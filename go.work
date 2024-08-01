@@ -1,0 +1,10 @@
+go 1.21.9
+
+use (
+	./lib
+	./user-service
+	./auth-service
+	./inventory-service
+	./purchase-service
+	./supplier-service
+)

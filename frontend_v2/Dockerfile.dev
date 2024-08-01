@@ -1,0 +1,26 @@
+# Dockerfile.dev
+
+FROM node:18-alpine
+
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY ./frontend/package.json ./frontend/yarn.lock* ./frontend/package-lock.json* ./frontend/pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then echo "Installing with Yarn" && yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then echo "Installing with npm" && npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then echo "Installing with pnpm" && npm i -g pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found. Please ensure that either yarn.lock, package-lock.json, or pnpm-lock.yaml is present." && exit 1; \
+  fi
+
+COPY . .
+
+CMD \
+  if [ -f yarn.lock ]; then yarn dev; \
+  elif [ -f package-lock.json ]; then npm run dev; \
+  elif [ -f pnpm-lock.yaml ]; then pnpm dev; \
+  fi
+
+# Expose the port the app runs on
+EXPOSE 3000

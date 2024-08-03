@@ -1,12 +1,13 @@
 import { Router } from 'express';
-import supplierRoutes from './supplier';
-import penerimaanCabangRoutes from './penerimaan-cabang';
-import penerimaanSupplierRoutes from './penerimaan-supplier';
+import infoObatRoutes from './info-obat';
+import transaksiPenjualanRoutes from './transaksi-penjualan';
+import returPenjualanRoutes from './retur-penjualan';   
 
 const router = Router();
 
-router.use('/supplier', supplierRoutes);
-router.use('/penerimaan-cabang', penerimaanCabangRoutes);
-router.use('/penerimaan-supplier', penerimaanSupplierRoutes);
+router.use('/info-obat', infoObatRoutes);
+router.use('/transaksi-penjualan', transaksiPenjualanRoutes);
+router.use('/retur-penjualan', returPenjualanRoutes);
+
 
 export default router;

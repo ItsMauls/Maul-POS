@@ -59,6 +59,21 @@ services:
         REDIS_PORT: "6379"
         REDIS_PASSWORD: ""
         JWT_SECRET_KEY: "JWT_SECRET_KEY_APP_APOTEK_PBF))(**"
+  
+  sales-service:
+    hostname: sales-service-host
+    build:
+      context: ./sales-service
+      dockerfile: ./sales-service/Dockerfile
+    networks:
+      - pbf-network
+    restart: on-failure
+    depends_on:
+      - postgres
+    environment:
+      APP_NAME: "sales-rest-service"
+      HTTP_PORT: "8082"
+      DATABSE_URL: "postgresql://root:password@localhost:5433/db_sales?schema=public"
 
   postgres:
     image: postgres:latest

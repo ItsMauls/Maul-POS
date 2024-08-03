@@ -1,0 +1,161 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Kategori {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  Mainstock   Mainstock[]
+}
+
+model Mainstock {
+  kd_brgdg               Int      @id @default(autoincrement())
+  nm_brgdg               String
+  id_dept                Int
+  isi                    Int
+  id_satuan              Int
+  strip                  Int
+  mark_up                Float
+  hb_netto               Float
+  hb_gross               Float
+  hj_ecer                Float
+  hj_bbs                 Float
+  id_kategori            Int
+  id_pabrik              Int
+  barcode                String
+  created_at             DateTime @default(now())
+  created_by             String
+  deleted_status         Boolean  @default(false)
+  deleted_at             DateTime?
+  hpp                    Float
+  q_bbs                  Int
+  sat_pus                Int
+  sat_cab                Int
+  tgl_new_product        DateTime
+  konsinyasi             Boolean
+  halodoc                Boolean
+  bpjs                   Boolean  
+  informasi_po           String?
+  informasi_tanggal_ed_po DateTime?
+  id_dept_pusdis         Int
+  trading_term           String?
+  id_kl                  Int
+  status                 Int
+  moq                    Int
+  min_bulan_ed           Int
+  informasi_return       String?
+  barcode_big            String?
+  hb_net                 Float
+  mark_up_purchasing     Float
+  hna                    Float
+  hj_masiva              Float
+  sup1                   String?
+  q_temp_out             Int
+  q_exp                  Int
+  disc1                  Float
+  q_akhir                Int
+  produksi               String?
+  het                    Float
+  berat                  Float
+  nie                    String?
+  tgl_berlaku_nie        DateTime?
+  file_nie               String?
+  updated_at             DateTime?
+  updated_by             String?
+  id_brand               Int
+  wso2transfer           Boolean
+  is_updated             Boolean
+  category              Kategori @relation(fields: [id_kategori], references: [id])
+}
+
+model ReturPenjualan {
+  id                 Int      @id @default(autoincrement())
+  id_hretur          Int
+  detail             String?
+  kd_brgdg           String
+  qty                Int
+  harga              Decimal  @db.Decimal(10, 2)
+  discount           Decimal  @db.Decimal(10, 2)
+  ppn                Decimal  @db.Decimal(10, 2)
+  subtotal_harga     Decimal  @db.Decimal(12, 2)
+  subtotal_discount  Decimal  @db.Decimal(12, 2)
+  subtotal_ppn       Decimal  @db.Decimal(12, 2)
+  no_batch           String?
+  tgl_batch          DateTime?
+  id_hretur_cabang   Int?
+  detail_retur_cabang String?
+  status_retur       String?
+  nominal_retur      Decimal?  @db.Decimal(12, 2)
+  hpp                Decimal  @db.Decimal(10, 2)
+  total_hpp          Decimal  @db.Decimal(12, 2)
+  wso2transfer       Boolean
+  id_htransb         Int
+
+  TransaksiPenjualan TransaksiPenjualan @relation(fields: [id_htransb], references: [id])
+}
+
+model TransaksiPenjualan {
+  id                  Int      @id @default(autoincrement())
+  kd_brgdg            String
+  nm_brgdg            String
+  id_dept             Int
+  psn                 Int
+  pisi                Int
+  ktr                 String?
+  sat_psn             Int
+  sld                 Int
+  nilaipo             Decimal  @db.Decimal(12, 2)
+  trana               Decimal  @db.Decimal(12, 2)
+  tranb               Decimal  @db.Decimal(12, 2)
+  trana_r             Decimal?  @db.Decimal(12, 2)
+  tranb_r             Decimal?  @db.Decimal(12, 2)
+  q_akhir             Int
+  user_id             Int
+  tgl_input           DateTime @default(now())
+  hb_gross            Decimal  @db.Decimal(10, 2)
+  isi                 Int
+  status              String?
+  cito                Boolean
+  buffer              Int
+  sat_cab             Int
+  interval_transaksi  Int
+  rata_rata_qty_jual  Decimal?  @db.Decimal(10, 2)
+  katagori            String?
+  tot_psn             Int
+  pesan               Int
+  psn_kalkulasi       Int
+  qty_po              Int
+  qty_beli            Int
+  qty_kurang          Int
+  jumlah_po           Int
+  nilai_max           Decimal  @db.Decimal(12, 2)
+  tranc               Decimal?  @db.Decimal(12, 2)
+  tranc_r             Decimal?  @db.Decimal(12, 2)
+  buffer_max          Int?
+  tot_max             Decimal?  @db.Decimal(12, 2)
+  depo                String?
+  q_bbs               Int
+  jml_trans           Int
+  jenis               String?
+  trand               Decimal?  @db.Decimal(12, 2)
+  trand_r             Decimal?  @db.Decimal(12, 2)
+  sat_pus             Int
+  grade               String?
+  t1                  Int?
+  t2                  Int?
+  hna                 Decimal  @db.Decimal(10, 2)
+  min_max             Int
+  kd_cab              String
+  hpp                 Decimal  @db.Decimal(10, 2)
+  infor               String?
+
+  ReturPenjualan      ReturPenjualan[]
+}

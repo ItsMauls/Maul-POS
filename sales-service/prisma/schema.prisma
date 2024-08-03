@@ -158,6 +158,8 @@ model TransaksiPenjualan {
   kd_cab              String
   hpp                 Decimal  @db.Decimal(10, 2)
   infor               String?
+  created_at             DateTime @default(now())
+  updated_at             DateTime? @updatedAt
 
   ReturPenjualan      ReturPenjualan[]
 }

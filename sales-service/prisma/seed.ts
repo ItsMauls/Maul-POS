@@ -54,7 +54,7 @@ async function seedTransaksiPenjualan() {
     min_max: faker.number.int({ min: 50, max: 1000 }),
     kd_cab: `CAB${faker.string.numeric(3)}`,
     hpp: faker.number.float({ min: 1000, max: 100000, precision: 0.01 }),
-    infor: faker.lorem.sentence(),
+    infor: faker.lorem.sentence(),    
   }));
 
   const createdTransaksiPenjualan = await prisma.transaksiPenjualan.createMany({

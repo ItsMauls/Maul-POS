@@ -30,7 +30,7 @@ export const returPenjualanController = {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const search = req.query.search as string;
-      const sortBy = req.query.sortBy as string || 'createdAt';
+      const sortBy = req.query.sortBy as string || 'created_at';
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
 
       const skip = (page - 1) * limit;
@@ -67,7 +67,9 @@ export const returPenjualanController = {
           limit,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error.message);
+      
       throw createError('FETCH_RETUR_PENJUALAN_ERROR');
     }
   },

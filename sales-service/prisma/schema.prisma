@@ -11,8 +11,8 @@ model Kategori {
   id          Int         @id @default(autoincrement())
   name        String      @unique
   description String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
   Mainstock   Mainstock[]
 }
 
@@ -98,6 +98,8 @@ model ReturPenjualan {
   total_hpp          Decimal  @db.Decimal(12, 2)
   wso2transfer       Boolean
   id_htransb         Int
+  created_at         DateTime    @default(now())
+  updated_at         DateTime    @updatedAt
 
   TransaksiPenjualan TransaksiPenjualan @relation(fields: [id_htransb], references: [id])
 }

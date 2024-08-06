@@ -10,7 +10,7 @@ export type ButtonTypes = {
 }
 
 
-export interface PaginationButtonTypes {
+export interface PaginationButtonTypes {    
     totalItems? : number
     itemsPerPage? : number
     currentPage : number

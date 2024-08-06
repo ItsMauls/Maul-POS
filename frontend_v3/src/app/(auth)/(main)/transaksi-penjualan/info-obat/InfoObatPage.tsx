@@ -8,7 +8,6 @@ import { Limiter } from "@/components/Limiter";
 import { useGet } from "@/hooks/useApi";
 import { API_URL } from "@/constants/api";
 import { ColumnDef } from "@tanstack/react-table";
-import { useRouter, useSearchParams } from "next/navigation";
 
 interface ApiResponse {
   success: boolean;
@@ -26,36 +25,34 @@ interface ApiResponse {
   };
 }
 
-export default function Page() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
+export default function InfoObatPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [limit, setLimit] = useState(10);
-    const page = parseInt(searchParams.get('table-page') as string) || 1;
+    const [sortBy, setSortBy] = useState("nm_brgdg");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
     const { data, error, isLoading } = useGet<ApiResponse>(
-        `${API_URL.SALES["info-obat"]}?limit=${limit}&search=${searchTerm}&page=${page}`
+        API_URL.SALES["info-obat"],
+        {
+            limit,
+            search: searchTerm,
+            sortBy,
+            sortOrder
+        }
     );
-    
+
+    useEffect(() => {
+        console.log('Data changed:', data);
+    }, [data]);
+
     const columns: ColumnDef<ApiResponse['data'][0]>[] = [
         { accessorKey: "kd_brgdg", header: "Kode" },
         { accessorKey: "nm_brgdg", header: "Nama Obat" },
-        { accessorKey: "category.name", header: "Kategori" },   
+        { accessorKey: "category.name", header: "Kategori" },
         { accessorKey: "hj_ecer", header: "Harga Ecer" },
         { accessorKey: "hj_bbs", header: "Harga BBS" },
         { accessorKey: "q_akhir", header: "Stok" },
     ];
-
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value);
-        router.push(`?page=1&search=${e.target.value}`);
-    };
-
-    const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newLimit = Number(e.target.value);
-        setLimit(newLimit);
-        router.push(`?page=1&limit=${newLimit}`);
-    };
 
     return (
         <> 
@@ -63,7 +60,7 @@ export default function Page() {
                 <div className="flex items-center gap-x-4">
                     <SearchBar
                         value={searchTerm}
-                        onChange={handleSearch}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         rightIcon={<div className="border border-gray-300 font-semibold px-1 rounded-md">\</div>}
                         className={"w-[295px] px-4 border-2 my-4 border-gray-100 font-normal"}
                         id="monitoringSearchbar"
@@ -71,7 +68,7 @@ export default function Page() {
                     />
                 </div>
                 <div className="flex gap-x-4">
-                    <Limiter value={limit} onChange={handleLimitChange} />
+                    <Limiter value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
                     <Button 
                         hasIcon
                         icon={<FaCirclePlus />}
@@ -84,12 +81,11 @@ export default function Page() {
                 <p>Loading...</p>
             ) : error ? (
                 <p>Error: {error.toString()}</p>
-            ) : data ? (            
+            ) : data && data.data ? (
                 <Table
                     columns={columns}
-                    defaultData={data?.data || []}
-                    meta={data?.meta || {}}
-                    totalData={data?.meta?.totalCount || 0}
+                    defaultData={data.data}
+                    meta={data.meta}
                     tableClassName="max-w-[1350px]"
                     pagination
                     enableSorting

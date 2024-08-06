@@ -3,6 +3,8 @@ import { CiSearch } from "react-icons/ci";
 import { SearchBarProps } from "./type";
 
 export const SearchBar = ({
+    value,
+    onChange,
     placeholder,
     className,
     rightIcon,
@@ -25,6 +27,8 @@ export const SearchBar = ({
                 type="search"
                 placeholder={placeholder}
                 id={id}
+                value={value}
+                onChange={onChange}
             />
             {rightIcon ? (
                 <span className="pr-2 cursor-pointer">

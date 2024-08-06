@@ -18,4 +18,6 @@ export type TableTypes =  {
     sortByDateDefaultStyle? : string | boolean | unknown | any
     totalData? : number
     meta? : any
+    isPreviousData? : boolean
+    enableSort? : boolean
 }

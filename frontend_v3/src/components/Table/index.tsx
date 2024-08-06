@@ -7,8 +7,9 @@ import {
   getSortedRowModel,
   useReactTable,
   ColumnDef,
+  ColumnSort,
 } from '@tanstack/react-table';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { Pagination } from './Pagination';
 import { TableTypes } from './type';
@@ -22,15 +23,20 @@ export const Table = ({
   pagination,
   tableClassName,
   totalData,
+  isPreviousData,
   meta,
   enableSorting = true,
 }: TableTypes & { enableSorting?: boolean }) => {
-  const [data, _setData] = useState<DataRow[]>([...defaultData]);
-  const [sorting, setSorting] = useState([]);
+  const [data, setData] = useState<DataRow[]>([...defaultData]);
+  const [sorting, setSorting] = useState<ColumnSort[]>([]);
+
+  useEffect(() => {
+    setData([...defaultData]);
+  }, [defaultData]);
 
   const table = useReactTable({
     data,
-    columns: columns(enableSorting),
+    columns: columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
     onSortingChange: setSorting,
@@ -50,7 +56,7 @@ export const Table = ({
                   <th 
                     key={header.id}
                     className={cn('py-5 font-semibold text-start text-sm px-6 text-gray-800 bg-white', headerClassName)}
-                    onClick={enableSorting ? header.column.getToggleSortingHandler() : undefined}
+                    onClick={enableSorting && header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}
                   >
                     <div className="flex items-center gap-2">
                       {header.isPlaceholder
@@ -59,10 +65,10 @@ export const Table = ({
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                      {(enableSorting && {
+                      {(enableSorting && header.column.getCanSort() && {
                         asc: <FaSortUp />,
                         desc: <FaSortDown />,
-                      }[header.column.getIsSorted() as 'asc' | 'desc']) ?? (header.column.getCanSort() ? <FaSort /> : null)}
+                      }[header.column.getIsSorted() as string]) ?? (header.column.getCanSort() ? <FaSort /> : null)}
                     </div>
                   </th>
                 ))}
@@ -91,7 +97,7 @@ export const Table = ({
           </tbody>
         </table>
       </div>
-        {pagination && <Pagination meta={meta} totalData={totalData} table={table}/>}
+        {pagination && <Pagination meta={meta} table={table}/>}
     </>
   );
 };

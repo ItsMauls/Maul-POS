@@ -32,9 +32,8 @@ export async function request(
             baseURL : url,
             onUploadProgress: (e: any) => onUploadProgress(e)
         })
-
-        try {
-            console.log(data);
+        
+        try {            
             
             const response = await client({
                 method,

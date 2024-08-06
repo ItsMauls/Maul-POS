@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { HTTP_STATUS } from '../constants/httpStatus';
 import { ERROR_TYPES, ErrorType } from '../constants/errors';
 
@@ -7,7 +7,7 @@ interface CustomError extends Error {
   statusCode?: number;
 }
 
-const errorMiddleware = (err: CustomError, req: Request, res: Response) => {
+const errorMiddleware = (err: CustomError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
   const errorName = err.name || 'InternalServerError';
 
@@ -28,4 +28,4 @@ export const createError = (errorType: ErrorType): CustomError => {
   return error;
 };
 
-export default errorMiddleware
+export default errorMiddleware;

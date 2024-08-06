@@ -63,17 +63,19 @@ services:
   sales-service:
     hostname: sales-service-host
     build:
-      context: ./sales-service
+      context: .
       dockerfile: ./sales-service/Dockerfile
     networks:
       - pbf-network
     restart: on-failure
+    volumes:
+      - ./sales-service/cmd/config.yml:/cmd/config.yml
     depends_on:
       - postgres
     environment:
-      APP_NAME: "sales-rest-service"
-      HTTP_PORT: "8082"
-      DATABSE_URL: "postgresql://root:password@localhost:5433/db_sales?schema=public"
+      - CONFIG_FILE=/cmd/config.yml
+    ports:
+      - "3005:3005"
 
   postgres:
     image: postgres:latest
@@ -111,6 +113,7 @@ services:
     depends_on:
       - app
       - user-service
+      - sales-service      
 
 networks:
     pbf-network:

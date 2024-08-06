@@ -1,17 +1,25 @@
 import express, { urlencoded } from 'express';
+import yaml from 'js-yaml';
+import cors from 'cors';
+import fs from 'fs';
 import router from './routes';
 import errorMiddleware from './middlewares/error';
 
 const app = express();
-const PORT = process.env.PORT || 3005;
+const configFile = process.env.CONFIG_FILE || './cmd/config.yml';
+const config = yaml.load(fs.readFileSync(configFile, 'utf8')) as {
+  APP_NAME: string;
+  HTTP_PORT: string;
+};
+const PORT = config.HTTP_PORT || '3005';
 
+app.use(cors())
 app.use(express.json());
-app.use(urlencoded())
+app.use(urlencoded({ extended: true }));
 
-app.use(router)
+app.use('/sales', router);
 app.use(errorMiddleware);
 
-
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`${config.APP_NAME} listening on port ${PORT}`);
 });

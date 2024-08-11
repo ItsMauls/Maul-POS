@@ -1,5 +1,5 @@
 'use client'
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { PaginationButton } from "../ui/Button/PaginationButton";
 
 export const Pagination = ({ table, meta } : {table : any, meta?: any}) => {
@@ -8,7 +8,6 @@ export const Pagination = ({ table, meta } : {table : any, meta?: any}) => {
     const {
         totalCount,
         limit,
-        totalPages,
         currentPage
     } = meta || {};
 

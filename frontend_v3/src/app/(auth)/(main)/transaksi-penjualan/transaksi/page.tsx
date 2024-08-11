@@ -26,13 +26,13 @@ import { createColumns, defaultData } from "@/constants";
       <> 
         <div className="flex space-x-4">
           <div className="flex-1">
-            <Table
+            {/* <Table
               meta={meta}
               defaultData={defaultData}
               tableClassName="max-w-[1028px]"
               columns={createColumns}
               enableSorting={false}
-            />
+            /> */}
           </div>
           <div className="w-[280px] space-y-4">
             <Card className="h-[448px]">

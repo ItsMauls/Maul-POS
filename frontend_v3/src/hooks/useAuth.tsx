@@ -1,8 +1,8 @@
-import { api } from "@/constants/api";
 import { create } from "zustand";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import { login } from "@/services/auth";
+import { API_URL } from "@/constants/api";
 
 
 const useAuth = create((set) => ({
@@ -27,7 +27,7 @@ const useAuth = create((set) => ({
       try {
         const accessToken = Cookies.get('access_token')
         const response = await axios.get(
-          api.auth.currentUser, {
+          API_URL.AUTH.currentUser, {
             headers : {
                 Authorization : `Bearer ${accessToken}`
             }
@@ -47,7 +47,7 @@ const useAuth = create((set) => ({
         const accessToken = Cookies.get('access_token')
         
         await axios.post(
-            api.auth.logout, {}, {
+            API_URL.AUTH.logout, {}, {
               headers : {
                   Authorization : `Bearer ${accessToken}`
               }

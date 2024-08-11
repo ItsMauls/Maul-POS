@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import prisma from '../src/config/prisma';
+import './loadEnv';
 
 async function seedTransaksiPenjualan() {
   const transaksiPenjualanData = Array.from({ length: 50 }, () => ({

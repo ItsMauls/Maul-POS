@@ -1,4 +1,5 @@
 import prisma from '../src/config/prisma';
+import './loadEnv';
 
 async function unseed() {
   try {

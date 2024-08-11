@@ -6,7 +6,6 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
-  ColumnDef,
   ColumnSort,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
@@ -22,8 +21,6 @@ export const Table = ({
   headerClassName,
   pagination,
   tableClassName,
-  totalData,
-  isPreviousData,
   meta,
   enableSorting = true,
 }: TableTypes & { enableSorting?: boolean }) => {

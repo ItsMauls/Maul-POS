@@ -31,35 +31,74 @@ export const transaksiPenjualanController = {
       const search = req.query.search as string;
       const sortBy = req.query.sortBy as string || 'created_at';
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
+      const date = req.query.date as string;
 
       const skip = (page - 1) * limit;
 
-      const where = search ? {
-        OR: [
-          { noFaktur: { contains: search, mode: 'insensitive' } },
-          { namaPelanggan: { contains: search, mode: 'insensitive' } },
-        ],
-      } : {};
+      let where: any = {};
+
+      if (search) {
+        where.OR = [
+          { id: { equals: parseInt(search) } }, // Assuming 'id' is used as 'no bon'
+          { sales_pelayan: { contains: search, mode: 'insensitive' } },
+          { pelanggan: { nama: { contains: search, mode: 'insensitive' } } },
+          { dokter: { nama: { contains: search, mode: 'insensitive' } } },
+        ];
+      }
+
+      if (date) {
+        where.created_at = {
+          gte: new Date(`${date}T00:00:00Z`),
+          lt: new Date(`${date}T23:59:59Z`),
+        };
+      }
 
       const [transaksiList, totalCount] = await Promise.all([
-        prisma.transaksiPenjualan.findMany({
+        prisma.transaksi.findMany({
           where,
           skip,
           take: limit,
           orderBy: { [sortBy]: sortOrder },
-        //   include: { items: true },
+          select: {
+            id: true, // 'no bon'
+            created_at: true, // 'tanggal' and 'jam'
+            sales_pelayan: true, // 'kasir'
+            pelanggan: {
+              select: {
+                nama: true,
+                alamat: true,
+                instansi: true,
+              },
+            },
+            dokter: {
+              select: {
+                nama: true,
+              },
+            },
+          },
         }),
-        prisma.transaksiPenjualan.count({ where }),
+        prisma.transaksi.count({ where }),
       ]);
+
+      const formattedTransaksiList = transaksiList.map((t: any) => ({
+        no_bon: t.id,
+        tanggal: t.created_at.toISOString().split('T')[0],
+        jam: t.created_at.toISOString().split('T')[1].substring(0, 5),
+        kasir: t.sales_pelayan,
+        kassa: 'N/A', // This information is not in your current model
+        shift: 'N/A', // This information is not in your current model
+        customer: t.pelanggan.nama,
+        alamat: t.pelanggan.alamat,
+        instansi: t.pelanggan.instansi,
+        dokter: t.dokter.nama,
+      }));
 
       const totalPages = Math.ceil(totalCount / limit);
 
-      res
-      .status(HTTP_STATUS.OK)
-      .json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
         message: 'Transaksi penjualan list retrieved successfully',
-        data: transaksiList,
+        data: formattedTransaksiList,
         meta: {
           currentPage: page,
           totalPages,
@@ -68,9 +107,7 @@ export const transaksiPenjualanController = {
         },
       });
     } catch (error) {
-      res
-      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Failed to fetch transaksi penjualan list',
         error: error instanceof Error ? error.message : String(error),

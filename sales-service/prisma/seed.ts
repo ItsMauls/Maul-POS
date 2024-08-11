@@ -1,28 +1,11 @@
 import { faker } from '@faker-js/faker';
 import prisma from '../src/config/prisma';
 import './loadEnv';
-
-const categories = [
-  { name: 'OTC (Over-the-Counter)', description: 'Obat yang dapat dibeli tanpa resep dokter' },
-  { name: 'Ethical', description: 'Obat yang hanya dapat dibeli dengan resep dokter' },
-  { name: 'Alat Kesehatan', description: 'Peralatan medis dan kesehatan' },
-  { name: 'Vitamin / Mineral & Multivitamin', description: 'Suplemen untuk kesehatan' },
-  { name: 'Skin Care Series', description: 'Produk perawatan kulit' },
-  { name: 'Herbal & Tradisional', description: 'Obat-obatan berbasis tanaman dan tradisional' },
-  { name: 'Nutrisi', description: 'Produk untuk kebutuhan nutrisi khusus' },
-  { name: 'Antibiotik', description: 'Obat untuk melawan infeksi bakteri' },
-  { name: 'Analgesik', description: 'Obat pereda nyeri' },
-  { name: 'Antipiretik', description: 'Obat penurun demam' },
-  { name: 'Antidiabetik', description: 'Obat untuk mengelola diabetes' },
-  { name: 'Antihipertensi', description: 'Obat untuk tekanan darah tinggi' },
-  { name: 'Antihistamin', description: 'Obat untuk mengatasi alergi' },
-  { name: 'Antiseptik & Desinfektan', description: 'Produk pembersih dan sterilisasi' },
-  { name: 'Obat Mata', description: 'Produk untuk kesehatan mata' },
-];
+import { CATEGORIES, REAL_DRUG_NAMES } from '../src/constants';
 
 async function seedCategories() {
 const createdCategories = await prisma.kategori.createMany({
-  data: categories,
+  data: CATEGORIES,
   skipDuplicates: true,
 });
 
@@ -30,12 +13,24 @@ console.log(`Seeded ${createdCategories.count} Category records`);
 return createdCategories.count;
 }
 
+const generateDrugName = (() => {
+  const usedSizes = new Set();
+  return () => {
+    const drugName = faker.helpers.arrayElement(REAL_DRUG_NAMES);
+    let drugSizeInGrams;
+    do {
+      drugSizeInGrams = Math.floor(Math.random() * 500) + 1; // Ukuran dalam gram (1-500 gram)
+    } while (usedSizes.has(drugSizeInGrams));
+    usedSizes.add(drugSizeInGrams);
+    return `${drugName} ${drugSizeInGrams} gr`;
+  };
+})();
+
 async function seedMainstock(categoryCount: number) {
-  const mainstockData = Array.from({ length: 100 }, () => ({
-    nm_brgdg: faker.commerce.productName(),
+  const mainstockData = Array.from({ length: 500 }, () => ({
+    nm_brgdg: generateDrugName(),
     id_dept: faker.number.int({ min: 1, max: 10 }),
-    isi: faker.number.int({ min: 1, max: 100 }),
-    id_satuan: faker.number.int({ min: 1, max: 5 }),
+    isi: faker.number.int({ min: 1, max: 100 }),    
     strip: faker.number.int({ min: 1, max: 20 }),
     mark_up: faker.number.float({ min: 0.1, max: 0.5 }),
     hb_netto: faker.number.float({ min: 1000, max: 100000 }),
@@ -47,16 +42,13 @@ async function seedMainstock(categoryCount: number) {
     barcode: faker.string.numeric(13),
     created_by: faker.internet.userName(),
     hpp: faker.number.float({ min: 800, max: 80000 }),
-    q_bbs: faker.number.int({ min: 0, max: 1000 }),
-    sat_pus: faker.number.int({ min: 1, max: 5 }),
-    sat_cab: faker.number.int({ min: 1, max: 5 }),
+    q_bbs: faker.number.int({ min: 0, max: 1000 }),        
     tgl_new_product: faker.date.past(),
     konsinyasi: faker.datatype.boolean(),
     halodoc: faker.datatype.boolean(),
     bpjs: faker.datatype.boolean(),
     informasi_po: faker.lorem.sentence(),
-    informasi_tanggal_ed_po: faker.date.future(),
-    id_dept_pusdis: faker.number.int({ min: 1, max: 10 }),
+    informasi_tanggal_ed_po: faker.date.future(),    
     trading_term: faker.lorem.word(),
     id_kl: faker.number.int({ min: 1, max: 100 }),
     status: faker.number.int({ min: 0, max: 3 }),

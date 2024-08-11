@@ -63,7 +63,6 @@ export const returPenjualanController = {
         }),
         prisma.returPenjualan.count({ where }),
       ]);
-      console.log(returPenjualans, 'returPenjualans');
       
       const formattedReturPenjualans = returPenjualans.map((r: any) => ({
         id: r.id,

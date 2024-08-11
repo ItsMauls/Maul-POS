@@ -10,4 +10,7 @@ export interface InputFieldProps {
   suffix?: string;
   type?: string
   labelPosition?: 'top' | 'left';
+  value?: string;
+  props?: any;
+  disabled?: boolean;
 }

@@ -5,10 +5,11 @@ import Button from "@/components/ui/Button";
 import { SearchBar } from "@/components/ui/Searchbar";
 import { FaCirclePlus } from "react-icons/fa6";
 import { Limiter } from "@/components/Limiter";
-import { useGet } from "@/hooks/useApi";
+import { useGet, usePost } from "@/hooks/useApi";
 import { API_URL } from "@/constants/api";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AddDrugModal } from "@/components/Modal/AddDrugModal";
 
 interface ApiResponse {
   success: boolean;
@@ -31,12 +32,16 @@ export default function Page() {
     const searchParams = useSearchParams();
     const [searchTerm, setSearchTerm] = useState("");
     const [limit, setLimit] = useState(10);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [lastUsedId, setLastUsedId] = useState<number | null>(null);
     const page = parseInt(searchParams.get('table-page') as string) || 1;
 
-    const { data, error, isLoading } = useGet<ApiResponse>(
+    const { data, error, isLoading, refetch } = useGet<ApiResponse>(
         `${API_URL.SALES["info-obat"]}?limit=${limit}&search=${searchTerm}&page=${page}`
     );
     
+    const { mutate: saveDrug } = usePost(`${API_URL.SALES["info-obat"]}`);
+
     const columns: ColumnDef<ApiResponse['data'][0]>[] = [
         { accessorKey: "kd_brgdg", header: "Kode" },
         { accessorKey: "nm_brgdg", header: "Nama Obat" },
@@ -57,6 +62,37 @@ export default function Page() {
         router.push(`?page=1&limit=${newLimit}`);
     };
 
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleSaveDrug = async (drugData: any) => {
+        try {
+            console.log(drugData, 'drugData');
+            
+            await saveDrug(drugData);
+            refetch();
+            handleCloseModal();
+        } catch (error) {
+            console.error("Error saving drug:", error);
+        }
+    };
+    useEffect(() => {
+        if (data && data.data.length > 0 && isModalOpen) {
+            setLimit(30);
+            const maxId = Math.max(...data.data.map(item => (item.kd_brgdg)));    
+             
+            setLastUsedId(maxId);
+        } else {
+            setLastUsedId(null);
+            setLimit(10);
+        }
+    }, [data, isModalOpen]);
+
     return (
         <> 
             <div className="flex justify-between items-center">
@@ -75,7 +111,8 @@ export default function Page() {
                     <Button 
                         hasIcon
                         icon={<FaCirclePlus />}
-                        className={'bg-teal-600 rounded-xl hover:bg-teal-700 text-white'}>
+                        className={'bg-teal-600 rounded-xl hover:bg-teal-700 text-white'}
+                        onClick={handleOpenModal}>
                         Tambah
                     </Button>
                 </div>
@@ -97,6 +134,12 @@ export default function Page() {
             ) : (
                 <p>No data available</p>
             )}
+            <AddDrugModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSave={handleSaveDrug}
+                lastUsedId={lastUsedId}
+            />
         </>
     )
 }

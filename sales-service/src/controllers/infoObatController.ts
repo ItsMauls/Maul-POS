@@ -8,6 +8,8 @@ export const infoObatController = {
       const newObat = await prisma.mainstock.create({
         data: req.body,
       });
+      console.log('ada');
+      
       res.status(HTTP_STATUS.CREATED).json({
         success: true,
         message: 'Obat created successfully',

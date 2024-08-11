@@ -16,6 +16,7 @@ export const API_URL = {
     SALES : {
         getSales : `${SALES_URL}/sales`,
         'info-obat': `${SALES_URL}/info-obat`,
-        transaksiPenjualan: `${SALES_URL}/transaksi-penjualan`
+        transaksiPenjualan: `${SALES_URL}/transaksi-penjualan`,
+        returPenjualan: `${SALES_URL}/retur-penjualan`
     }
 }

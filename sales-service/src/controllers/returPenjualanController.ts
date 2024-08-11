@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { HTTP_STATUS } from '../constants/httpStatus';
-import { createError } from '../middlewares/error';
 
 export const returPenjualanController = {
   async create(req: Request, res: Response) {
@@ -15,9 +14,7 @@ export const returPenjualanController = {
         data: newReturPenjualan,
       });
     } catch (error) {
-      res
-      .status(HTTP_STATUS.BAD_REQUEST)
-      .json({
+      res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: 'Failed to create new retur penjualan',
         error: error instanceof Error ? error.message : String(error),
@@ -32,15 +29,26 @@ export const returPenjualanController = {
       const search = req.query.search as string;
       const sortBy = req.query.sortBy as string || 'created_at';
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
+      const date = req.query.date as string;
 
       const skip = (page - 1) * limit;
 
-      const where = search ? {
-        OR: [
-          { noRetur: { contains: search, mode: 'insensitive' } },
-          { keterangan: { contains: search, mode: 'insensitive' } },
-        ],
-      } : {};
+      let where: any = {};
+
+      if (search) {
+        where.OR = [
+          { id: { equals: parseInt(search) } },
+          { transaksi: { id: { equals: parseInt(search) } } },
+          { kd_brgdg: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      if (date) {
+        where.created_at = {
+          gte: new Date(`${date}T00:00:00Z`),
+          lt: new Date(`${date}T23:59:59Z`),
+        };
+      }
 
       const [returPenjualans, totalCount] = await Promise.all([
         prisma.returPenjualan.findMany({
@@ -48,18 +56,30 @@ export const returPenjualanController = {
           skip,
           take: limit,
           orderBy: { [sortBy]: sortOrder },
+          include: {
+            transaksi: true,
+            mainstock: true,
+          },
         }),
         prisma.returPenjualan.count({ where }),
       ]);
+      console.log(returPenjualans, 'returPenjualans');
+      
+      const formattedReturPenjualans = returPenjualans.map((r: any) => ({
+        id: r.id,
+        tanggal_beli: r.transaksi.created_at.toISOString().split('T')[0],
+        no_bon: r.transaksi.id,
+        nama_barang: r.mainstock.nm_brgdg, // Assuming kd_brgdg represents the product name
+        total: r.subtotal_harga,
+        tanggal_retur: r.created_at.toISOString().split('T')[0],
+      }));
 
       const totalPages = Math.ceil(totalCount / limit);
 
-      res
-      .status(HTTP_STATUS.OK)
-      .json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
         message: 'Retur penjualan list retrieved successfully',
-        data: returPenjualans,
+        data: formattedReturPenjualans,
         meta: {
           currentPage: page,
           totalPages,
@@ -67,10 +87,12 @@ export const returPenjualanController = {
           limit,
         },
       });
-    } catch (error: any) {
-      console.log(error.message);
-      
-      throw createError('FETCH_RETUR_PENJUALAN_ERROR');
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to fetch retur penjualan list',
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   },
 
@@ -79,6 +101,7 @@ export const returPenjualanController = {
       const { id } = req.params;
       const returPenjualan = await prisma.returPenjualan.findUnique({
         where: { id: Number(id) },
+        include: { transaksi: true },
       });
       if (returPenjualan) {
         res.status(HTTP_STATUS.OK).json({
@@ -93,7 +116,11 @@ export const returPenjualanController = {
         });
       }
     } catch (error) {
-      throw createError('FETCH_RETUR_PENJUALAN_ERROR');
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to fetch retur penjualan',
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   },
 
@@ -110,9 +137,7 @@ export const returPenjualanController = {
         data: updatedReturPenjualan,
       });
     } catch (error) {
-      res
-      .status(HTTP_STATUS.BAD_REQUEST)
-      .json({
+      res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: 'Failed to update retur penjualan',
         error: error instanceof Error ? error.message : String(error),
@@ -131,9 +156,7 @@ export const returPenjualanController = {
         message: 'Retur penjualan deleted successfully',
       });
     } catch (error) {
-      res
-      .status(HTTP_STATUS.BAD_REQUEST)
-      .json({
+      res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: 'Failed to delete retur penjualan',
         error: error instanceof Error ? error.message : String(error),

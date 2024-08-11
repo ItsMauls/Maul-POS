@@ -19,61 +19,62 @@ model Kategori {
 model Mainstock {
   kd_brgdg                Int               @id @default(autoincrement())
   nm_brgdg                String
-  id_dept                 Int
-  isi                     Int
-  id_satuan               Int
+  id_dept                 Int?
+  isi                     Int?  
   strip                   Int
-  mark_up                 Float
-  hb_netto                Float
-  hb_gross                Float
-  hj_ecer                 Float
-  hj_bbs                  Float
-  id_kategori             Int
-  id_pabrik               Int
-  barcode                 String
+  mark_up                 Float?
+  hb_netto                Float?
+  hb_gross                Float?
+  hj_ecer                 Float?
+  hj_bbs                  Float?
+  id_kategori             Int?
+  id_pabrik               Int?
+  barcode                 String?
   created_at              DateTime          @default(now())
-  created_by              String
+  created_by              String?
   deleted_status          Boolean           @default(false)
   deleted_at              DateTime?
-  hpp                     Float
-  q_bbs                   Int
-  sat_pus                 Int
-  sat_cab                 Int
-  tgl_new_product         DateTime
-  konsinyasi              Boolean
-  halodoc                 Boolean
-  bpjs                    Boolean
+  hpp                     Float?
+  q_bbs                   Int?
+  tgl_new_product         DateTime?
+  konsinyasi              Boolean?
+  halodoc                 Boolean?
+  bpjs                    Boolean?
   informasi_po            String?
   informasi_tanggal_ed_po DateTime?
-  id_dept_pusdis          Int
+  aturan_pakai            String?
+  komposisi               String?
+  indikasi                String?
+  dosis                   String?
   trading_term            String?
-  id_kl                   Int
-  status                  Int
-  moq                     Int
-  min_bulan_ed            Int
+  id_kl                   Int?
+  status                  Int?
+  moq                     Int?
+  min_bulan_ed            Int?
   informasi_return        String?
   barcode_big             String?
-  hb_net                  Float
-  mark_up_purchasing      Float
-  hna                     Float
-  hj_masiva               Float
+  hb_net                  Float?
+  mark_up_purchasing      Float?
+  hna                     Float?
+  hj_masiva               Float?
   sup1                    String?
-  q_temp_out              Int
-  q_exp                   Int
-  disc1                   Float
-  q_akhir                 Int
+  q_temp_out              Int?
+  q_exp                   Int?
+  disc1                   Float?
+  q_akhir                 Int?
   produksi                String?
-  het                     Float
-  berat                   Float
+  het                     Float?
+  berat                   Float?
   nie                     String?
   tgl_berlaku_nie         DateTime?
   file_nie                String?
   updated_at              DateTime?
   updated_by              String?
-  id_brand                Int
-  wso2transfer            Boolean
-  is_updated              Boolean
-  category                Kategori          @relation(fields: [id_kategori], references: [id])
+  id_brand                Int?
+  deskripsi               String?
+  wso2transfer            Boolean?
+  is_updated              Boolean?
+  kategori                Kategori?          @relation(fields: [id_kategori], references: [id])
   TransaksiDetail         TransaksiDetail[]
   ReturPenjualan          ReturPenjualan[]
 }

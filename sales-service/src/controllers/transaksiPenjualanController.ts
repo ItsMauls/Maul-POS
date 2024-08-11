@@ -8,7 +8,9 @@ export const transaksiPenjualanController = {
       const newTransaksi = await prisma.transaksiPenjualan.create({
         data: req.body,
       });
-      res.status(HTTP_STATUS.CREATED).json({
+      res
+      .status(HTTP_STATUS.CREATED)
+      .json({
         success: true,
         message: 'Transaksi penjualan created successfully',
         data: newTransaksi,

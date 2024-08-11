@@ -2,13 +2,76 @@ import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { HTTP_STATUS } from '../constants/httpStatus';
 
+interface CreateObatDto {
+  nm_brgdg: string;
+  isi?: number;
+  id_kategori?: number;
+  strip: number;
+  mark_up?: number;
+  hb_netto?: number;
+  hb_gross?: number;
+  hj_ecer?: number;
+  hj_bbs?: number;
+  id_pabrik?: number;
+  barcode?: string;
+  created_by?: string;
+  hpp?: number;
+  q_bbs?: number;
+  tgl_new_product?: string;
+  konsinyasi?: boolean;
+  halodoc?: boolean;
+  bpjs?: boolean;
+  id_kl?: number;
+  status?: number;
+  moq?: number;
+  min_bulan_ed?: number;
+  hb_net?: number;
+  mark_up_purchasing?: number;
+  hna?: number;
+  hj_masiva?: number;
+  q_temp_out?: number;
+  q_exp?: number;
+  disc1?: number;
+  q_akhir?: number;
+  het?: number;
+  berat?: number;
+  id_brand?: number;
+  wso2transfer?: boolean;
+  is_updated?: boolean;
+  dosis?: string;
+  aturan_pakai?: string;
+  komposisi?: string;
+  indikasi?: string;
+  deskripsi?: string;
+}
+
 export const infoObatController = {
-  async create(req: Request, res: Response) {
+  async create(req: Request<{}, {}, Partial<CreateObatDto>>, res: Response) {
     try {
+      const obatData: Partial<CreateObatDto> = req.body;
+
+      // Perform type conversions
+      if (typeof obatData.strip === 'string') obatData.strip = parseInt(obatData.strip, 10);
+      if (typeof obatData.id_kategori === 'string') obatData.id_kategori = parseInt(obatData.id_kategori, 10);
+      if (typeof obatData.id_pabrik === 'string') obatData.id_pabrik = parseInt(obatData.id_pabrik, 10);
+      if (typeof obatData.hj_bbs === 'string') obatData.hj_bbs = parseFloat(obatData.hj_bbs);
+
+      // Validate required fields
+      if (!obatData.nm_brgdg || !obatData.strip) {
+        throw new Error('nm_brgdg and strip are required fields');
+      }
+
+      // Separate id_kategori from the rest of the data
+      const { id_kategori, ...mainStockData } = obatData;
+
       const newObat = await prisma.mainstock.create({
-        data: req.body,
+        data: {
+          ...mainStockData,
+          kategori: id_kategori ? { connect: { id: id_kategori } } : undefined,
+        },
       });
-      console.log('ada');
+
+      console.log('New obat created:', newObat);
       
       res.status(HTTP_STATUS.CREATED).json({
         success: true,
@@ -16,9 +79,9 @@ export const infoObatController = {
         data: newObat,
       });
     } catch (error) {
-      res
-      .status(HTTP_STATUS.BAD_REQUEST)
-      .json({
+      console.error('Error creating obat:', error);
+      
+      res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: 'Failed to create new obat',
         error: error instanceof Error ? error.message : String(error),
@@ -55,7 +118,7 @@ export const infoObatController = {
           skip,
           take: limit,
           orderBy: { [sortBy]: sortOrder },
-          include: { category: true },
+          include: { kategori: true },
         }),
         prisma.mainstock.count({ where }),
       ]);
@@ -76,6 +139,8 @@ export const infoObatController = {
         },
       });
     } catch (error) {
+      console.log(error instanceof Error ? error.message : String(error));
+      
       res
       .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
       .json({

@@ -2,8 +2,7 @@ import React from 'react';
 import Button from '@/components/ui/Button';
 import { InputField } from '@/components/Input';
 import { FieldError, useForm } from 'react-hook-form';
-
-const generateRandomCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+import { SelectField } from '@/components/SelectField';
 
 interface AddDrugModalProps {
   isOpen: boolean;
@@ -13,11 +12,13 @@ interface AddDrugModalProps {
 }
 
 export const AddDrugModal: React.FC<AddDrugModalProps> = ({ isOpen, onClose, onSave, lastUsedId }) => {
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const [nextId, setNextId] = React.useState<number | null>(null);
 
   const onSubmit = (data: any) => {
-    onSave(data);
+    // Remove kd_brgdg from the data before sending
+    const { kd_brgdg, ...dataToSend } = data;
+    onSave(dataToSend);
     onClose();
   };
 
@@ -25,9 +26,8 @@ export const AddDrugModal: React.FC<AddDrugModalProps> = ({ isOpen, onClose, onS
     if (lastUsedId !== null) {
       const newId = lastUsedId + 1;
       setNextId(newId);
-      setValue('kd_barang', newId.toString());
     }
-  }, [lastUsedId, setValue]);
+  }, [lastUsedId]);
 
   if (!isOpen) return null;
 
@@ -39,27 +39,28 @@ export const AddDrugModal: React.FC<AddDrugModalProps> = ({ isOpen, onClose, onS
           <div className="grid grid-cols-2 gap-4">
             <InputField
               label="Kd Barang*"
-              name="kd_barang"
-              register={register}
-              error={errors.kd_barang as FieldError}
+              name="kd_brgdg"
               value={nextId !== null ? nextId.toString() : ''}
-              disabled
+              readOnly
+              type="number"
+              register={() => {}} // Passing an empty function as register
             />
             <InputField
               label="Nama Barang*"
-              name="nama_barang"
+              name="nm_brgdg"
               register={register}
-              error={errors.nama_barang as FieldError}
+              error={errors.nm_brgdg as FieldError}
             />
             <InputField
-              label="Harga*"
-              name="harga"
+              label="Harga BBS*"
+              name="hj_bbs"
+              step="0.01"
               register={register}
-              error={errors.harga as FieldError}
+              error={errors.hj_bbs as FieldError}
               type="number"
             />
             <InputField
-              label="Strip"
+              label="Strip*"
               name="strip"
               register={register}
               error={errors.strip as FieldError}
@@ -77,20 +78,28 @@ export const AddDrugModal: React.FC<AddDrugModalProps> = ({ isOpen, onClose, onS
               register={register}
               error={errors.aturan_pakai as FieldError}
             />
-            <div>
-              <label className="block mb-1">Pabrik</label>
-              <select {...register("pabrik")} className="w-full p-2 border rounded">
-                <option value="">Pilih Pabrik</option>
-                {/* Add pabrik options here */}
-              </select>
-            </div>
-            <div>
-              <label className="block mb-1">Kategori</label>
-              <select {...register("kategori")} className="w-full p-2 border rounded">
-                <option value="">Pilih Kategori</option>
-                {/* Add kategori options here */}
-              </select>
-            </div>
+            <SelectField
+              label="Pabrik"
+              name="id_pabrik"
+              register={register}
+              error={errors.id_pabrik as FieldError}
+              options={[
+                { value: '1', label: 'Pabrik 1' },
+                { value: '2', label: 'Pabrik 2' },
+              ]}
+              placeholder="Pilih Pabrik"
+            />
+            <SelectField
+              label="Kategori*"
+              name="id_kategori"
+              register={register}
+              error={errors.id_kategori as FieldError}
+              options={[
+                { value: '1', label: 'Kategori 1' },
+                { value: '2', label: 'Kategori 2' },
+              ]}
+              placeholder="Pilih Kategori"
+            />
           </div>
           <InputField
             label="Indikasi"
@@ -105,10 +114,10 @@ export const AddDrugModal: React.FC<AddDrugModalProps> = ({ isOpen, onClose, onS
             error={errors.deskripsi as FieldError}
           />
           <InputField
-            label="Kompisi"
-            name="kompisi"
+            label="Komposisi"
+            name="komposisi"
             register={register}
-            error={errors.kompisi as FieldError}
+            error={errors.komposisi as FieldError}
           />
           <div className="mt-6 flex justify-end gap-4">
             <Button onClick={onClose} className="bg-gray-300 text-black">Batal</Button>

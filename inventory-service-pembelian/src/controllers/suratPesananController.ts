@@ -24,8 +24,18 @@ export const suratPesananController = {
         throw new Error('nomor_sp and id_supplier are required fields');
       }
 
+      // Ensure all required fields are present
+      const requiredFields: (keyof CreateSuratPesananDto)[] = [
+        'nomor_sp', 'tgl_pr', 'jns_trans', 'id_supplier', 'total', 'userId', 'status_approval'
+      ];
+      for (const field of requiredFields) {
+        if (suratPesananData[field] === undefined) {
+          throw new Error(`${field} is a required field`);
+        }
+      }
+
       const newSuratPesanan = await prisma.suratPesanan.create({
-        data: suratPesananData,
+        data: suratPesananData as CreateSuratPesananDto,
       });
 
       console.log('New surat pesanan created:', newSuratPesanan);
@@ -54,10 +64,11 @@ export const suratPesananController = {
       const sortBy = req.query.sortBy as string || 'nomor_sp';
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'asc';
       const status = req.query.status as string;
+      const date = req.query.date as string;
 
       const skip = (page - 1) * limit;
 
-      const where = {
+      const where: any = {
         AND: [
           search ? {
             OR: [
@@ -66,6 +77,12 @@ export const suratPesananController = {
             ],
           } : {},
           status ? { status_approval: status } : {},
+          date ? {
+            tgl_approve: {
+              gte: new Date(`${date}T00:00:00.000Z`),
+              lt: new Date(`${date}T23:59:59.999Z`)
+            }
+          } : {},
         ],
       };
 

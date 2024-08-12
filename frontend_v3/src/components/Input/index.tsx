@@ -1,10 +1,13 @@
 // InputField.tsx
 import React, { FC } from 'react';
 import { InputFieldProps } from './type';
+import { cn } from '@/lib/cn';
 
-export const InputField: FC<InputFieldProps> = ({ label, name, register, error, readOnly = false, suffix, labelPosition = 'top', type = 'text', ...props }) => {
+export const InputField: FC<InputFieldProps> = ({ label, name, register, error, readOnly = false, suffix, labelPosition = 'top', type = 'text', className, ...props }) => {
   return (
-    <div className={`mb-4 ${labelPosition === 'left' ? 'flex items-center' : ''}`}>
+    <div className={cn(
+      `mb-4 ${labelPosition === 'left' ? 'flex items-center' : ''}`      
+    )}>
       <label className={`block text-gray-700 text-sm font-bold ${labelPosition === 'left' ? 'mr-2 w-1/4' : 'mb-2'}`}>
         {label}
       </label>
@@ -13,7 +16,11 @@ export const InputField: FC<InputFieldProps> = ({ label, name, register, error, 
           type={type}
           {...register(name)}
           readOnly={readOnly}
-          className={`border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${error ? 'border-red-500' : ''}`}
+          className={cn(
+            `border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`,
+            error ? 'border-red-500' : '',
+            className
+          )}
           {...props}
         />
         {suffix && (

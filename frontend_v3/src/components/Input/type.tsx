@@ -9,6 +9,7 @@ export interface InputFieldProps {
   readOnly?: boolean;
   suffix?: string;
   type?: string
+  className?: string;
   labelPosition?: 'top' | 'left';
   value?: string;
   props?: any;

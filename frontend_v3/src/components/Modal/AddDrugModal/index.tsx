@@ -39,7 +39,8 @@ export const AddDrugModal: React.FC<AddDrugModalProps> = ({ isOpen, onClose, onS
           <div className="grid grid-cols-2 gap-4">
             <InputField
               label="Kd Barang*"
-              name="kd_brgdg"
+              name="kd_brgdg"       
+              className="bg-gray-50"
               value={nextId !== null ? nextId.toString() : ''}
               readOnly
               type="number"

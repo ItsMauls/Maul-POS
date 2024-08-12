@@ -39,6 +39,7 @@ export default function Page() {
     const { data, error, isLoading, refetch } = useGet<ApiResponse>(
         `${API_URL.SALES["info-obat"]}?limit=${limit}&search=${searchTerm}&page=${page}`
     );
+    const lastId: any = data?.meta.totalCount;
     
     const { mutate: saveDrug } = usePost(`${API_URL.SALES["info-obat"]}`);
 
@@ -64,6 +65,7 @@ export default function Page() {
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
+        setLastUsedId(lastId);
     };
 
     const handleCloseModal = () => {
@@ -81,17 +83,17 @@ export default function Page() {
             console.error("Error saving drug:", error);
         }
     };
-    useEffect(() => {
-        if (data && data.data.length > 0 && isModalOpen) {
-            setLimit(30);
-            const maxId = Math.max(...data.data.map(item => (item.kd_brgdg)));    
+    // useEffect(() => {
+    //     if (isModalOpen) {
+    //         setLimit(30);
+    //         const maxId = Math.max(...data.data.map(item => (item.kd_brgdg)));    
              
-            setLastUsedId(maxId);
-        } else {
-            setLastUsedId(null);
-            setLimit(10);
-        }
-    }, [data, isModalOpen]);
+    //         setLastUsedId(maxId);
+    //     } else {
+    //         setLastUsedId(null);
+    //         setLimit(10);
+    //     }
+    // }, [data, isModalOpen]);
 
     return (
         <> 

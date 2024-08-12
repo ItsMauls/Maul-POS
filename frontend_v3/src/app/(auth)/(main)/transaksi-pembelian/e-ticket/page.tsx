@@ -29,14 +29,14 @@ const meta = {
              </Button>
             </div>
         </div>
-       <Table
+       {/* <Table
             meta={meta}
             tableClassName="max-w-[1350px]"
             defaultData={dummyDataWithAction}
             columns={createColumnsWithAction}
             pagination
             enableSorting
-        />
+        /> */}
         </>
     )
 }

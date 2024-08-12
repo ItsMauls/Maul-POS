@@ -2,6 +2,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005'
 const AUTH_URL = `${BASE_URL}/auth`
 const REPORT_URL = `${BASE_URL}/report`
 const SALES_URL = `${BASE_URL}/sales`
+const PURCHASE_PEMBELIAN_URL = `http://localhost:3003/inventory-pembelian`
 
 export const API_URL = {
     AUTH : {
@@ -18,5 +19,10 @@ export const API_URL = {
         'info-obat': `${SALES_URL}/info-obat`,
         transaksiPenjualan: `${SALES_URL}/transaksi-penjualan`,
         returPenjualan: `${SALES_URL}/retur-penjualan`
+    },
+    PURCHASE_PEMBELIAN : {
+        fakturPembelian : `${PURCHASE_PEMBELIAN_URL}/faktur-pembelian`,
+        penerimaanSupplier : `${PURCHASE_PEMBELIAN_URL}/penerimaan-supplier`,
+        eTicket : `${PURCHASE_PEMBELIAN_URL}/e-ticket`
     }
 }

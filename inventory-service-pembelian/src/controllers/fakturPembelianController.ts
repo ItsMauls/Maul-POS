@@ -66,7 +66,6 @@ export const fakturPembelianController = {
       });
     }
   },
-
   async getAll(req: Request, res: Response) {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -75,6 +74,7 @@ export const fakturPembelianController = {
       const sortBy = req.query.sortBy as string || 'tgl_reff';
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
       const status = req.query.status as string;
+      const date = req.query.date as string;
 
       const skip = (page - 1) * limit;
 
@@ -87,6 +87,12 @@ export const fakturPembelianController = {
             ],
           } : {},
           status ? { status_bayar: status } : {},
+          date ? {
+            tgl_reff: {
+              gte: new Date(`${date}T00:00:00.000Z`),
+              lt: new Date(`${date}T23:59:59.999Z`)
+            }
+          } : {},
         ],
       };
 

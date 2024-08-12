@@ -30,14 +30,14 @@ const meta = {
                 <Shortcuts />
             </div>
         </div>
-        <Table
+        {/* <Table
             meta={meta}
             tableClassName="max-w-[1350px]"
             defaultData={defaultData}
             columns={createColumns}
             pagination
             enableSorting
-        />
+        /> */}
      
         </>
     )

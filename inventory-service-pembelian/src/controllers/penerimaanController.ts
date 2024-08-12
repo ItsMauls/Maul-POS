@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { HTTP_STATUS } from '../constants/httpStatus';
+import { Prisma } from '@prisma/client';
 
 interface CreatePenerimaanDto {
   nomor_sp: string;
@@ -33,8 +34,26 @@ export const penerimaanController = {
         throw new Error('nomor_sp and nomor_preorder are required fields');
       }
 
+      // Convert CreatePenerimaanDto to PenerimaanCreateInput
+      const createData: any = {
+        nomor_sp: penerimaanData.nomor_sp,
+        nomor_preorder: penerimaanData.nomor_preorder,
+        tgl_preorder: penerimaanData.tgl_preorder,
+        scan: penerimaanData.scan,
+        jns_trans: penerimaanData.jns_trans,
+        no_reff: penerimaanData.no_reff,
+        tgl_reff: penerimaanData.tgl_reff,
+        nama_supplier: penerimaanData.nama_supplier,
+        total: penerimaanData.total,
+        keterangan: penerimaanData.keterangan,
+        tanggal_jt: penerimaanData.tanggal_jt,
+        userId: penerimaanData.userId,
+        status_approval: penerimaanData.status_approval,
+        tgl_approve: penerimaanData.tgl_approve,
+      };
+
       const newPenerimaan = await prisma.penerimaan.create({
-        data: penerimaanData,
+        data: createData,
       });
 
       console.log('New penerimaan created:', newPenerimaan);
@@ -66,7 +85,7 @@ export const penerimaanController = {
 
       const skip = (page - 1) * limit;
 
-      const where = {
+      const where: any = {
         AND: [
           search ? {
             OR: [

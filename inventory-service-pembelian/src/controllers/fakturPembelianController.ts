@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { HTTP_STATUS } from '../constants/httpStatus';
+import { Prisma } from '@prisma/client';
 
 interface CreateFakturPembelianDto {
   nomor_pembelian: string;
@@ -33,7 +34,19 @@ export const fakturPembelianController = {
       }
 
       const newFaktur = await prisma.fakturPembelian.create({
-        data: fakturData,
+        data: {
+          nomor_pembelian: fakturData.nomor_pembelian!,
+          jns_trans: fakturData.jns_trans!,
+          no_reff: fakturData.no_reff!,
+          tgl_reff: fakturData.tgl_reff!,
+          id_supplier: fakturData.id_supplier!,
+          sub_total: fakturData.sub_total!,
+          total: fakturData.total!,
+          keterangan: fakturData.keterangan,
+          tanggal_jt: fakturData.tanggal_jt!,
+          userId: fakturData.userId!,
+          status_bayar: fakturData.status_bayar!,
+        },
       });
 
       console.log('New faktur pembelian created:', newFaktur);
@@ -65,7 +78,7 @@ export const fakturPembelianController = {
 
       const skip = (page - 1) * limit;
 
-      const where = {
+      const where: any = {
         AND: [
           search ? {
             OR: [

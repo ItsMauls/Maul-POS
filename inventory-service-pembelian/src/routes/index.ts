@@ -1,12 +1,15 @@
 import { Router } from 'express';
 import supplierRoutes from './supplier';
-import penerimaanCabangRoutes from './penerimaan-cabang';
-import penerimaanSupplierRoutes from './penerimaan-supplier';
+import penerimaanRoutes from './penerimaan';
+import fakturPembelianRoutes from './fakturPembelian';
+import eTicketRoutes from './eTicket';
 
 const router = Router();
 
 router.use('/supplier', supplierRoutes);
-router.use('/penerimaan-cabang', penerimaanCabangRoutes);
-router.use('/penerimaan-supplier', penerimaanSupplierRoutes);
+// router.use('/penerimaan-cabang', penerimaanCabangRoutes);
+router.use('/faktur-pembelian', fakturPembelianRoutes);
+router.use('/e-ticket', eTicketRoutes);
+router.use('/penerimaan-supplier', penerimaanRoutes);
 
 export default router;

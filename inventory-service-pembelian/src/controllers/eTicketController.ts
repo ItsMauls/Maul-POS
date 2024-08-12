@@ -29,7 +29,16 @@ export const eTicketController = {
       }
 
       const newETicket = await prisma.eTicket.create({
-        data: eTicketData,
+        data: {
+            no_lpb: eTicketData.no_lpb!,
+            jenis_transaksi: eTicketData.jenis_transaksi!,
+            tgl_lpb: eTicketData.tgl_lpb!,
+            polos: eTicketData.polos!,
+            no_reff: eTicketData.no_reff!,
+            total: eTicketData.total!,
+            keterangan: eTicketData.keterangan,
+            userId: eTicketData.userId!,
+        },
       });
 
       console.log('New e-ticket created:', newETicket);
@@ -61,7 +70,7 @@ export const eTicketController = {
 
       const skip = (page - 1) * limit;
 
-      const where = {
+      const where : any = {
         AND: [
           search ? {
             OR: [

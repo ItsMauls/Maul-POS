@@ -26,7 +26,24 @@ const generateDrugName = (() => {
   };
 })();
 
-async function seedMainstock(categoryCount: number) {
+async function seedCabang() {
+  const cabangData = Array.from({ length: 10 }, (_, index) => ({
+    kd_cab: `CAB${String(index + 1).padStart(3, '0')}`,
+    nama_cabang: faker.company.name(),
+    alamat: faker.location.streetAddress(),
+    area: faker.location.city(),
+  }));
+
+  const createdCabang = await prisma.cabang.createMany({
+    data: cabangData,
+    skipDuplicates: true,
+  });
+
+  console.log(`Seeded ${createdCabang.count} Cabang records`);
+  return createdCabang.count;
+}
+
+async function seedMainstock(categoryCount: number, cabangCount: number) {
   const mainstockData = Array.from({ length: 500 }, () => ({
     nm_brgdg: generateDrugName(),
     id_dept: faker.number.int({ min: 1, max: 10 }),
@@ -74,6 +91,7 @@ async function seedMainstock(categoryCount: number) {
     id_brand: faker.number.int({ min: 1, max: 50 }),
     wso2transfer: faker.datatype.boolean(),
     is_updated: faker.datatype.boolean(),
+    kd_cab: `CAB${String(faker.number.int({ min: 1, max: cabangCount })).padStart(3, '0')}`,
   }));
 
   const createdMainstock = await prisma.mainstock.createMany({
@@ -118,7 +136,7 @@ async function seedDokter() {
   return createdDokter.count;
 }
 
-async function seedTransaksi(pelangganCount: number, dokterCount: number) {
+async function seedTransaksi(pelangganCount: number, dokterCount: number, cabangCount: number) {
   const transaksiData = Array.from({ length: 100 }, () => ({
     id_pelanggan: faker.number.int({ min: 1, max: pelangganCount }),
     id_dokter: faker.number.int({ min: 1, max: dokterCount }),
@@ -134,6 +152,7 @@ async function seedTransaksi(pelangganCount: number, dokterCount: number) {
     no_voucher: faker.helpers.maybe(() => faker.string.alphanumeric(8)),
     interval_transaksi: faker.helpers.maybe(() => faker.number.int({ min: 1, max: 30 })),
     buffer_transaksi: faker.helpers.maybe(() => faker.number.int({ min: 1, max: 10 })),
+    kd_cab: `CAB${String(faker.number.int({ min: 1, max: cabangCount })).padStart(3, '0')}`,
   }));
 
   const createdTransaksi = await prisma.transaksi.createMany({
@@ -203,10 +222,11 @@ async function seedReturPenjualan(transaksiCount: number, mainstockCount: number
 async function main() {
   try {
     const categoryCount = await seedCategories();
-    await seedMainstock(categoryCount);
+    const cabangCount = await seedCabang();
+    await seedMainstock(categoryCount, cabangCount);
     const pelangganCount = await seedPelanggan();
     const dokterCount = await seedDokter();
-    const transaksiCount = await seedTransaksi(pelangganCount, dokterCount);
+    const transaksiCount = await seedTransaksi(pelangganCount, dokterCount, cabangCount);
     await seedTransaksiDetail(transaksiCount, 100); // Assuming 100 mainstock items
     await seedReturPenjualan(transaksiCount, 100); // Assuming 100 mainstock items
     console.log('Seeding completed successfully');

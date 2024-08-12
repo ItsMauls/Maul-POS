@@ -77,6 +77,8 @@ model Mainstock {
   kategori                Kategori?          @relation(fields: [id_kategori], references: [id])
   TransaksiDetail         TransaksiDetail[]
   ReturPenjualan          ReturPenjualan[]
+  cabang                 Cabang             @relation(fields: [kd_cab], references: [kd_cab])
+  kd_cab                 String
 }
 
 model Pelanggan {
@@ -123,6 +125,8 @@ model Transaksi {
   updated_at         DateTime          @updatedAt
   TransaksiDetail    TransaksiDetail[]
   ReturPenjualan     ReturPenjualan[]
+  cabang             Cabang            @relation(fields: [kd_cab], references: [kd_cab])
+  kd_cab             String
 }
 
 model TransaksiDetail {
@@ -170,4 +174,16 @@ model ReturPenjualan {
   id_htransb          Int
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
+}
+
+model Cabang {
+  id          Int         @id @default(autoincrement())
+  kd_cab      String      @unique
+  nama_cabang String
+  alamat      String
+  area        String
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  Transaksi   Transaksi[]
+  Mainstock   Mainstock[]
 }

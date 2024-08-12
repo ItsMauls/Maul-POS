@@ -23,6 +23,7 @@ export const API_URL = {
     PURCHASE_PEMBELIAN : {
         fakturPembelian : `${PURCHASE_PEMBELIAN_URL}/faktur-pembelian`,
         penerimaanSupplier : `${PURCHASE_PEMBELIAN_URL}/penerimaan-supplier`,
-        eTicket : `${PURCHASE_PEMBELIAN_URL}/e-ticket`
+        eTicket : `${PURCHASE_PEMBELIAN_URL}/e-ticket`,
+        penerimaan : `${PURCHASE_PEMBELIAN_URL}/penerimaan`
     }
 }

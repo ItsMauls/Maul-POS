@@ -10,6 +10,6 @@ router.use('/supplier', supplierRoutes);
 // router.use('/penerimaan-cabang', penerimaanCabangRoutes);
 router.use('/faktur-pembelian', fakturPembelianRoutes);
 router.use('/e-ticket', eTicketRoutes);
-router.use('/penerimaan-supplier', penerimaanRoutes);
+router.use('/penerimaan', penerimaanRoutes);
 
 export default router;

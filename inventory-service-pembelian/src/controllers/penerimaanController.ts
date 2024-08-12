@@ -82,7 +82,7 @@ export const penerimaanController = {
       const sortBy = req.query.sortBy as string || 'tgl_preorder';
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
       const status = req.query.status as string;
-
+      const date = req.query.date as string;
       const skip = (page - 1) * limit;
 
       const where: any = {
@@ -95,6 +95,12 @@ export const penerimaanController = {
             ],
           } : {},
           status ? { status_approval: status } : {},
+          date ? {
+            created_at: {
+              gte: new Date(`${date}T00:00:00.000Z`),
+              lt: new Date(`${date}T23:59:59.999Z`)
+            }
+          } : {},
         ],
       };
 

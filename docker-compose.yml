@@ -74,8 +74,27 @@ services:
       - postgres
     environment:
       - CONFIG_FILE=/cmd/config.yml
+      - DATABASE_URL=postgresql://root:password@postgres:5432/db_sales?schema=public
+
     ports:
       - "3005:3005"
+
+  inventory-service-pembelian:
+    hostname: inventory-service-pembelian-host
+    build:
+      context: .
+      dockerfile: ./inventory-service-pembelian/Dockerfile
+    networks:
+      - pbf-network
+    restart: on-failure
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres
+    environment:
+      - PORT=3003
+      - DATABASE_URL=postgresql://root:password@postgres:5432/db_inventory_pembelian?schema=public
+
 
   postgres:
     image: postgres:latest

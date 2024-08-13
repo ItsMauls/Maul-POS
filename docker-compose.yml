@@ -131,8 +131,9 @@ services:
       - '8001:80'
     depends_on:
       - app
-      - user-service
-      - sales-service      
+      - user-service      
+      - sales-service  
+      - inventory-service-pembelian      
 
 networks:
     pbf-network:

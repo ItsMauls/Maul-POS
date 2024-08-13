@@ -17,7 +17,7 @@ app.use(cors())
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
 
-app.use('/sales', router);
+app.use('/api/sales', router);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

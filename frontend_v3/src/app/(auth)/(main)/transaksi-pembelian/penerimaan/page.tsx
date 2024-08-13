@@ -49,7 +49,7 @@ export default function Page() {
   const { data, error, isLoading } = useGet<ApiResponse>(
     `${API_URL.PURCHASE_PEMBELIAN.penerimaan}?limit=${limit}&search=${searchTerm}&page=${page}&date=${selectedDate ? formatDate(selectedDate) : ''}`
   );
-
+  
   const columns: ColumnDef<ApiResponse['data'][0]>[] = [
     { accessorKey: "nomor_sp", header: "No. SP" },
     { accessorKey: "nomor_preorder", header: "No. PO" },

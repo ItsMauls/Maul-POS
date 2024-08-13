@@ -7,6 +7,7 @@ import { useGet } from "@/hooks/useApi";
 import { API_URL } from "@/constants/api";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
+import AddSuratPesananModal from "@/components/Modal/AddSuratPesananModal";
 import { MdOtherHouses } from "react-icons/md";
 import { FaPlus, FaEdit, FaCalendarAlt, FaRedo, FaCheck } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
@@ -53,6 +54,7 @@ export default function Page() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const page = parseInt(searchParams.get('table-page') as string) || 1;
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const { data, error, isLoading } = useGet<ApiResponse>(
     `${API_URL.PURCHASE_PEMBELIAN.suratPesanan}?limit=${limit}&search=${searchTerm}&page=${page}&date=${selectedDate ? formatDate(selectedDate) : ''}`
@@ -86,8 +88,7 @@ export default function Page() {
   const handleShortcut = (action: string) => {
     switch (action) {
       case 'Tambah':
-        console.log('Add new surat pesanan');
-        // Implement add functionality
+        setIsAddModalOpen(true);
         break;
       case 'Ganti Tujuan':
         console.log('Change destination');
@@ -105,6 +106,12 @@ export default function Page() {
         // Implement approval functionality
         break;
     }
+  };
+
+  const handleSaveSuratPesanan = (data: any) => {
+    console.log('Saving new surat pesanan:', data);
+    // Implement the logic to save the new surat pesanan
+    setIsAddModalOpen(false);
   };
 
   return (
@@ -228,6 +235,11 @@ export default function Page() {
     ) : (
       <p>No data available</p>
     )}
+    <AddSuratPesananModal
+      isVisible={isAddModalOpen}
+      onClose={() => setIsAddModalOpen(false)}
+      onSave={handleSaveSuratPesanan}      
+    />
     </>
   )
 }

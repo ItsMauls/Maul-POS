@@ -5,3 +5,11 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE DATABASE db_inventory;
 \connect db_inventory;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE DATABASE db_inventory_pembelian;
+\connect db_inventory_pembelian;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE DATABASE db_sales;
+\connect db_sales;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

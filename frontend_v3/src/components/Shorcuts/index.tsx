@@ -4,10 +4,10 @@ import Button from '../ui/Button';
 
 const shortcuts = [
   { name: 'Tambah', shortcut: 'Insert', icon: <FaPlus />, bgClass: 'bg-teal-600' },
-  { name: 'Ganti Tujuan', shortcut: 'F1', icon: <FaEdit />, bgClass: 'bg-teal-600' },
+  // { name: 'Ganti Tujuan', shortcut: 'F1', icon: <FaEdit />, bgClass: 'bg-teal-600' },
   { name: 'Pilih Tanggal', shortcut: 'F3', icon: <FaCalendarAlt />, bgClass: 'bg-teal-600' },
   { name: 'Reset SP Gantung', shortcut: 'F10', icon: <FaRedo />, bgClass: 'bg-teal-600' },
-  { name: 'Persetujuan', shortcut: '', icon: <FaCheck />, bgClass: 'bg-blue-600' },
+  // { name: 'Persetujuan', shortcut: '', icon: <FaCheck />, bgClass: 'bg-blue-600' },
 ];
 
 export const Shortcuts = () => {

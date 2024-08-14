@@ -11,6 +11,7 @@ import { MdOtherHouses } from "react-icons/md";
 import { FaPlus, FaEdit, FaCalendarAlt, FaMoneyBillWave } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import CustomFormModal from "@/components/Modal/CustomFormModal";
 
 function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -50,6 +51,7 @@ export default function Page() {
   const [limit, setLimit] = useState(10);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const page = parseInt(searchParams.get('table-page') as string) || 1;
 
   const { data, error, isLoading } = useGet<ApiResponse>(
@@ -86,11 +88,10 @@ export default function Page() {
   const handleShortcut = (action: string) => {
     switch (action) {
       case 'Tambah':
-        console.log('Add new faktur');
-        // Implement add functionality
+        setIsAddModalOpen(true);
         break;
-      case 'Ganti Tujuan':
-        console.log('Change destination');
+      // case 'Ganti Tujuan':
+      //   console.log('Change destination');
         // Implement change destination functionality
         break;
       case 'Pilih Tanggal':
@@ -101,6 +102,16 @@ export default function Page() {
         // Implement payment functionality
         break;
     }
+  };
+
+  const handleAddModalClose = () => {
+    setIsAddModalOpen(false);
+  };
+
+  const handleAddModalSave = (data: any) => {
+    console.log('Saving new faktur pembelian:', data);
+    // Implement the logic to save the new faktur pembelian
+    setIsAddModalOpen(false);
   };
 
   return (
@@ -135,7 +146,7 @@ export default function Page() {
               Insert
             </span>
           </Button>
-          <Button
+          {/* <Button
             hasIcon
             icon={<FaEdit />}
             onClick={() => handleShortcut('Ganti Tujuan')}
@@ -145,7 +156,7 @@ export default function Page() {
             <span className="ml-2 px-2 py-1 bg-blue-600 text-white rounded-lg text-xs">
               F1
             </span>
-          </Button>
+          </Button> */}
           <Button
             hasIcon
             icon={<FaCalendarAlt />}
@@ -202,17 +213,49 @@ export default function Page() {
       <p>Error: {error.toString()}</p>
     ) : data ? (            
       <Table
-        columns={columns}
-        defaultData={data?.data || []}
-        meta={data?.meta || {}}
-        totalData={data?.meta?.totalCount || 0}
-        tableClassName="max-w-[1350px]"
-        pagination
-        enableSorting
+      columns={columns}
+      defaultData={data?.data || []}
+      meta={data?.meta || {}}
+      totalData={data?.meta?.totalCount || 0}
+      tableClassName="max-w-[1350px]"
+      pagination
+      enableSorting
       />
     ) : (
       <p>No data available</p>
     )}
+  {isAddModalOpen && (
+    <CustomFormModal
+      isVisible={isAddModalOpen}
+      onClose={handleAddModalClose}
+      onSave={handleAddModalSave}
+      title="Tambah Faktur Pembelian"
+      fields={[
+        { name: "nama", label: "Nama", type: "text", required: true },
+        { name: "kode", label: "Kode", type: "text", required: true },
+        { name: "tanggal", label: "Tanggal", type: "date", required: true },
+        { name: "tanggal_jatuh_tempo", label: "Tanggal Jatuh Tempo", type: "date", required: true },
+        { name: "nomor_po", label: "Nomor PO", type: "text", required: true },
+        { name: "nomor_refferensi", label: "Nomor Referensi", type: "text", required: true },
+        { name: "tanggal_refferensi", label: "Tanggal Referensi", type: "date", required: true },
+        { name: "keterangan", label: "Keterangan", type: "textarea", required: false },
+      ]}
+      itemColumns={[
+        // { key: "no", label: "No.", type: "number", formatter: (value) => value.toString() },
+        { key: "kode_barang", label: "Kode Barang", type: "text" },
+        { key: "nama_barang", label: "Nama Barang", type: "text" },
+        { key: "qty", label: "Qty", type: "number" },
+        { key: "isi", label: "Isi", type: "text" },
+        { key: "hsat_ppn", label: "Harga Satuan PPN", type: "number" },
+        { key: "hsat_nppn", label: "Harga Satuan NPPN", type: "number" },
+        { key: "ttl_nppn", label: "Total NPPN", type: "number" },
+        { key: "disc", label: "Diskon", type: "number" },
+        { key: "ttl_net", label: "Total Net", type: "number" },
+        { key: "total", label: "Total", type: "number" },
+        { key: "ket", label: "Keterangan", type: "text" },
+      ]}
+    />
+  )}
     </>
   )
 }

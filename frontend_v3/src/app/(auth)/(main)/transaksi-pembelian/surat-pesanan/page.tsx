@@ -7,11 +7,12 @@ import { useGet } from "@/hooks/useApi";
 import { API_URL } from "@/constants/api";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
-import AddSuratPesananModal from "@/components/Modal/AddSuratPesananModal";
+import CustomFormModal from "@/components/Modal/CustomFormModal";
 import { MdOtherHouses } from "react-icons/md";
 import { FaPlus, FaEdit, FaCalendarAlt, FaRedo, FaCheck } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+
 
 function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -53,8 +54,8 @@ export default function Page() {
   const [limit, setLimit] = useState(10);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const page = parseInt(searchParams.get('table-page') as string) || 1;
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const page = parseInt(searchParams.get('table-page') as string) || 1;
 
   const { data, error, isLoading } = useGet<ApiResponse>(
     `${API_URL.PURCHASE_PEMBELIAN.suratPesanan}?limit=${limit}&search=${searchTerm}&page=${page}&date=${selectedDate ? formatDate(selectedDate) : ''}`
@@ -90,8 +91,8 @@ export default function Page() {
       case 'Tambah':
         setIsAddModalOpen(true);
         break;
-      case 'Ganti Tujuan':
-        console.log('Change destination');
+      // case 'Ganti Tujuan':
+      //   console.log('Change destination');
         // Implement change destination functionality
         break;
       case 'Pilih Tanggal':
@@ -146,7 +147,7 @@ export default function Page() {
               Insert
             </span>
           </Button>
-          <Button
+          {/* <Button
             hasIcon
             icon={<FaEdit />}
             onClick={() => handleShortcut('Ganti Tujuan')}
@@ -156,7 +157,7 @@ export default function Page() {
             <span className="ml-2 py-1 bg-blue-600 text-white rounded-lg text-xs">
               F1
             </span>
-          </Button>
+          </Button> */}
           <Button
             hasIcon
             icon={<FaCalendarAlt />}
@@ -235,11 +236,36 @@ export default function Page() {
     ) : (
       <p>No data available</p>
     )}
-    <AddSuratPesananModal
-      isVisible={isAddModalOpen}
-      onClose={() => setIsAddModalOpen(false)}
-      onSave={handleSaveSuratPesanan}      
-    />
+    {isAddModalOpen && (
+      <CustomFormModal
+        isVisible={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleSaveSuratPesanan}
+        title="Tambah Surat Pesanan"
+        fields={[
+          { name: 'nama', label: 'Nama', type: 'text', required: true },
+          { name: 'kodePR', label: 'Kode PR', type: 'text', required: true },
+          { name: 'tanggal', label: 'Tanggal', type: 'date' },
+          { name: 'tanggalJatuhTempo', label: 'Tanggal Jatuh Tempo', type: 'date' },
+          { 
+            name: 'namaSupplier', 
+            label: 'Nama Supplier', 
+            type: 'select', 
+            options: [{ value: 'PT. ANUGRAH BUNDA SEHAT INDONESIA', label: 'PT. ANUGRAH BUNDA SEHAT INDONESIA' }],
+            required: true 
+          },
+          { name: 'keterangan', label: 'Keterangan', type: 'textarea' },
+        ]}
+        itemColumns={[
+          { key: 'kode', label: 'Kode', type: 'text' },
+          { key: 'namaBarang', label: 'Nama Barang', type: 'text' },
+          { key: 'qty', label: 'Qty', type: 'number' },
+          { key: 'isi', label: 'Isi', type: 'number' },
+          { key: 'hargaBeli', label: 'Harga Beli', type: 'text', formatter: (value) => value.toFixed(2) },
+          { key: 'subTotal', label: 'Sub Total', type: 'text', formatter: (value) => value.toFixed(2) },
+        ]}
+      />
+    )}
     </>
   )
 }

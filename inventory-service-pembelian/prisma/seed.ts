@@ -9,8 +9,8 @@ async function main() {
     Array.from({ length: 10 }).map(async () => {
       return prisma.supplier.create({
         data: {
+          nama: faker.company.name() ,
           kd_brgdg: faker.string.alphanumeric(10),
-          id_supplier: faker.number.int({ min: 1000, max: 9999 }),
           kd_cab: faker.string.alphanumeric(5),
           created_by: faker.internet.userName(),
           updated_by: faker.internet.userName(),
@@ -103,7 +103,7 @@ async function main() {
           nomor_sp: faker.string.alphanumeric(10),
           tgl_pr: faker.date.past(),
           jns_trans: faker.helpers.arrayElement(['Pembelian', 'Retur', 'Konsinyasi']),
-          id_supplier: supplier.id_supplier,
+          id_supplier: supplier.id,
           total: faker.number.float({ min: 10000, max: 1000000, precision: 0.01 }),
           keterangan: faker.lorem.sentence(),
           userId: faker.number.int({ min: 1, max: 100 }),
@@ -147,7 +147,7 @@ async function main() {
           jns_trans: faker.helpers.arrayElement(['Pembelian', 'Retur', 'Konsinyasi']),
           no_reff: faker.string.alphanumeric(8),
           tgl_reff: faker.date.past(),
-          id_supplier: supplier.id_supplier,
+          id_supplier: supplier.id,
           sub_total: faker.number.float({ min: 10000, max: 1000000, precision: 0.01 }),
           total: faker.number.float({ min: 10000, max: 1000000, precision: 0.01 }),
           keterangan: faker.lorem.sentence(),

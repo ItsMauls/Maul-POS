@@ -1,30 +1,31 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { HTTP_STATUS } from '../constants/httpStatus';
-import { Prisma } from '@prisma/client';
+
 
 interface CreatePenerimaanDto {
   nomor_sp: string;
   nomor_preorder: string;
-  tgl_preorder: Date;
+  tgl_preorder: Date | string | any;
   scan?: string;
   jns_trans: string;
   no_reff: string;
-  tgl_reff: Date;
+  tgl_reff: Date | string | any;
   nama_supplier: string;
   total: number;
   keterangan?: string;
-  tanggal_jt: Date;
+  tanggal_jt: Date | string | any;
   userId: number;
   status_approval: string;
-  tgl_approve?: Date;
+  tgl_approve?: Date | string | any;
 }
 
 export const penerimaanController = {
   async create(req: Request<{}, {}, Partial<CreatePenerimaanDto>>, res: Response) {
     try {
       const penerimaanData: Partial<CreatePenerimaanDto> = req.body;
-
+      console.log(penerimaanData, 'tes');
+      
       // Perform type conversions and validations as needed
       if (typeof penerimaanData.total === 'string') penerimaanData.total = parseFloat(penerimaanData.total);
       if (typeof penerimaanData.userId === 'string') penerimaanData.userId = parseInt(penerimaanData.userId, 10);
@@ -38,15 +39,15 @@ export const penerimaanController = {
       const createData: any = {
         nomor_sp: penerimaanData.nomor_sp,
         nomor_preorder: penerimaanData.nomor_preorder,
-        tgl_preorder: penerimaanData.tgl_preorder,
+        tgl_preorder: new Date(penerimaanData.tgl_preorder).toISOString(),
         scan: penerimaanData.scan,
         jns_trans: penerimaanData.jns_trans,
         no_reff: penerimaanData.no_reff,
-        tgl_reff: penerimaanData.tgl_reff,
+        tgl_reff: new Date(penerimaanData.tgl_reff).toISOString(),
         nama_supplier: penerimaanData.nama_supplier,
         total: penerimaanData.total,
         keterangan: penerimaanData.keterangan,
-        tanggal_jt: penerimaanData.tanggal_jt,
+        tanggal_jt: new Date(penerimaanData.tanggal_jt).toISOString(),
         userId: penerimaanData.userId,
         status_approval: penerimaanData.status_approval,
         tgl_approve: penerimaanData.tgl_approve,

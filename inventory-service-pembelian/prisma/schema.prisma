@@ -10,7 +10,7 @@ generator client {
 model Supplier {
   id                   Int                    @id @default(autoincrement())
   kd_brgdg             String                 @unique
-  id_supplier          Int                    @unique   
+  nama                 String                 @unique
   kd_cab               String                 @unique
   created_at           DateTime               @default(now())
   created_by           String
@@ -105,7 +105,7 @@ model SuratPesanan {
   nomor_sp         String       @unique
   tgl_pr           DateTime
   jns_trans        String
-  supplier         Supplier     @relation(fields: [id_supplier], references: [id_supplier])
+  supplier         Supplier     @relation(fields: [id_supplier], references: [id])
   id_supplier      Int
   total            Decimal      @db.Decimal(12, 2)
   keterangan       String?
@@ -144,7 +144,7 @@ model FakturPembelian {
   jns_trans        String
   no_reff          String
   tgl_reff         DateTime
-  supplier         Supplier  @relation(fields: [id_supplier], references: [id_supplier])
+  supplier         Supplier  @relation(fields: [id_supplier], references: [id])
   id_supplier      Int
   sub_total        Decimal   @db.Decimal(12, 2)
   total            Decimal   @db.Decimal(12, 2)

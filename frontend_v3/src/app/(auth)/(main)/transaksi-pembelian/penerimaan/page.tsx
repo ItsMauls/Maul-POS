@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Table } from "@/components/Table";
 import Button from "@/components/ui/Button";
 import { SearchBar } from "@/components/ui/Searchbar";
-import { useGet } from "@/hooks/useApi";
+import { useGet, usePost } from "@/hooks/useApi";
 import { API_URL } from "@/constants/api";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -48,10 +48,12 @@ export default function Page() {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const page = parseInt(searchParams.get('table-page') as string) || 1;
 
-  const { data, error, isLoading } = useGet<ApiResponse>(
+  const { data, error, isLoading, refetch } = useGet<ApiResponse>(
     `${API_URL.PURCHASE_PEMBELIAN.penerimaan}?limit=${limit}&search=${searchTerm}&page=${page}&date=${selectedDate ? formatDate(selectedDate) : ''}`
   );
-  
+
+  const { mutate: createPenerimaan, isPending: isCreating } = usePost(`${API_URL.PURCHASE_PEMBELIAN.penerimaan}`);
+
   const columns: ColumnDef<ApiResponse['data'][0]>[] = [
     { accessorKey: "nomor_sp", header: "No. SP" },
     { accessorKey: "nomor_preorder", header: "No. PO" },
@@ -87,8 +89,24 @@ export default function Page() {
   const handleAddModalClose = () => {
     setIsAddModalOpen(false);
   };
-  const handleAddModalSave = () => {
-    setIsAddModalOpen(false);
+  const handleAddModalSave = async (formData: any) => {
+    try {
+      const penerimaanData = {
+        ...formData,
+        userId: 1, // Replace with actual user ID
+        status_approval: 'pending', // Set initial status
+        total: formData.items.reduce((sum: number, item: any) => sum + (item.total || 0), 0),
+      };
+      console.log(penerimaanData, 'tes');
+      
+      await createPenerimaan(penerimaanData);
+      setIsAddModalOpen(false);
+      // Refetch data after successful creation
+      refetch();
+    } catch (error) {
+      console.error("Error creating penerimaan:", error);
+      // Handle error (e.g., show error message to user)
+    }
   };
 
   const handleShortcut = (action: string) => {
@@ -166,7 +184,7 @@ export default function Page() {
               F3
             </span>
           </Button>
-          <Button
+          {/* <Button
             hasIcon
             icon={<FaRedo />}
             onClick={() => handleShortcut('Reset SP Gantung')}
@@ -176,7 +194,7 @@ export default function Page() {
             <span className="ml-2 px-2 py-1 bg-blue-600 text-white rounded-lg text-xs">
               F10
             </span>
-          </Button>
+          </Button> */}
           <Button
             hasIcon
             icon={<FaCheck />}
@@ -238,28 +256,25 @@ export default function Page() {
           isVisible={isAddModalOpen}
           onClose={handleAddModalClose}
           onSave={handleAddModalSave}
-          title="Tambah Faktur Pembelian"
+          title="Tambah Penerimaan"
           fields={[
-            { name: "nomor_penerimaan", label: "No. Penerimaan", type: "text", required: true },
-            { name: "tanggal", label: "Tanggal", type: "date", required: true },
-            { name: "tanggal_jatuh_tempo", label: "Tanggal Jatuh Tempo", type: "date", required: true },
-            { name: "nomor_po", label: "Nomor PO", type: "text", required: true },
-            { name: "nomor_refferensi", label: "Nomor Referensi", type: "text", required: true },
-            { name: "tanggal_refferensi", label: "Tanggal Referensi", type: "date", required: true },
+            { name: "nomor_sp", label: "No. SP", type: "text", required: true },
+            { name: "nomor_preorder", label: "No. PO", type: "text", required: true },
+            { name: "tgl_preorder", label: "Tanggal PO", type: "date", required: true },
+            { name: "jns_trans", label: "Jenis Transaksi", type: "text", required: true },
+            { name: "no_reff", label: "No. Reff", type: "text", required: true },
+            { name: "tgl_reff", label: "Tanggal Reff", type: "date", required: true },
+            { name: "nama_supplier", label: "Nama Supplier", type: "text", required: true },
+            { name: "tanggal_jt", label: "Tanggal Jatuh Tempo", type: "date", required: true },
             { name: "keterangan", label: "Keterangan", type: "textarea", required: false },
           ]}
           itemColumns={[        
             { key: "kode_barang", label: "Kode Barang", type: "text" },
             { key: "nama_barang", label: "Nama Barang", type: "text" },
             { key: "qty", label: "Qty", type: "number" },
-            { key: "isi", label: "Isi", type: "text" },
-            { key: "hsat_ppn", label: "Harga Satuan PPN", type: "number" },
-            { key: "hsat_nppn", label: "Harga Satuan NPPN", type: "number" },
-            { key: "ttl_nppn", label: "Total NPPN", type: "number" },
-            { key: "disc", label: "Diskon", type: "number" },
-            { key: "ttl_net", label: "Total Net", type: "number" },
+            { key: "harga_satuan", label: "Harga Satuan", type: "number" },
+            { key: "disc", label: "Diskon (%)", type: "number" },
             { key: "total", label: "Total", type: "number" },
-            { key: "ket", label: "Keterangan", type: "text" },
           ]}
         />
       )}

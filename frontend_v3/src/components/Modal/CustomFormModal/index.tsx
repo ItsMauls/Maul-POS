@@ -39,7 +39,7 @@ const CustomFormModal: React.FC<CustomFormModalProps> = ({
   isVisible, onClose, onSave, title, fields, itemColumns 
 }) => {
   const { register, handleSubmit, control, reset } = useForm();
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Item[]>([{ id: 1 }]);
   const modalRef = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -82,7 +82,7 @@ const CustomFormModal: React.FC<CustomFormModalProps> = ({
   const onSubmit = (data: any) => {
     onSave({ ...data, items });
     reset();
-    setItems([]);
+    setItems([{ id: 1 }]);
     onClose();
   };
 
@@ -90,10 +90,10 @@ const CustomFormModal: React.FC<CustomFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div ref={modalRef} className="bg-white w-full rounded-lg p-8 max-w-6xl">
-        <h2 className="text-2xl font-bold mb-6">{title}</h2>
+      <div ref={modalRef} className="bg-white w-full rounded-lg p-6 max-w-6xl">
+        <h2 className="text-2xl font-bold mb-4">{title}</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-4 gap-4 mb-6">
             {fields.map((field) => (
               field.type === 'select' ? (
                 <Controller
@@ -121,60 +121,77 @@ const CustomFormModal: React.FC<CustomFormModalProps> = ({
                   required={field.required}
                   type={field.type}
                   as={field.type === 'textarea' ? 'textarea' : 'input'}
-                  className="w-full border rounded px-2 py-1"
+                  className="w-full border rounded px-2 py-1 text-sm"
                 />
               )
             ))}
           </div>
 
-          <table className="w-full mb-4">
+          <table className="w-full mb-4 border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-100">
-                <th className="px-4 py-2">No.</th>
+                <th className="border border-gray-300 px-2 py-1 text-sm font-semibold">No.</th>
                 {itemColumns.map((col) => (
-                  <th key={col.key} className="px-4 py-2">{col.label}</th>
+                  <th key={col.key} className="border border-gray-300 px-2 py-1 text-sm font-semibold">{col.label}</th>
                 ))}
-                <th className="px-4 py-2">Action</th>
+                <th className="border border-gray-300 px-2 py-1 text-sm font-semibold">Action</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, index) => (
-                <tr key={item.id} className="border-b">
-                  <td className="px-4 py-2">{index + 1}</td>
+                <tr key={item.id}>
+                  <td className="border border-gray-300 px-2 py-1 text-sm text-center">{index + 1}</td>
                   {itemColumns.map((col) => (
-                    <td key={col.key} className="px-4 py-2">
-                      <InputField
+                    <td key={col.key} className="border border-gray-300 px-2 py-1">
+                      <input
                         name={`${col.key}-${item.id}`}
-                        register={register}
                         value={col.formatter ? col.formatter(item[col.key]) : item[col.key]}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        onChange={(e) => {
                           const value = col.type === 'number' ? Number(e.target.value) : e.target.value;
                           handleItemChange(item.id, col.key, value);
                         }}
                         type={col.type}
-                        className="w-full border rounded px-2 py-1"
+                        className="w-full border-none text-sm focus:outline-none"
                       />
                     </td>
                   ))}
-                  <td className="px-4 py-2">
-                    <Button onClick={() => handleRemoveItem(item.id)} className="bg-red-500 text-white">
-                      Remove
-                    </Button>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      -
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <Button onClick={handleAddItem} className="bg-blue-500 text-white mb-4">
-            + Add Item
-          </Button>
+          <div className="flex justify-between items-center mb-4">
+            <Button
+              onClick={handleAddItem}
+              className="bg-blue-500 text-white text-sm px-2 py-1 rounded"
+            >
+              + Add Item
+            </Button>
+            <div className="text-sm">
+              <span className="font-semibold">TOTAL:</span> {/* Calculate and display total here */}
+            </div>
+          </div>
 
           <div className="flex justify-end space-x-4">
-            <Button onClick={() => setItems([])} className="bg-red-500 text-white">
+            <Button
+              onClick={() => setItems([{ id: 1 }])}
+              className="bg-red-500 text-white text-sm px-4 py-2 rounded"
+            >
               Hapus Semua
             </Button>
-            <Button className="bg-green-500 text-white">
+            <Button
+              // type="submit"
+              className="bg-green-500 text-white text-sm px-4 py-2 rounded"
+            >
               Simpan
             </Button>
           </div>

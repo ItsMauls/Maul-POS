@@ -1,9 +1,9 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "@/components/Table";
 import Button from "@/components/ui/Button";
 import { SearchBar } from "@/components/ui/Searchbar";
-import { useGet } from "@/hooks/useApi";
+import { useGet, usePost } from "@/hooks/useApi";
 import { API_URL } from "@/constants/api";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -47,6 +47,11 @@ interface ApiResponse {
   };
 }
 
+interface Supplier {
+  id: number;
+  nama: string;
+}
+
 export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -56,10 +61,24 @@ export default function Page() {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const page = parseInt(searchParams.get('table-page') as string) || 1;
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
-  const { data, error, isLoading } = useGet<ApiResponse>(
+  const { data, error, isLoading, refetch } = useGet<ApiResponse>(
     `${API_URL.PURCHASE_PEMBELIAN.suratPesanan}?limit=${limit}&search=${searchTerm}&page=${page}&date=${selectedDate ? formatDate(selectedDate) : ''}`
   );
+
+  const { data: suppliersData, error: suppliersError, isLoading: isSuppliersLoading } = useGet<{ data: Supplier[] }>(
+    `${API_URL.PURCHASE_PEMBELIAN.supplier}`
+  );
+  const { mutate: createSuratPesanan, isPending: isCreating } = usePost(`${API_URL.PURCHASE_PEMBELIAN.suratPesanan}`);
+
+  useEffect(() => {
+    
+    if (suppliersData) {
+      console.log(suppliersData.data, 'ada');
+      setSuppliers(suppliersData.data);
+    }
+  }, [suppliersData]);
 
   const columns: ColumnDef<ApiResponse['data'][0]>[] = [
     { accessorKey: "nomor_sp", header: "No. SP" },
@@ -109,10 +128,27 @@ export default function Page() {
     }
   };
 
-  const handleSaveSuratPesanan = (data: any) => {
-    console.log('Saving new surat pesanan:', data);
-    // Implement the logic to save the new surat pesanan
-    setIsAddModalOpen(false);
+  const handleSaveSuratPesanan = async (formData: any) => {
+    try {
+      const suratPesananData = {
+        nomor_sp: formData.kodePR,
+        tgl_pr: new Date(formData.tanggal).toISOString(),
+        jns_trans: "Regular", // Anda mungkin ingin menambahkan field ini ke form
+        id_supplier: 1, // Anda perlu menambahkan logika untuk mendapatkan id supplier
+        total: formData.items.reduce((sum: number, item: any) => sum + (parseFloat(item.subTotal) || 0), 0),
+        keterangan: formData.keterangan,
+        userId: 1, // Ganti dengan ID user yang sebenarnya
+        status_approval: "pending"
+      };
+
+      await createSuratPesanan(suratPesananData);
+      setIsAddModalOpen(false);
+      // Refresh data
+      refetch();
+    } catch (error) {
+      console.error("Error creating surat pesanan:", error);
+      // Handle error (e.g., show error message to user)
+    }
   };
 
   return (
@@ -169,7 +205,7 @@ export default function Page() {
               F3
             </span>
           </Button>
-          <Button
+          {/* <Button
             hasIcon
             icon={<FaRedo />}
             onClick={() => handleShortcut('Reset SP Gantung')}
@@ -179,7 +215,7 @@ export default function Page() {
             <span className="ml-2 px-1 py-1 bg-blue-600 text-white rounded-lg text-xs">
               F10
             </span>
-          </Button>
+          </Button> */}
           <Button
             hasIcon
             icon={<FaCheck />}
@@ -243,15 +279,13 @@ export default function Page() {
         onSave={handleSaveSuratPesanan}
         title="Tambah Surat Pesanan"
         fields={[
-          { name: 'nama', label: 'Nama', type: 'text', required: true },
-          { name: 'kodePR', label: 'Kode PR', type: 'text', required: true },
-          { name: 'tanggal', label: 'Tanggal', type: 'date' },
-          { name: 'tanggalJatuhTempo', label: 'Tanggal Jatuh Tempo', type: 'date' },
+          { name: 'kodePR', label: 'No. SP', type: 'text', required: true },
+          { name: 'tanggal', label: 'Tanggal PR', type: 'date', required: true },
           { 
-            name: 'namaSupplier', 
-            label: 'Nama Supplier', 
+            name: 'id_supplier', 
+            label: 'Supplier', 
             type: 'select', 
-            options: [{ value: 'PT. ANUGRAH BUNDA SEHAT INDONESIA', label: 'PT. ANUGRAH BUNDA SEHAT INDONESIA' }],
+            options: suppliers.map(supplier => ({ value: supplier.id.toString(), label: supplier.nama })),
             required: true 
           },
           { name: 'keterangan', label: 'Keterangan', type: 'textarea' },
@@ -260,9 +294,13 @@ export default function Page() {
           { key: 'kode', label: 'Kode', type: 'text' },
           { key: 'namaBarang', label: 'Nama Barang', type: 'text' },
           { key: 'qty', label: 'Qty', type: 'number' },
-          { key: 'isi', label: 'Isi', type: 'number' },
-          { key: 'hargaBeli', label: 'Harga Beli', type: 'text', formatter: (value) => value.toFixed(2) },
-          { key: 'subTotal', label: 'Sub Total', type: 'text', formatter: (value) => value.toFixed(2) },
+          { key: 'hargaSatuan', label: 'Harga Satuan', type: 'number' },
+          { 
+            key: 'subTotal', 
+            label: 'Sub Total', 
+            type: 'number',
+            formatter: (value) => (value != null ? Number(value).toFixed(2) : '')
+          },
         ]}
       />
     )}

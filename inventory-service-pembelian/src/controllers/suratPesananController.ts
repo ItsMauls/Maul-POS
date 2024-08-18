@@ -65,9 +65,9 @@ export const suratPesananController = {
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'asc';
       const status = req.query.status as string;
       const date = req.query.date as string;
-
+  
       const skip = (page - 1) * limit;
-
+  
       const where: any = {
         AND: [
           search ? {
@@ -85,20 +85,28 @@ export const suratPesananController = {
           } : {},
         ],
       };
-
+  
       const [suratPesananList, totalCount] = await Promise.all([
         prisma.suratPesanan.findMany({
           where,
           skip,
           take: limit,
           orderBy: { [sortBy]: sortOrder },
-          include: { supplier: true },
+          include: {
+            supplier: {
+              select: {
+                id: true,
+                nama: true,
+                kd_brgdg: true,
+              }
+            }
+          },
         }),
         prisma.suratPesanan.count({ where }),
       ]);
-
+  
       const totalPages = Math.ceil(totalCount / limit);
-
+  
       res.status(HTTP_STATUS.OK).json({
         success: true,
         message: 'Surat Pesanan list retrieved successfully',
@@ -111,40 +119,11 @@ export const suratPesananController = {
         },
       });
     } catch (error) {
-      console.log(error instanceof Error ? error.message : String(error));
+      console.error('Error fetching surat pesanan list:', error);
       
       res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Failed to fetch surat pesanan list',
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  },
-
-  async getOne(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const suratPesanan = await prisma.suratPesanan.findUnique({
-        where: { id: parseInt(id) },
-        include: { supplier: true },
-      });
-
-      if (!suratPesanan) {
-        return res.status(HTTP_STATUS.NOT_FOUND).json({
-          success: false,
-          message: 'Surat Pesanan not found',
-        });
-      }
-
-      res.status(HTTP_STATUS.OK).json({
-        success: true,
-        message: 'Surat Pesanan retrieved successfully',
-        data: suratPesanan,
-      });
-    } catch (error) {
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: 'Failed to fetch surat pesanan',
         error: error instanceof Error ? error.message : String(error),
       });
     }

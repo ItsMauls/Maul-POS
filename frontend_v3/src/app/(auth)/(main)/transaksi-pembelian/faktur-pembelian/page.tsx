@@ -1,9 +1,9 @@
 'use client'
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Table } from "@/components/Table";
 import Button from "@/components/ui/Button";
 import { SearchBar } from "@/components/ui/Searchbar";
-import { useGet } from "@/hooks/useApi";
+import { useGet, usePost } from "@/hooks/useApi";
 import { API_URL } from "@/constants/api";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -44,6 +44,12 @@ interface ApiResponse {
   };
 }
 
+interface Supplier {
+  id: number;
+  nama: string;
+  // ... other supplier properties
+}
+
 export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -54,9 +60,25 @@ export default function Page() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const page = parseInt(searchParams.get('table-page') as string) || 1;
 
+  const { data: suppliersData, error: suppliersError, isLoading: isSuppliersLoading } = useGet<{ data: Supplier[] }>(
+    `${API_URL.PURCHASE_PEMBELIAN.supplier}`
+  );
+
+  const supplierOptions = useMemo(() => {
+    if (suppliersData?.data) {
+      return suppliersData.data.map(supplier => ({
+        value: supplier.id.toString(),
+        label: supplier.nama
+      }));
+    }
+    return [];
+  }, [suppliersData]);
+
   const { data, error, isLoading } = useGet<ApiResponse>(
     `${API_URL.PURCHASE_PEMBELIAN.fakturPembelian}?limit=${limit}&search=${searchTerm}&page=${page}&date=${selectedDate ? formatDate(selectedDate) : ''}`
   );
+
+  const { mutate: createFakturPembelian, isPending: isCreating } = usePost(API_URL.PURCHASE_PEMBELIAN.fakturPembelian);
 
   const columns: ColumnDef<ApiResponse['data'][0]>[] = [
     { accessorKey: "nomor_pembelian", header: "No. Pembelian" },
@@ -108,10 +130,40 @@ export default function Page() {
     setIsAddModalOpen(false);
   };
 
-  const handleAddModalSave = (data: any) => {
-    console.log('Saving new faktur pembelian:', data);
-    // Implement the logic to save the new faktur pembelian
-    setIsAddModalOpen(false);
+  const handleAddModalSave = async (data: any) => {
+    try {
+      const fakturData = {
+        nomor_pembelian: data.kode,
+        jns_trans: "Pembelian",
+        no_reff: data.nomor_refferensi,
+        tgl_reff: new Date(data.tanggal_refferensi),
+        id_supplier: parseInt(data.nama),
+        sub_total: calculateSubTotal(data.items),
+        total: calculateTotal(data.items),
+        keterangan: data.keterangan,
+        tanggal_jt: new Date(data.tanggal_jatuh_tempo),
+        userId: 1,
+        status_bayar: "Belum Lunas",
+      };
+
+      const response = await createFakturPembelian(fakturData);
+      if (response.success) {
+        console.log('Faktur pembelian berhasil dibuat:', response.data);
+        setIsAddModalOpen(false);
+      } else {
+        console.error('Gagal membuat faktur pembelian:', response.error);
+      }
+    } catch (error) {
+      console.error('Error saat membuat faktur pembelian:', error);
+    }
+  };
+
+  const calculateSubTotal = (items: any[]) => {
+    return items.reduce((sum, item) => sum + (item.ttl_nppn || 0), 0);
+  };
+
+  const calculateTotal = (items: any[]) => {
+    return items.reduce((sum, item) => sum + (item.total || 0), 0);
   };
 
   return (
@@ -231,8 +283,8 @@ export default function Page() {
       onSave={handleAddModalSave}
       title="Tambah Faktur Pembelian"
       fields={[
-        { name: "nama", label: "Nama", type: "text", required: true },
-        { name: "kode", label: "Kode", type: "text", required: true },
+        { name: "nama", label: "Supplier", type: "select", options: supplierOptions, required: true },
+        { name: "kode", label: "Nomor Pembelian", type: "text", required: true },
         { name: "tanggal", label: "Tanggal", type: "date", required: true },
         { name: "tanggal_jatuh_tempo", label: "Tanggal Jatuh Tempo", type: "date", required: true },
         { name: "nomor_po", label: "Nomor PO", type: "text", required: true },
@@ -241,7 +293,6 @@ export default function Page() {
         { name: "keterangan", label: "Keterangan", type: "textarea", required: false },
       ]}
       itemColumns={[
-        // { key: "no", label: "No.", type: "number", formatter: (value) => value.toString() },
         { key: "kode_barang", label: "Kode Barang", type: "text" },
         { key: "nama_barang", label: "Nama Barang", type: "text" },
         { key: "qty", label: "Qty", type: "number" },

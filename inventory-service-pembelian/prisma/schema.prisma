@@ -136,6 +136,8 @@ model Penerimaan {
   tgl_approve      DateTime?
   created_at       DateTime     @default(now())
   updated_at       DateTime     @updatedAt
+
+  @@index([nomor_sp])
 }
 
 model FakturPembelian {

@@ -19,23 +19,23 @@ services:
     networks:
       - pbf-network
 
-  user-service:
-    hostname: user-service-host
-    build:
-      context: .
-      dockerfile: ./user-service/Dockerfile
-    networks:
-      - pbf-network
-    restart: on-failure
-    volumes:
-      - ./user-service/cmd/config.yml:/cmd/config.yml
-      - ./user-service/storage/signature:/storage/signature
-    environment:
-      APP_NAME: "user-rest-service"
-      HTTP_PORT: "80"
-      DB_DSN: "postgres://apps:obwMHF3sI%3C87@101.255.118.131:5703/db_pbf?sslmode=disable"
-      API_AUTH_URL: "http://auth-service-host:80/api/auth"
-      API_SECRET_KEY: "APP@SECRET_KEY_SERVICE_PBF2024"
+  # user-service:
+  #   hostname: user-service-host
+  #   build:
+  #     context: .
+  #     dockerfile: ./user-service/Dockerfile
+  #   networks:
+  #     - pbf-network
+  #   restart: on-failure
+  #   volumes:
+  #     - ./user-service/cmd/config.yml:/cmd/config.yml
+  #     - ./user-service/storage/signature:/storage/signature
+  #   environment:
+  #     APP_NAME: "user-rest-service"
+  #     HTTP_PORT: "80"
+  #     DB_DSN: "postgres://apps:obwMHF3sI%3C87@101.255.118.131:5703/db_pbf?sslmode=disable"
+  #     API_AUTH_URL: "http://auth-service-host:80/api/auth"
+  #     API_SECRET_KEY: "APP@SECRET_KEY_SERVICE_PBF2024"
   
   inventory-service:
     hostname: inventory-service-host
@@ -54,27 +54,27 @@ services:
       API_AUTH_URL: "http://auth-service-host:80/api/auth"
       API_SECRET_KEY: "APP@SECRET_KEY_SERVICE_PBF2024"
 
-  auth-service:
-    hostname: auth-service-host
-    build:
-      context: .
-      dockerfile: ./auth-service/Dockerfile
-    networks:
-      - pbf-network
-    restart: on-failure
-    volumes:
-      - ./auth-service/cmd/config.yml:/cmd/config.yml
-    depends_on:
-      - redis
-    environment:
-      APP_NAME: "auth-rest-service"
-      HTTP_PORT: "80"
-      DB_DSN: "postgres://apps:obwMHF3sI%3C87@101.255.118.131:5703/db_pbf?sslmode=disable"
-      REDIS_HOST: "redis"
-      REDIS_PORT: "6379"
-      REDIS_PASSWORD: ""
-      JWT_SECRET_KEY: "JWT_SECRET_KEY_APP_APOTEK_PBF))(**"
-      API_SECRET_KEY: "APP@SECRET_KEY_SERVICE_PBF2024"
+  # auth-service:
+  #   hostname: auth-service-host
+  #   build:
+  #     context: .
+  #     dockerfile: ./auth-service/Dockerfile
+  #   networks:
+  #     - pbf-network
+  #   restart: on-failure
+  #   volumes:
+  #     - ./auth-service/cmd/config.yml:/cmd/config.yml
+  #   depends_on:
+  #     - redis
+  #   environment:
+  #     APP_NAME: "auth-rest-service"
+  #     HTTP_PORT: "80"
+  #     DB_DSN: "postgres://apps:obwMHF3sI%3C87@101.255.118.131:5703/db_pbf?sslmode=disable"
+  #     REDIS_HOST: "redis"
+  #     REDIS_PORT: "6379"
+  #     REDIS_PASSWORD: ""
+  #     JWT_SECRET_KEY: "JWT_SECRET_KEY_APP_APOTEK_PBF))(**"
+  #     API_SECRET_KEY: "APP@SECRET_KEY_SERVICE_PBF2024"
     
   purchase-service:
     hostname: purchase-service-host

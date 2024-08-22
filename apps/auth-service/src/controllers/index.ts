@@ -4,8 +4,8 @@ import schedule from 'node-schedule';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { hashPassword, comparePassword } from '../utils/bcrypt';
 import { setSession, getSession, deleteSession, getAllSessions, getSessionTTL } from '../utils/redis';
-import prisma from '../config/prisma';
 import { HTTP_STATUS } from '../constants/httpStatus';
+import userService from '../services/index';
 
 export const authController = {
   async register(req: Request, res: Response) {
@@ -13,13 +13,13 @@ export const authController = {
 
     try {
       const hashedPassword = await hashPassword(password);
-      const user = await prisma.user.create({
-        data: { email, password: hashedPassword, username }
-      });
+      const user = await userService.createUser({ email, password: hashedPassword, username });
       res
         .status(HTTP_STATUS.CREATED)
         .json({ message: 'User registered successfully', userId: user.id });
     } catch (error) {
+      console.log(error as any);
+      
       res
         .status(HTTP_STATUS.BAD_REQUEST)
         .json({ error: 'Registration failed' });
@@ -30,7 +30,9 @@ export const authController = {
     const { email, password } = req.body;
 
     try {
-      const user = await prisma.user.findUnique({ where: { email } });
+      const user = await userService.findUserByEmail(email);
+      console.log(user,'user');
+      
       if (!user || !await comparePassword(password, user.password)) {
         return res
           .status(HTTP_STATUS.UNAUTHORIZED)
@@ -45,6 +47,8 @@ export const authController = {
 
       res.json({ accessToken, refreshToken, sessionId });
     } catch (error) {
+      console.log(error);
+      
       res
         .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
         .json({ error: 'Login failed' });
@@ -97,7 +101,7 @@ export const authController = {
     const { userId, currentPassword, newPassword } = req.body;
 
     try {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const user = await userService.findUserById(userId);
       if (!user || !await comparePassword(currentPassword, user.password)) {
         return res
           .status(HTTP_STATUS.UNAUTHORIZED)
@@ -105,10 +109,7 @@ export const authController = {
       }
 
       const hashedNewPassword = await hashPassword(newPassword);
-      await prisma.user.update({
-        where: { id: userId },
-        data: { password: hashedNewPassword }
-      });
+      await userService.updateUserPassword(userId, hashedNewPassword);
 
       res.json({ message: 'Password changed successfully' });
     } catch (error) {

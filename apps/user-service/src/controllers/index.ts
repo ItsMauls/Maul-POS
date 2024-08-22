@@ -48,6 +48,8 @@ export const userController = {
         .status(HTTP_STATUS.CREATED)
         .json(newUser);
     } catch (error) {
+      console.log(error);
+      
       res.status(400).json({ error: 'Error creating user' });
     }
   },
@@ -79,6 +81,61 @@ export const userController = {
         .json({ message: 'User deleted successfully' });
     } catch (error) {
       res.status(400).json({ error: 'Error deleting user' });
+    }
+  },
+
+  // Find user by email
+  async findUserByEmail(req: Request, res: Response) {
+    const { email } = req.params;
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true, email: true, username: true, password: true, role: true, isActive: true }
+      });
+      if (!user) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ error: 'User not found' });
+      }
+      res.status(HTTP_STATUS.OK).json(user);
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Error fetching user' });
+    }
+  },
+
+  // Validate user credentials
+  async validateUserCredentials(req: Request, res: Response) {
+    const { email, password } = req.body;
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true, email: true, password: true }
+      });
+      if (!user) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: 'Invalid credentials' });
+      }
+      // Note: In a real-world scenario, you should use a proper password hashing library
+      const isPasswordValid = user.password === password;
+      if (!isPasswordValid) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: 'Invalid credentials' });
+      }
+      res.status(HTTP_STATUS.OK).json({ message: 'Credentials are valid' });
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Error validating credentials' });
+    }
+  },
+
+  // Update user password
+  async updateUserPassword(req: Request, res: Response) {
+    const { id } = req.params;
+    const { password } = req.body;
+    try {
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: { password },
+        select: { id: true, email: true, username: true }
+      });
+      res.status(HTTP_STATUS.OK).json(updatedUser);
+    } catch (error) {
+      res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Error updating user password' });
     }
   }
 };

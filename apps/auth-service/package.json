@@ -20,6 +20,7 @@
     "bcrypt": "^5.1.1",
     "express": "^4.19.2",
     "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
     "node-schedule": "^2.1.1",
     "report-service": "file:",
     "uuid": "^10.0.0"

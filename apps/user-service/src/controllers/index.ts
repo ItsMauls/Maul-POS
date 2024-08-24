@@ -85,12 +85,12 @@ export const userController = {
   },
 
   // Find user by email
-  async findUserByEmail(req: Request, res: Response) {
-    const { email } = req.params;
+  async findUserByPhoneNumber(req: Request, res: Response) {
+    const { phoneNumber: phone_number } = req.params;
     try {
       const user = await prisma.user.findUnique({
-        where: { email },
-        select: { id: true, email: true, username: true, password: true, role: true, isActive: true }
+        where: { phone_number },
+        select: { id: true, phone_number: true, username: true, password: true, role: true, isActive: true }
       });
       if (!user) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({ error: 'User not found' });

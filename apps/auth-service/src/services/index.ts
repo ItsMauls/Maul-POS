@@ -3,8 +3,8 @@ import { USER_SERVICE_URL } from '../constants';
 
 
 const userService = {
-  async findUserByEmail(email: string) {
-    const response = await axios.get(`${USER_SERVICE_URL}/by-email/${email}`);
+  async findUserByPhoneNumber(phoneNumber: string) {
+    const response = await axios.get(`${USER_SERVICE_URL}/by-phone-number/${phoneNumber}`);
     return response.data;
   },
 
@@ -19,7 +19,7 @@ const userService = {
   },
 
   async findUserById(userId: string) {
-    const response = await axios.get(`${USER_SERVICE_URL}/users/${userId}`);
+    const response = await axios.get(`${USER_SERVICE_URL}/${userId}`);
     return response.data;
   },
 

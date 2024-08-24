@@ -1,5 +1,5 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005/api'
-const AUTH_URL = `${BASE_URL}/auth`
+const AUTH_URL = `http://localhost:3007/api/auth`
 const REPORT_URL = `${BASE_URL}/report`
 const SALES_URL = `${BASE_URL}/sales/`
 const PURCHASE_PEMBELIAN_URL = `http://localhost:3003/api/inventory-pembelian`

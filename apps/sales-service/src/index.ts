@@ -4,7 +4,7 @@ import cors from 'cors';
 import fs from 'fs';
 import router from './routes';
 import errorMiddleware from './middlewares/error';
-import { authenticate } from '../../../libs/@auth/src/';
+import { authenticate } from '../../../libs/@auth/src/authenticate';
 
 const app = express();
 const configFile = process.env.CONFIG_FILE || './cmd/config.yml';
@@ -18,7 +18,7 @@ app.use(cors())
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
 app.use(authenticate);
-app.use('/api/sales', authenticate, router);
+app.use('/api/sales', router);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

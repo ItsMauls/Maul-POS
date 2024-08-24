@@ -19,7 +19,7 @@ const userService = {
   },
 
   async findUserById(userId: string) {
-    const response = await axios.get(`${USER_SERVICE_URL}/users/${userId}`);
+    const response = await axios.get(`${USER_SERVICE_URL}/${userId}`);
     return response.data;
   },
 

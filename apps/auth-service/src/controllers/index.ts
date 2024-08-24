@@ -27,28 +27,28 @@ export const authController = {
   },
 
   async login(req: Request, res: Response) {
-    const { email, password } = req.body;
-
+    const { phoneNumber, password } = req.body;
+  
     try {
-      const user = await userService.findUserByEmail(email);
-      console.log(user,'user');
-      
+      const user = await userService.findUserByPhoneNumber(phoneNumber);
+      console.log(user, 'user');
+  
       if (!user || !await comparePassword(password, user.password)) {
         return res
           .status(HTTP_STATUS.UNAUTHORIZED)
           .json({ error: 'Invalid credentials' });
       }
-
+  
       const accessToken = signAccessToken(user.id);
       const refreshToken = signRefreshToken(user.id);
-
+  
       const sessionId = uuidv4();
       await setSession(sessionId, { userId: user.id, refreshToken }, 60 * 60 * 24 * 7); // 7 days
-
+  
       res.json({ accessToken, refreshToken, sessionId });
     } catch (error) {
       console.log(error);
-      
+  
       res
         .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
         .json({ error: 'Login failed' });

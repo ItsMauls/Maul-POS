@@ -10,6 +10,6 @@ router.put('/:id', userController.updateUser);
 router.delete('/:id', userController.deleteUser);
 router.post('/validate-credentials', userController.validateUserCredentials);
 router.patch('/:id/password', userController.updateUserPassword);
-router.get('/by-email/:email', userController.findUserByEmail);
+router.get('/by-phone-number/:phoneNumber', userController.findUserByPhoneNumber);
 
 export default router;

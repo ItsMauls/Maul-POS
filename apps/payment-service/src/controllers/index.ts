@@ -1,0 +1,54 @@
+// apps/payment-service/src/controllers/PaymentController.ts
+import { Request, Response } from 'express';
+import prisma from '../config/prisma';
+
+export class PaymentController {
+  async createPayment(req: Request, res: Response) {
+    try {
+      const { transactionId, amount, paymentType, ...paymentDetails } = req.body;
+
+      const payment = await prisma.payment.create({
+        data: {
+          transactionId,
+          amount,
+          paymentType,
+          ...(paymentType === 'CASH' && {
+            cashPayment: { create: paymentDetails }
+          }),
+          ...((paymentType === 'CREDIT' || paymentType === 'DEBIT') && {
+            cardPayment: { create: paymentDetails }
+          }),
+        },
+        include: {
+          cashPayment: true,
+          cardPayment: true,
+        },
+      });
+
+      res.status(201).json(payment);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create payment' });
+    }
+  }
+
+  async getPayment(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const payment = await prisma.payment.findUnique({
+        where: { id },
+        include: {
+          cashPayment: true,
+          cardPayment: true,
+        },
+      });
+
+      if (!payment) {
+        return res.status(404).json({ error: 'Payment not found' });
+      }
+
+      res.json(payment);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to retrieve payment' });
+    }
+  }
+}

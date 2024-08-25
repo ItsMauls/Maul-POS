@@ -17,8 +17,8 @@ const PORT = config.HTTP_PORT || '3005';
 app.use(cors())
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
-app.use(authenticate);
-app.use('/api/sales', router);
+
+app.use('/api/sales', authenticate, router);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

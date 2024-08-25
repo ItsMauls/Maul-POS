@@ -1,17 +1,25 @@
 // MainComponent.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { FormValues } from './type';
 import { InputField } from '@/components/Input';
+import { DataRow } from '@/types';
 
 
 
-export const TransaksiCardContent: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
+export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: () => void }> = ({ data, onPaymentClick }) => {
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormValues>();
 
   const onSubmit: SubmitHandler<FormValues> = data => {
     console.log(data);
   };
+
+  useEffect(() => {
+    const subtotal = data.reduce((sum, item) => sum + item.subJumlah, 0);
+    setValue('subtotal', subtotal);
+  }, [data, setValue]);
+
+  const subtotal = watch('subtotal');
 
   return (
     <div className=''>
@@ -23,6 +31,7 @@ export const TransaksiCardContent: React.FC = () => {
           error={errors.subtotal}
           labelPosition='left'
           readOnly
+          value={subtotal ? subtotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) : ''}
         />
         <InputField
           label="Misc"
@@ -68,7 +77,7 @@ export const TransaksiCardContent: React.FC = () => {
           suffix="%"
         />
         <div className="flex mt-4">
-          <button type="submit" className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded mr-2">
+          <button type="submit" className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded mr-2" onClick={onPaymentClick}>
             Bayar
           </button>
           <button type="button" className="flex-1 bg-blue-600 text-white py-2 px-4 rounded">
@@ -79,4 +88,3 @@ export const TransaksiCardContent: React.FC = () => {
     </div>
   );
 };
-

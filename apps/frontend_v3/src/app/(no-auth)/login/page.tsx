@@ -9,6 +9,7 @@ import { usePost } from '@/hooks/useApi';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { API_URL } from '@/constants/api';
+import Error from 'next/error';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,7 +44,7 @@ const Login = () => {
           <h1 className="text-3xl text-blue-600 font-bold uppercase mb-2">pedagang besar farmasi</h1>
           <h2 className="text-2xl font-semibold mb-6">Log in ke Akun Kamu</h2>
           <p className="text-gray-700 mb-6">Masukan No.Telp & Password untuk Login ke Halaman Dashboard</p>
-          {error && <p className="text-red-500 mb-4">{error.message}</p>}
+          {error && <p className="text-red-500 mb-4">{(error as Error).message}</p>}
           <form onSubmit={handleSubmit(onSubmit)}>
             <InputField
               label="No Telp"

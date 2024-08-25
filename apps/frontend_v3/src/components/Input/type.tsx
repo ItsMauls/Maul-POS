@@ -5,6 +5,7 @@ export interface InputFieldProps {
   label?: string;
   name?: string;
   register?: any;
+  placeholder?: string;
   error?: FieldError;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;

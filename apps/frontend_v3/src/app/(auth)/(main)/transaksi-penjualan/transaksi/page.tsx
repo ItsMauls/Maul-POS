@@ -6,78 +6,38 @@ import { DokterCardContent } from "@/components/Content/DokterCardContent";
 import { PelangganCardContent } from "@/components/Content/PelangganCardContent";
 import { TransaksiCardContent } from "@/components/Content/TransaksiCardContent";
 import { ObatModal } from "@/components/Modal/ObatModal";
+import { PaymentModal } from "@/components/Modal/PaymentModal";
+import { SelectField } from "@/components/SelectField";
 import { Table } from "@/components/Table";
 import { DataRow } from "@/types";
+import { formatRupiah } from "@/utils/currency";
 import { ColumnDef } from "@tanstack/react-table";
-import { useState } from "react";
-
-// Sample data - replace this with your actual data source
-const defaultData: DataRow[] = [
-  {
-    index: 0,
-    rOption: "R",
-    kdBarang: "BRG001",
-    namaBarang: "Paracetamol",
-    harga: 10000,
-    qty: 2,
-    subJumlah: 20000,
-    disc: 0,
-    sc: 0,
-    misc: 0,
-    jumlah: 20000,
-    promo: 0,
-    discPromo: 0,
-    promoValue: 0,
-    up: 0,
-    noVoucher: "-",
-  },
-  // Add more sample data as needed
-];
+import { useState, useEffect, ChangeEvent } from "react";
+import { useTransactionStore } from "@/store/transactionStore";
 
 export default function Page() {
-  const [data, setData] = useState<DataRow[]>(defaultData);
+  const { data, addItem, removeItem, updateItem, calculateValues } = useTransactionStore();
   const [isObatModalOpen, setIsObatModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const handleAddItem = (index: number) => {
-    const newItem: DataRow = {
-      index: data.length,
-      rOption: "R",
-      kdBarang: `BRG${(data.length + 1).toString().padStart(3, '0')}`,
-      namaBarang: "New Item",
-      harga: 0,
-      qty: 1,
-      subJumlah: 0,
-      disc: 0,
-      sc: 0,
-      misc: 0,
-      jumlah: 0,
-      promo: 0,
-      discPromo: 0,
-      promoValue: 0,
-      up: 0,
-      noVoucher: "-",
-    };
-    setData([...data.slice(0, index + 1), newItem, ...data.slice(index + 1)]);
+    addItem(index);
   };
 
   const handleRemoveItem = (index: number) => {
-    if (data.length > 1) {
-      setData(data.filter((_, i) => i !== index));
-    }
+    removeItem(index);
   };
 
   const handleObatSelect = (obat: DataRow) => {
     if (selectedRowIndex !== null) {
-      const newData = [...data];
-      newData[selectedRowIndex] = {
-        ...newData[selectedRowIndex],
-        kdBarang: obat.kdBarang,
-        namaBarang: obat.namaBarang,
-        harga: obat.harga,
-        // Update other fields as necessary
-      };
-      setData(newData);
+      const updatedItem = calculateValues({
+        ...data[selectedRowIndex],
+        kd_brgdg: obat.kd_brgdg,
+        nm_brgdg: obat.nm_brgdg,
+        hj_ecer: obat.hj_ecer,
+      });
+      updateItem(selectedRowIndex, updatedItem);
     }
     setIsObatModalOpen(false);
   };
@@ -122,19 +82,32 @@ export default function Page() {
     {
       accessorKey: "rOption",
       header: "R",
-      cell: ({ row }) => row.original.rOption,
+      cell: ({ row }) => (
+        <SelectField
+          label=""
+          name={`rOption-${row.index}`}
+          register={() => {}}
+          options={[
+            { value: "R", label: "R" },
+            { value: "RC", label: "RC" }
+          ]}
+          placeholder="Select"
+          value={row.original.rOption}
+          onChange={(e: ChangeEvent<HTMLSelectElement>) => updateItem(row.index, { rOption: e.target.value })}
+        />
+      ),
     },
     {
-      accessorKey: "kdBarang",
+      accessorKey: "kd_brgdg",
       header: "Kd Barang",
     },
     {
-      accessorKey: "namaBarang",
+      accessorKey: "nm_brgdg",
       header: "Nama Barang",
       cell: ({ row }) => (
         <input
           type="text"
-          value={row.original.namaBarang}
+          value={row.original.nm_brgdg}
           onClick={() => {
             setSelectedRowIndex(row.index);
             setIsObatModalOpen(true);
@@ -145,9 +118,9 @@ export default function Page() {
       ),
     },
     {
-      accessorKey: "harga",
+      accessorKey: "hj_ecer",
       header: "Harga",
-      cell: ({ row }) => `Rp ${row.original.harga.toLocaleString()}`,
+      cell: ({ row }) => `${formatRupiah(row.original.hj_ecer)}`,
     },
     {
       accessorKey: "qty",
@@ -156,7 +129,7 @@ export default function Page() {
     {
       accessorKey: "subJumlah",
       header: "Sub Jumlah",
-      cell: ({ row }) => `Rp ${row.original.subJumlah.toLocaleString()}`,
+      cell: ({ row }) => `${formatRupiah(row.original.subJumlah)}`,
     },
     {
       accessorKey: "disc",
@@ -173,7 +146,7 @@ export default function Page() {
     {
       accessorKey: "jumlah",
       header: "Jumlah",
-      cell: ({ row }) => `Rp ${row.original.jumlah.toLocaleString()}`,
+      cell: ({ row }) => `${formatRupiah(row.original.jumlah)}`,
     },
     {
       accessorKey: "promo",
@@ -182,12 +155,12 @@ export default function Page() {
     {
       accessorKey: "discPromo",
       header: "Disc Promo",
-      cell: ({ row }) => `Rp ${row.original.discPromo.toLocaleString()}`,
+      cell: ({ row }) => `${formatRupiah(row.original.discPromo)}`,
     },
     {
       accessorKey: "promoValue",
       header: "Promo",
-      cell: ({ row }) => `Rp ${row.original.promoValue.toLocaleString()}`,
+      cell: ({ row }) => `${formatRupiah(row.original.promoValue)}`,
     },
     {
       accessorKey: "up",
@@ -203,6 +176,10 @@ export default function Page() {
     totalData: data.length
   };
 
+  const calculateTotalAmount = () => {
+    return data.reduce((total, item) => total + item.jumlah, 0);
+  };
+
   return (
     <> 
       <div className="flex space-x-4">
@@ -216,7 +193,10 @@ export default function Page() {
         </div>
         <div className="w-[280px] space-y-4">
           <Card className="h-[448px]">
-            <TransaksiCardContent />
+            <TransaksiCardContent 
+              data={data} 
+              onPaymentClick={() => setIsPaymentModalOpen(true)}
+            />
           </Card>
           {accordionMenus.map((val, index) => (
             <SingleAccordion 
@@ -234,6 +214,11 @@ export default function Page() {
         isOpen={isObatModalOpen}
         onClose={() => setIsObatModalOpen(false)}
         onSelect={handleObatSelect}
+      />
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        totalAmount={calculateTotalAmount()}
       />
     </>
   );

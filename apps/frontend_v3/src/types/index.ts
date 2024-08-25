@@ -1,9 +1,9 @@
 export interface DataRow {
   index: number;
   rOption: string;
-  kdBarang: string;
-  namaBarang: string;
-  harga: number;
+  kd_brgdg: string;
+  nm_brgdg: string;
+  hj_ecer: number;
   qty: number;
   subJumlah: number;
   disc: number;

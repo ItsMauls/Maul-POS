@@ -1,3 +1,4 @@
+import { cn } from '@/lib/cn';
 import React from 'react';
 import { FieldError, UseFormRegister } from 'react-hook-form';
 
@@ -7,6 +8,7 @@ interface Option {
 }
 
 interface SelectFieldProps {
+  className?: string;
   label: string;
   name: string;
   register: UseFormRegister<any>;
@@ -16,17 +18,19 @@ interface SelectFieldProps {
 }
 
 export const SelectField: React.FC<SelectFieldProps> = ({
+  className,
   label,
   name,
   register,
   error,
   options,
   placeholder = 'Select an option',
+  ...props
 }) => {
   return (
     <div>
       <label className="block mb-1">{label}</label>
-      <select {...register(name)} className="w-full p-2 border rounded">
+      <select {...props} {...register(name)} className={cn("w-full p-2 border rounded", className)}>
         <option value="">{placeholder}</option>
         {options.map((option) => (
           <option 

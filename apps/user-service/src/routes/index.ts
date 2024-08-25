@@ -1,7 +1,10 @@
 import express from 'express';
 import { userController } from '../controllers';
+import { authenticate } from '../../../../libs/@auth/src/authenticate';
 
 const router = express.Router();
+
+router.get('/current-user', authenticate, userController.getCurrentUser);
 
 router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);

@@ -1,7 +1,10 @@
-import { Request, Response } from 'express';
+import { Request as ExpressRequest,Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { HTTP_STATUS } from '../constants/httpStatus';
 
+interface AuthenticatedRequest extends ExpressRequest {
+  user?: { id: string };
+}
 
 export const userController = {
   // Get all users
@@ -137,5 +140,40 @@ export const userController = {
     } catch (error) {
       res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Error updating user password' });
     }
-  }
+  },
+
+  async getCurrentUser(req: AuthenticatedRequest, res: Response) {
+    console.log(req.user);
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: 'User not authenticated' });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { 
+          id: true, 
+          email: true, 
+          username: true, 
+          firstName: true, 
+          lastName: true, 
+          role: true, 
+          isActive: true,
+          phone_number: true
+        }
+      });
+
+      if (!user) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ error: 'User not found' });
+      }
+
+      res.status(HTTP_STATUS.OK).json(user);
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Error fetching current user' });
+    }
+  },
+
+  
 };

@@ -1,17 +1,18 @@
 export interface DataRow {
-    no: number;
-    namaLengkap: string;
-    role: string;
-    departemen: string;
-    area: string;
-    cabang: string;
-    action: number;
-    action1?: number;
-    action2?: number;
-    action3?: number;
-    action4?: number;
-    action5?: number;
-    action6?: number;
-    action7?: number;
-    action8?: number;
-  }
+  index: number;
+  rOption: string;
+  kdBarang: string;
+  namaBarang: string;
+  harga: number;
+  qty: number;
+  subJumlah: number;
+  disc: number;
+  sc: number;
+  misc: number;
+  jumlah: number;
+  promo: number;
+  discPromo: number;
+  promoValue: number;
+  up: number;
+  noVoucher: string;
+}

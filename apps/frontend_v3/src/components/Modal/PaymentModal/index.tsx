@@ -27,7 +27,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
         <h2 className="text-2xl font-bold mb-4">Tipe Pembayaran</h2>
         <div className="bg-blue-100 p-4 rounded-md mb-4">
           <p className="text-xl font-semibold">Total Bayar</p>
@@ -42,11 +42,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
               onChange={() => togglePaymentMethod('cash')}
               className="mr-2"
             />
-            <span>Cash</span>
+            <span className="mr-4">Cash</span>
+            {paymentMethods.cash && (
+              <InputField register={register} name="cash" label="Nominal" placeholder="Masukan Nominal" />
+            )}
           </div>
-          {paymentMethods.cash && (
-            <InputField register={register} name="cash" label="Nominal" placeholder="Masukan Nominal" />
-          )}
 
           <div className="flex items-center">
             <input
@@ -55,10 +55,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
               onChange={() => togglePaymentMethod('creditCard')}
               className="mr-2"
             />
-            <span>Credit Card</span>
+            <span className="mr-4">Credit Card</span>
           </div>
           {paymentMethods.creditCard && (
-            <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-4">
               <InputField 
                 register={register} 
                 name="creditCard" 
@@ -99,10 +99,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
               onChange={() => togglePaymentMethod('debitCard')}
               className="mr-2"
             />
-            <span>Debit Card</span>
+            <span className="mr-4">Debit Card</span>
           </div>
           {paymentMethods.debitCard && (
-            <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-4">
               <InputField 
                 register={register} 
                 name="debitCard" 

@@ -3,31 +3,32 @@ import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 
 export class PaymentController {
-  async createPayment(req: Request, res: Response) {
-    try {
-      const { transactionId, amount, paymentType, ...paymentDetails } = req.body;
-
-      const payment = await prisma.payment.create({
-        data: {
-          transactionId,
-          amount,
-          paymentType,
-          ...(paymentType === 'CASH' && {
-            cashPayment: { create: paymentDetails }
-          }),
-          ...((paymentType === 'CREDIT' || paymentType === 'DEBIT') && {
-            cardPayment: { create: paymentDetails }
-          }),
-        },
-        include: {
-          cashPayment: true,
-          cardPayment: true,
-        },
-      });
-
-      res.status(201).json(payment);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to create payment' });
+    async createPayment(req: Request, res: Response) {
+        try {
+          const { transactionId, amount, paymentType, cashPayment, cardPayment } = req.body;
+      
+          const payment = await prisma.payment.create({
+            data: {
+              transactionId,
+              amount,
+              paymentType,
+              ...(paymentType === 'CASH' && {
+                cashPayment: { create: cashPayment }
+              }),
+              ...((paymentType === 'CREDIT' || paymentType === 'DEBIT') && {
+                cardPayment: { create: cardPayment }
+              }),
+            },
+            include: {
+              cashPayment: true,
+              cardPayment: true,
+            },
+          });
+      
+          res.status(201).json(payment);
+        } catch (error) {
+          console.error('Error creating payment:', error);
+          res.status(500).json({ error: 'Failed to create payment' });
     }
   }
 

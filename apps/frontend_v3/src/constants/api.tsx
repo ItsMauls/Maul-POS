@@ -1,6 +1,7 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005/api'
 const AUTH_URL = `http://localhost:3007/api/auth`
 const USER_URL = `http://localhost:3006/api/users`
+const PAYMENT_URL = `http://localhost:3010/api/payment`
 const REPORT_URL = `${BASE_URL}/report`
 const SALES_URL = `${BASE_URL}/sales/`
 const PURCHASE_PEMBELIAN_URL = `http://localhost:3003/api/inventory-pembelian`
@@ -10,6 +11,10 @@ export const API_URL = {
         login : `${AUTH_URL}/login`,
         refreshToken : `${AUTH_URL}/refresh-token`,
         logout : `${AUTH_URL}/logout`
+    },
+    PAYMENT : {
+        createPayment : `${PAYMENT_URL}`,
+        getPayment : `${PAYMENT_URL}`
     },
     USER : {
         currentUser : `${USER_URL}/current-user`

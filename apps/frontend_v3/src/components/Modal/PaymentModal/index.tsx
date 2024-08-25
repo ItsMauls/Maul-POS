@@ -4,30 +4,65 @@ import { SelectField } from '@/components/SelectField';
 import { formatRupiah } from '@/utils/currency';
 import { InputField } from '@/components/Input';
 import { useForm } from 'react-hook-form';
+import { usePost } from '@/hooks/useApi';
+import { API_URL } from '@/constants/api';
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   totalAmount: number;
+  transactionId: string;
 }
 
-export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, totalAmount }) => {
+export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, totalAmount, transactionId }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [paymentMethods, setPaymentMethods] = useState({
     cash: true,
     creditCard: false,
     debitCard: false,
-  });
+  });   
 
   const togglePaymentMethod = (method: keyof typeof paymentMethods) => {
     setPaymentMethods(prev => ({ ...prev, [method]: !prev[method] }));
+  };
+
+  const { mutate: createPayment, isPending, isError, error } = usePost(API_URL.PAYMENT.createPayment);
+
+  const onSubmit = async (data: any) => {
+    const paymentType = Object.keys(paymentMethods).find(method => paymentMethods[method as keyof typeof paymentMethods]);
+    const paymentData = {
+      transactionId,
+      amount: totalAmount,
+      paymentType: paymentType?.toUpperCase(),
+      ...(paymentType === 'cash' ? {
+        cashPayment: {
+          amount: parseFloat(data.cash.amount),
+        }
+      } : {
+        cardPayment: {
+          ...data[paymentType as keyof typeof data],
+          amount: totalAmount,
+        }
+      }),
+    };
+
+    createPayment(paymentData, {
+      onSuccess: () => {
+        onClose();
+        // You might want to add some success feedback here
+      },
+      onError: (error) => {
+        console.error('Failed to process payment:', error);
+        // You might want to add some error feedback here
+      }
+    });
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg p-6 w-full max-w-2xl">
         <h2 className="text-2xl font-bold mb-4">Tipe Pembayaran</h2>
         <div className="bg-blue-100 p-4 rounded-md mb-4">
           <p className="text-xl font-semibold">Total Bayar</p>
@@ -44,7 +79,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
             />
             <span className="mr-4">Cash</span>
             {paymentMethods.cash && (
-              <InputField register={register} name="cash" label="Nominal" placeholder="Masukan Nominal" />
+              <InputField register={register} name="cash.amount" label="Nominal" placeholder="Masukan Nominal" />
             )}
           </div>
 
@@ -73,7 +108,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
               />
               <SelectField 
                 register={register} 
-                name="bank" 
+                name="creditCard" 
                 label="Bank" 
                 options={[{ value: 'mandiri', label: 'Bank Mandiri' }]} 
               />
@@ -85,7 +120,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
               />
               <SelectField 
                 register={register} 
-                name="tipeCreditCard" 
+                name="creditCard" 
                 label="Tipe Credit Card" 
                 options={[{ value: 'visa', label: 'Visa' }]} 
               />
@@ -117,7 +152,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
               />
               <SelectField 
                 register={register} 
-                name="bank" 
+                name="debitCard" 
                 label="Bank" 
                 options={[{ value: 'mandiri', label: 'Bank Mandiri' }]} 
               />
@@ -129,7 +164,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
               />
               <SelectField 
                 register={register} 
-                name="tipeDebitCard" 
+                name="debitCard" 
                 label="Tipe Debit Card" 
                 options={[{ value: 'visa', label: 'Visa' }]} 
               />
@@ -139,9 +174,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
 
         <div className="mt-6 flex justify-end space-x-2">
           <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Batal</button>
-          <button className="px-4 py-2 bg-green-500 text-white rounded">Simpan</button>
+          <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded" disabled={isPending}>
+            {isPending ? 'Processing...' : 'Simpan'}
+          </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

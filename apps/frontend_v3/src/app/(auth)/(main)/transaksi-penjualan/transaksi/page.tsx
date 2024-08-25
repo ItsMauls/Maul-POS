@@ -216,6 +216,7 @@ export default function Page() {
         onSelect={handleObatSelect}
       />
       <PaymentModal
+        transactionId={Math.random().toString(36).substring(2, 15)}
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
         totalAmount={calculateTotalAmount()}

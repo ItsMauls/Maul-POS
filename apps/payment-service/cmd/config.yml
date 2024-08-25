@@ -1,0 +1,9 @@
+APP_NAME: "payment-service"
+HTTP_PORT: "3010"
+
+DATABASE_URL: "postgresql://root:password@localhost:5433/db_payment?schema=public"
+
+
+API_AUTH_URL: "http://localhost:8081/api/auth"
+
+JWT_SECRET_KEY: "JWT_SECRET_KEY_APP_APOTEK_PBF))(**"

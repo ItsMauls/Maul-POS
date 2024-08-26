@@ -6,10 +6,14 @@ import { DataRow } from '@/types';
 
 interface TransactionState {
   data: DataRow[];
+  pelanggan: any;
+  dokter: any;
   addItem: (index: number) => void;
   removeItem: (index: number) => void;
   updateItem: (index: number, item: Partial<DataRow>) => void;
   calculateValues: (item: DataRow) => DataRow;
+  setPelanggan: (data: any) => void;
+  setDokter: (data: any) => void;
 }
 
 const customStorage: StateStorage = {
@@ -46,6 +50,8 @@ export const useTransactionStore = create(
         up: 0,
         noVoucher: "-",
       }],
+      pelanggan: {},
+      dokter: {},
       addItem: (index) => {
         const { data } = get();
         const newItem: DataRow = {
@@ -99,6 +105,8 @@ export const useTransactionStore = create(
           promoValue: promoAmount,
         };
       },
+      setPelanggan: (data) => set((state) => ({ pelanggan: { ...state.pelanggan, ...data } })),
+      setDokter: (data) => set((state) => ({ dokter: { ...state.dokter, ...data } })),
     }),
     {
       name: 'transaction-storage',

@@ -1,42 +1,39 @@
-// MainComponent.tsx
 import { InputField } from '@/components/Input';
 import React from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { FormValues } from './type';
-
+import { useTransactionStore } from '@/store/transactionStore';
 
 export const DokterCardContent: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
+  const { register, watch } = useForm<FormValues>();
+  const setDokter = useTransactionStore((state) => state.setDokter);
 
-  const onSubmit: SubmitHandler<FormValues> = data => {
-    console.log(data);
-  };
+  React.useEffect(() => {
+    const subscription = watch((value) => setDokter(value));
+    return () => subscription.unsubscribe();
+  }, [watch, setDokter]);
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form>
         <InputField
           label="Nama"
           name="nama"
           register={register}
-          error={errors.nama}
           labelPosition='left'
         />
         <InputField
           label="Alamat"
           name="alamat"
           register={register}
-          error={errors.alamat}
           labelPosition='left'
         />
         <InputField
           label="No Telp"
-          name="noTelp"
+          name="no_telp"
           register={register}
-          error={errors.noTelp}
           labelPosition='left'
         />
-
       </form>
     </>
   );

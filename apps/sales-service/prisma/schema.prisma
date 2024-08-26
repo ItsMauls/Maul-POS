@@ -97,6 +97,7 @@ model Pelanggan {
 model Dokter {
   id           Int         @id @default(autoincrement())
   nama         String
+  alamat       String
   spesialisasi String?
   created_at   DateTime    @default(now())
   updated_at   DateTime    @updatedAt

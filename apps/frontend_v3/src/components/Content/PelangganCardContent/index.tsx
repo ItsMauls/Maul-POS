@@ -1,67 +1,62 @@
-// MainComponent.tsx
 import { InputField } from '@/components/Input';
 import React from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { FormValues } from './type';
-
+import { useTransactionStore } from '@/store/transactionStore';
 
 export const PelangganCardContent: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
+  const { register, watch } = useForm<FormValues>();
+  const setPelanggan = useTransactionStore((state) => state.setPelanggan);
 
-  const onSubmit: SubmitHandler<FormValues> = data => {
-    console.log(data);
-  };
+  React.useEffect(() => {
+    const subscription = watch((value) => setPelanggan(value));
+    return () => subscription.unsubscribe();
+  }, [watch, setPelanggan]);
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form>
         <InputField
           label="Nama"
           name="nama"
           register={register}
-          error={errors.nama}
           labelPosition='left'
         />
         <InputField
           label="Alamat"
           name="alamat"
           register={register}
-          error={errors.alamat}
           labelPosition='left'
         />
         <InputField
           label="No Telp"
-          name="noTelp"
+          name="no_telp"
           register={register}
-          error={errors.noTelp}
           labelPosition='left'
         />
         <InputField
+          type='number'
           label="Usia"
           name="usia"
           register={register}
-          error={errors.usia}
           labelPosition='left'
         />
         <InputField
           label="Instansi"
           name="instansi"
           register={register}
-          error={errors.instansi}
           labelPosition='left'
         />
         <InputField
           label="Korp"
           name="korp"
           register={register}
-          error={errors.korp}
           labelPosition='left'
         />
         <InputField
           label="ID"
           name="id"
           register={register}
-          error={errors.id}
           labelPosition='left'
         />
       </form>

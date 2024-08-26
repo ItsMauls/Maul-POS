@@ -12,9 +12,10 @@ interface PaymentModalProps {
   onClose: () => void;
   totalAmount: number;
   transactionId: string;
+  createTransaction: () => Promise<void>;
 }
 
-export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, totalAmount, transactionId }) => {
+export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, totalAmount, transactionId, createTransaction }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [paymentMethods, setPaymentMethods] = useState({
     cash: true,
@@ -47,9 +48,15 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
     };
 
     createPayment(paymentData, {
-      onSuccess: () => {
-        onClose();
-        // You might want to add some success feedback here
+      onSuccess: async () => {
+        try {
+          await createTransaction();
+          onClose();
+          // You might want to add some success feedback here
+        } catch (error) {
+          console.error('Failed to create transaction:', error);
+          // You might want to add some error feedback here
+        }
       },
       onError: (error) => {
         console.error('Failed to process payment:', error);

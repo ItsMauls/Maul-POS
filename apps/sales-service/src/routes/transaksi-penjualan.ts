@@ -3,7 +3,7 @@ import { transaksiPenjualanController } from '../controllers/transaksiPenjualanC
 
 const router = Router();
 
-router.post('/', transaksiPenjualanController.create);
+router.post('/', transaksiPenjualanController.createTransaction);
 router.get('/', transaksiPenjualanController.getAll);
 router.get('/:id', transaksiPenjualanController.getById);
 router.put('/:id', transaksiPenjualanController.update);

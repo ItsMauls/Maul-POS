@@ -30,7 +30,7 @@ export const PelangganCardContent: React.FC = () => {
         />
         <InputField
           label="No Telp"
-          name="no_telp"
+          name="noTelp"
           register={register}
           labelPosition='left'
         />

@@ -87,7 +87,7 @@ export default function Page() {
       cell: ({ row }) => (
         <SelectField
           label=""
-          name={`rOption-${row.index}`}
+          name={`he`}
           register={() => {}}
           options={[
             { value: "R", label: "R" },
@@ -201,7 +201,7 @@ export default function Page() {
     const transactionData = {
       pelanggan: formattedPelanggan,
       dokter: formattedDokter,
-      sales_pelayan: "Sales Person Name", // You might want to get this from somewhere
+      // sales_pelayan: "Sales Person Name", // You might want to get this from somewhere
       jenis_penjualan: "Regular", // You might want to get this from somewhere
       invoice_eksternal: "INV-001", // You might want to generate this
       catatan: "Transaction note", // You might want to get this from somewhere
@@ -216,14 +216,14 @@ export default function Page() {
       kd_cab: "CAB001", // You might want to get this from somewhere
       items: data.map(item => ({
         kd_brgdg: item.kd_brgdg,
-        jenis: item.rOption,
+        jenis: item.rOption || 'R', // Default to 'R' if rOption is not set
         harga: item.hj_ecer,
         qty: item.qty,
-        subjumlah: item.subJumlah,
+        subjumlah: item.subJumlah || 0, // Provide a default value
         disc: item.disc,
-        sc_misc: item.sc + item.misc,
+        sc_misc: (item.sc || 0) + (item.misc || 0), // Ensure sc and misc are numbers
         promo: item.promo,
-        disc_promo: item.discPromo,
+        disc_promo: item.discPromo || 0, // Provide a default value
         up: item.up,
       }))
     };

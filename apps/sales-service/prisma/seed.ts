@@ -40,7 +40,7 @@ async function seedCabang() {
   });
 
   console.log(`Seeded ${createdCabang.count} Cabang records`);
-  return createdCabang.count;
+  return createdCabang.count > 0 ? createdCabang.count : 10; // Ensure we return at least 1
 }
 
 async function seedMainstock(categoryCount: number, cabangCount: number) {
@@ -91,7 +91,7 @@ async function seedMainstock(categoryCount: number, cabangCount: number) {
     id_brand: faker.number.int({ min: 1, max: 50 }),
     wso2transfer: faker.datatype.boolean(),
     is_updated: faker.datatype.boolean(),
-    kd_cab: `CAB${String(faker.number.int({ min: 1, max: cabangCount })).padStart(3, '0')}`,
+    kd_cab: `CAB${String(faker.number.int({ min: 1, max: Math.max(1, cabangCount) })).padStart(3, '0')}`,
   }));
 
   const createdMainstock = await prisma.mainstock.createMany({
@@ -125,6 +125,7 @@ async function seedDokter() {
   const dokterData = Array.from({ length: 20 }, () => ({
     nama: faker.person.fullName(),
     spesialisasi: faker.helpers.arrayElement(['Umum', 'Anak', 'Penyakit Dalam', 'Bedah', 'Mata', 'THT', 'Kulit dan Kelamin']),
+    alamat: faker.location.streetAddress()
   }));
 
   const createdDokter = await prisma.dokter.createMany({
@@ -152,7 +153,7 @@ async function seedTransaksi(pelangganCount: number, dokterCount: number, cabang
     no_voucher: faker.helpers.maybe(() => faker.string.alphanumeric(8)),
     interval_transaksi: faker.helpers.maybe(() => faker.number.int({ min: 1, max: 30 })),
     buffer_transaksi: faker.helpers.maybe(() => faker.number.int({ min: 1, max: 10 })),
-    kd_cab: `CAB${String(faker.number.int({ min: 1, max: cabangCount })).padStart(3, '0')}`,
+    kd_cab: `CAB${String(faker.number.int({ min: 1, max: Math.max(1, cabangCount) })).padStart(3, '0')}`,
   }));
 
   const createdTransaksi = await prisma.transaksi.createMany({

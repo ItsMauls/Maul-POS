@@ -28,6 +28,9 @@ export const API_URL = {
         transaksiPenjualan: `${SALES_URL}/transaksi-penjualan`,
         returPenjualan: `${SALES_URL}/retur-penjualan`
     },
+    TRANSAKSI_PENJUALAN : {
+        createTransaction : `${SALES_URL}/transaksi-penjualan`
+    },
     PURCHASE_PEMBELIAN : {
         fakturPembelian : `${PURCHASE_PEMBELIAN_URL}/faktur-pembelian`,
         penerimaanSupplier : `${PURCHASE_PEMBELIAN_URL}/penerimaan-supplier`,

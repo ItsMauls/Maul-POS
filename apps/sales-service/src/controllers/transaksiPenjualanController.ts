@@ -3,28 +3,91 @@ import prisma from '../config/prisma';
 import { HTTP_STATUS } from '../constants/httpStatus';
 
 export const transaksiPenjualanController = {
-  async create(req: Request, res: Response) {
+  async createTransaction(req: Request, res: Response) {
     try {
-      const newTransaksi = await prisma.transaksiPenjualan.create({
-        data: req.body,
+      const {
+        pelanggan,
+        dokter,
+        sales_pelayan,
+        jenis_penjualan,
+        invoice_eksternal,
+        catatan,
+        total_harga,
+        total_disc,
+        total_sc_misc,
+        total_promo,
+        total_up,
+        no_voucher,
+        interval_transaksi,
+        buffer_transaksi,
+        kd_cab,
+        items
+      } = req.body;
+
+      const transaction = await prisma.transaksi.create({
+        data: {
+          pelanggan: {
+            create: {
+              nama: pelanggan.nama,
+              alamat: pelanggan.alamat,
+              no_telp: pelanggan.noTelp,
+              usia: parseInt(pelanggan.usia),
+              instansi: pelanggan.instansi,
+              korp: pelanggan.korp,
+            }
+          },
+          dokter: {
+            create: {
+              nama: dokter.nama,
+              alamat: dokter.alamat,
+              spesialisasi: dokter.noTelp, // Using noTelp as spesialisasi since it's not in the form
+            }
+          },
+          sales_pelayan,
+          jenis_penjualan,
+          invoice_eksternal,
+          catatan,
+          total_harga,
+          total_disc,
+          total_sc_misc,
+          total_promo,
+          total_up,
+          no_voucher,
+          interval_transaksi,
+          buffer_transaksi,
+          cabang: {
+            connect: { kd_cab: kd_cab }
+          },
+          TransaksiDetail: {
+            create: items.map((item: any) => ({
+              kd_brgdg: item.kd_brgdg,
+              jenis: item.rOption,
+              harga: item.hj_ecer,
+              qty: item.qty,
+              subjumlah: item.subJumlah,
+              disc: item.disc,
+              sc_misc: item.sc,
+              promo: item.promo,
+              disc_promo: item.discPromo,
+              up: item.up,
+            }))
+          }
+        },
+        include: {
+          pelanggan: true,
+          dokter: true,
+          TransaksiDetail: true,
+          cabang: true,
+        },
       });
-      res
-      .status(HTTP_STATUS.CREATED)
-      .json({
-        success: true,
-        message: 'Transaksi penjualan created successfully',
-        data: newTransaksi,
-      });
+
+      res.status(201).json(transaction);
     } catch (error) {
-      res
-      .status(HTTP_STATUS.BAD_REQUEST)
-      .json({
-        success: false,
-        message: 'Failed to create new transaksi penjualan',
-        error: error instanceof Error ? error.message : String(error),
-      });
+      console.error('Error creating transaction:', error);
+      res.status(500).json({ error: 'Failed to create transaction' });
     }
   },
+
 
   async getAll(req: Request, res: Response) {
     try {

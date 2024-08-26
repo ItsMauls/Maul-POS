@@ -12,14 +12,17 @@ import { Table } from "@/components/Table";
 import { DataRow } from "@/types";
 import { formatRupiah } from "@/utils/currency";
 import { ColumnDef } from "@tanstack/react-table";
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 import { useTransactionStore } from "@/store/transactionStore";
+import { usePost } from '@/hooks/useApi';
+import { API_URL } from '@/constants/api';
 
 export default function Page() {
-  const { data, addItem, removeItem, updateItem, calculateValues } = useTransactionStore();
+  const { data, addItem, removeItem, updateItem, calculateValues, pelanggan, dokter } = useTransactionStore();
   const [isObatModalOpen, setIsObatModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
 
   const handleAddItem = (index: number) => {
     addItem(index);
@@ -50,8 +53,7 @@ export default function Page() {
       trigger: 'Dokter',
       content: <DokterCardContent />
     }
-  ]
-  
+  ]  
 
   const createColumns: ColumnDef<DataRow>[] = [
     {
@@ -180,6 +182,67 @@ export default function Page() {
     return data.reduce((total, item) => total + item.jumlah, 0);
   };
 
+  const handleCreateTransaction = async () => {
+    const formattedPelanggan = {
+      nama: pelanggan.nama || undefined,
+      alamat: pelanggan.alamat || undefined,
+      no_telp: pelanggan.no_telp || undefined,
+      usia: pelanggan.usia ? parseInt(pelanggan.usia) : undefined,
+      instansi: pelanggan.instansi || undefined,
+      korp: pelanggan.korp || undefined,
+    };
+
+    const formattedDokter = {
+      nama: dokter.nama || undefined,
+      alamat: dokter.alamat || undefined,
+      spesialisasi: dokter.no_telp || undefined, // Using no_telp as spesialisasi
+    };
+
+    const transactionData = {
+      pelanggan: formattedPelanggan,
+      dokter: formattedDokter,
+      sales_pelayan: "Sales Person Name", // You might want to get this from somewhere
+      jenis_penjualan: "Regular", // You might want to get this from somewhere
+      invoice_eksternal: "INV-001", // You might want to generate this
+      catatan: "Transaction note", // You might want to get this from somewhere
+      total_harga: calculateTotalAmount(),
+      total_disc: data.reduce((total, item) => total + (item.subJumlah * item.disc / 100), 0),
+      total_sc_misc: data.reduce((total, item) => total + item.sc + item.misc, 0),
+      total_promo: data.reduce((total, item) => total + item.promoValue, 0),
+      total_up: data.reduce((total, item) => total + item.up, 0),
+      no_voucher: data.find(item => item.noVoucher)?.noVoucher || "",
+      interval_transaksi: 0, // You might want to calculate this
+      buffer_transaksi: 0, // You might want to calculate this
+      kd_cab: "CAB001", // You might want to get this from somewhere
+      items: data.map(item => ({
+        kd_brgdg: item.kd_brgdg,
+        jenis: item.rOption,
+        harga: item.hj_ecer,
+        qty: item.qty,
+        subjumlah: item.subJumlah,
+        disc: item.disc,
+        sc_misc: item.sc + item.misc,
+        promo: item.promo,
+        disc_promo: item.discPromo,
+        up: item.up,
+      }))
+    };
+    console.log(transactionData, 'transactioData');
+    
+    return new Promise<void>((resolve, reject) => {
+      createTransaction(transactionData, {
+        onSuccess: () => {
+          console.log('Transaction created successfully');
+          resolve();
+        },
+        onError: (error) => {
+          console.error('Failed to create transaction:', error);
+          reject(error);
+        }
+      });
+    });
+  };
+
   return (
     <> 
       <div className="flex space-x-4">
@@ -219,7 +282,8 @@ export default function Page() {
         transactionId={Math.random().toString(36).substring(2, 15)}
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
-        totalAmount={calculateTotalAmount()}
+        totalAmount={calculateTotalAmount()}                
+        createTransaction={handleCreateTransaction}
       />
     </>
   );

@@ -6,11 +6,11 @@ export interface InputFieldProps {
   name?: string;
   register?: any;
   placeholder?: string;
-  error?: FieldError;
+  error?: FieldError | any;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
   readOnly?: boolean;
-  suffix?: string;
+  suffix?: string | any;
   type?: string
   className?: string;
   labelPosition?: 'top' | 'left';

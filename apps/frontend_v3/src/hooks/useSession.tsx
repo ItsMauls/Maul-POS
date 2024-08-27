@@ -9,35 +9,46 @@ interface User {
   username: string;
   role: string;
   email: string;
-  phone_number: string;
+  phoneNumber: string;
   // Add other user properties as needed
 }
 
 interface SessionStore {
   user: User | null;
   setUser: (user: User | null) => void;
-  signIn: (data: { phone_number: string; password: string }) => Promise<User>;
+  signIn: (data: { phoneNumber: string; password: string }) => Promise<User>;
   fetchCurrentUser: () => Promise<User>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
+
+  isLoading: boolean;
+  error: string | null;
+  setIsLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 const useSession = create<SessionStore>()(
   persist(
     (set, get) => ({
       user: null,
+      isLoading: false,
+      error: null,
+      setIsLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
       setUser: (user) => set({ user }),
       signIn: async (data): Promise<User> => {
         try {
           const response = await axios.post(API_URL.AUTH.login, {
-            phone_number: data.phone_number,
+            phoneNumber: data.phoneNumber,
             password: data.password
-          });
+          });          
+          
+          const { accessToken, refreshToken, user } = response.data;
+          console.log(accessToken);
+          
 
-          const { access_token, refresh_token, user } = response.data.data;
-
-          Cookies.set('access_token', access_token, { expires: 1 });
-          Cookies.set('refresh_token', refresh_token, { expires: 7 });
+          Cookies.set('access_token', accessToken, { expires: 1 });
+          Cookies.set('refresh_token', refreshToken, { expires: 7 });
 
           set({ user });
           return user;

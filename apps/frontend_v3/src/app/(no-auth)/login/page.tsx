@@ -5,29 +5,22 @@ import Button from '@/components/ui/Button';
 import React, { useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import { usePost } from '@/hooks/useApi';
 import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
-import { API_URL } from '@/constants/api';
-import Error from 'next/error';
+import useSession from '@/hooks/useSession';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm();
+  const { signIn, isLoading, error } = useSession()
   const router = useRouter();
 
-  const { mutate: login, isPending, error } = usePost(API_URL.AUTH.login, {
-    onSuccess: (data: any) => {
-      // Handle successful login
-      console.log(data, 'tes');
-      
-      Cookies.set('access_token', data.data.accessToken, { expires: 7 }); // expires in 7 days
+  const onSubmit = async (data: any) => {
+    try {
+      await signIn(data);
       router.push('/');
-    },
-  });
-
-  const onSubmit = (data: any) => {
-    login(data);
+    } catch (error) {
+      // Error is handled in useSession, no need to do anything here
+    }
   };
 
   return (
@@ -44,7 +37,7 @@ const Login = () => {
           <h1 className="text-3xl text-blue-600 font-bold uppercase mb-2">pedagang besar farmasi</h1>
           <h2 className="text-2xl font-semibold mb-6">Log in ke Akun Kamu</h2>
           <p className="text-gray-700 mb-6">Masukan No.Telp & Password untuk Login ke Halaman Dashboard</p>
-          {error && <p className="text-red-500 mb-4">{(error as Error).message}</p>}
+          {error && <p className="text-red-500 mb-4">{error}</p>}
           <form onSubmit={handleSubmit(onSubmit)}>
             <InputField
               label="No Telp"
@@ -67,9 +60,10 @@ const Login = () => {
             />
             <Button
               className='bg-blue-600 w-full text-white flex justify-center rounded-xl py-3'
-              disabled={isPending}
+              disabled={isLoading}
+              type="submit"
             >
-              {isPending ? 'Loading...' : 'Login'}
+              {isLoading ? 'Loading...' : 'Login'}
             </Button>
           </form>
           <p className="mt-6 text-center text-gray-600">Menemukan Masalah? <a href="/help" className="text-blue-500">Hubungi</a></p>

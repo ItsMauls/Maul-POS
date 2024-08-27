@@ -1,22 +1,22 @@
 import { Request, Response } from 'express';
-import prisma from '../config/prisma';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as Handlebars from 'handlebars';
+import * as puppeteer from 'puppeteer';
 import { HTTP_STATUS } from '../constants/httpStatus';
+import prisma from '../config/prisma';
 
-interface RequestWithUser extends Request {
-  user?: any;
+interface AuthRequest extends Request {
+  user: any;
 }
 
-
 export const transaksiPenjualanController = {
-  async createTransaction(req: RequestWithUser, res: Response) {
+  async createTransaction(req: any, res: Response) {
     try {
-      const user = req.user as any
-      console.log(user, 'user');
-      
+      const user = req.user;
       const {
         pelanggan,
-        dokter,
-        sales_pelayan,
+        dokter,        
         jenis_penjualan,
         invoice_eksternal,
         catatan,
@@ -69,14 +69,14 @@ export const transaksiPenjualanController = {
           TransaksiDetail: {
             create: items.map((item: any) => ({
               kd_brgdg: item.kd_brgdg,
-              jenis: item.rOption || 'R', // Provide a default value if undefined
-              harga: item.hj_ecer || 0,
+              jenis: item.rOption || 'R', // Provide a default value if jenis is undefined
+              harga: item.harga || 0,
               qty: item.qty || 1,
-              subjumlah: item.subJumlah || 0,
+              subjumlah: item.subjumlah || 0,
               disc: item.disc || 0,
               sc_misc: item.sc_misc || 0,
               promo: item.promo || 0,
-              disc_promo: item.discPromo || 0,
+              disc_promo: item.disc_promo || 0,
               up: item.up || 0,
             }))
           }
@@ -84,18 +84,102 @@ export const transaksiPenjualanController = {
         include: {
           pelanggan: true,
           dokter: true,
-          TransaksiDetail: true,
+          TransaksiDetail: {
+            include: {
+              mainstock: true // Include this if you need product details
+            }
+          },
           cabang: true,
         },
       });
 
-      res.status(201).json(transaction);
+      // Prepare data for the HTML template
+      const templateData = {
+        transaction: {
+          transType: '2',
+          branch: {
+            header: 'Apotek Ibra',
+            address: 'Equity Tower SCBD',
+            phoneNumber: '2132131',
+            mobileNumber: '2132131',
+            outlet: 'Outlet Name',
+            email: 'company@email.com'
+          },
+          billNumber: transaction.invoice_eksternal,
+          queue: 'Queue Number',
+          date: new Date().toLocaleString(),
+          cashier: user.username,
+          shift: 'Shift Info',
+          kassa: 'Kassa Info',
+          productList: transaction.TransaksiDetail.map((detail: any) => ({
+            productName: detail.mainstock.nm_brgdg,
+            qty: detail.qty,
+            amount: detail.subjumlah,
+            nDisc: detail.disc,
+            jnsPromo: detail.promo ? '3' : '0',
+            r: detail.jenis,
+            kdSc: '0',
+            misc: false,
+          })),
+          subTotal: transaction.total_harga,
+          totDiscount: transaction.total_disc,
+          totPromo: transaction.total_promo,
+          grandTotal: transaction.total_harga - transaction.total_disc - transaction.total_promo,
+          payment: [{
+            payFormat: transaction.total_harga - transaction.total_disc - transaction.total_promo,
+            cashFormat: transaction.total_harga - transaction.total_disc - transaction.total_promo,
+            changeFormat: '0',
+            creditCardFormat: '0',
+            debitCardFormat: '0',
+            eWalletFormat: '0',
+            transferBankFormat: '0',
+            receivablesFormat: '0',
+          }],
+          customer: {
+            pro: pelanggan.korp,
+            address: pelanggan.alamat,
+            phoneNumberCust: pelanggan.no_telp
+          },
+          doctor: dokter.nama,
+          item: transaction.TransaksiDetail.length,
+          print: new Date().toLocaleString(),
+          createdBy: user.username,
+          footerLine1: 'Thank you for your purchase',
+          footerLine2: 'Please come again',
+          footerLine3: '',
+          footerLine4: '',
+          footerLine5: '',
+          isReceivables: false,
+          corpPresent: false,
+          nameEmployee: '',
+          orderNumber: null,
+        }
+      };
+
+      // Generate PDF receipt
+      const templatePath = path.join(__dirname, '..', 'resources', 'transaksiStruk.html');
+      const templateContent = fs.readFileSync(templatePath, 'utf-8');
+      const template = Handlebars.compile(templateContent);
+      const html = template(templateData);
+      console.log('Compiled HTML:', html);
+
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+      await page.setContent(html);
+      const pdfBuffer = await page.pdf({ format: 'A4' });
+      await browser.close();
+
+      const base64Pdf = Buffer.from(pdfBuffer).toString('base64');
+
+      res.status(HTTP_STATUS.CREATED).json({
+        transaction,
+        receipt: base64Pdf
+      });
     } catch (error) {
       console.error('Error creating transaction:', error);
-      res.status(500).json({ error: 'Failed to create transaction' });
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Failed to create transaction' });
     }
   },
-
 
   async getAll(req: Request, res: Response) {
     try {

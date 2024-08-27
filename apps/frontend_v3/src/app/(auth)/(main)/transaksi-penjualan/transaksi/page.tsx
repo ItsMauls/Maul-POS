@@ -24,6 +24,12 @@ export default function Page() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
 
+  const [headerInfo, setHeaderInfo] = useState({
+    Antrian: '84',
+    Periode: '03/07/2004',
+    'No Bon': 'R24073831357'
+  });
+
   const handleAddItem = (index: number) => {
     addItem(index);
   };
@@ -87,7 +93,7 @@ export default function Page() {
       cell: ({ row }) => (
         <SelectField
           label=""
-          name={`he`}
+          name={`jenis`}
           register={() => {}}
           options={[
             { value: "R", label: "R" },
@@ -195,44 +201,52 @@ export default function Page() {
     const formattedDokter = {
       nama: dokter.nama || undefined,
       alamat: dokter.alamat || undefined,
-      spesialisasi: dokter.no_telp || undefined, // Using no_telp as spesialisasi
+      spesialisasi: dokter.no_telp || undefined,
     };
 
     const transactionData = {
       pelanggan: formattedPelanggan,
       dokter: formattedDokter,
-      // sales_pelayan: "Sales Person Name", // You might want to get this from somewhere
-      jenis_penjualan: "Regular", // You might want to get this from somewhere
-      invoice_eksternal: "INV-001", // You might want to generate this
-      catatan: "Transaction note", // You might want to get this from somewhere
+      jenis_penjualan: "Regular",
+      invoice_eksternal: "INV-001",
+      catatan: "Transaction note",
       total_harga: calculateTotalAmount(),
       total_disc: data.reduce((total, item) => total + (item.subJumlah * item.disc / 100), 0),
       total_sc_misc: data.reduce((total, item) => total + item.sc + item.misc, 0),
       total_promo: data.reduce((total, item) => total + item.promoValue, 0),
       total_up: data.reduce((total, item) => total + item.up, 0),
       no_voucher: data.find(item => item.noVoucher)?.noVoucher || "",
-      interval_transaksi: 0, // You might want to calculate this
-      buffer_transaksi: 0, // You might want to calculate this
-      kd_cab: "CAB001", // You might want to get this from somewhere
+      interval_transaksi: 0,
+      buffer_transaksi: 0,
+      kd_cab: "CAB001",
       items: data.map(item => ({
         kd_brgdg: item.kd_brgdg,
-        jenis: item.rOption || 'R', // Default to 'R' if rOption is not set
+        jenis: item.rOption || 'R',
         harga: item.hj_ecer,
         qty: item.qty,
-        subjumlah: item.subJumlah || 0, // Provide a default value
+        subjumlah: item.subJumlah || 0,
         disc: item.disc,
-        sc_misc: (item.sc || 0) + (item.misc || 0), // Ensure sc and misc are numbers
+        sc_misc: (item.sc || 0) + (item.misc || 0),
         promo: item.promo,
-        disc_promo: item.discPromo || 0, // Provide a default value
+        disc_promo: item.discPromo || 0,
         up: item.up,
       }))
     };
-    console.log(transactionData, 'transactioData');
     
     return new Promise<void>((resolve, reject) => {
       createTransaction(transactionData, {
-        onSuccess: () => {
+        onSuccess: (data: any) => {
           console.log('Transaction created successfully');
+          console.log(data, 'data');
+          
+          if (data.data.receipt) {
+            // Open PDF receipt in a new tab
+            const pdfBlob = new Blob([Buffer.from(data.data.receipt, 'base64')], { type: 'application/pdf' });
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            window.open(pdfUrl, '_blank');
+          } else {
+            console.warn('Receipt data not available');
+          }
           resolve();
         },
         onError: (error) => {
@@ -245,6 +259,26 @@ export default function Page() {
 
   return (
     <> 
+      <div className="mb-4 flex justify-between items-center">
+        <div className="flex space-x-4">
+          {Object.entries(headerInfo).map(([key, value]) => (
+            <div key={key} className="flex bg-white drop-shadow-sm rounded-xl px-4 py-2 items-center space-x-2">
+              <span className="font-semibold">
+                <span className="bg-blue-500 text-xs py-2 rounded-l-xl mr-2 text-blue-500">|</span>
+                {key}:
+              </span>
+              <span>
+                {value}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center space-x-2 rounded-xl px-12 drop-shadow-md py-2 bg-white">        
+          <span className="font-semibold">Grand Total:</span>
+          <span>{formatRupiah(calculateTotalAmount())}</span>
+        </div>
+      </div>
+  
       <div className="flex space-x-4">
         <div className="flex-1">
           <Table

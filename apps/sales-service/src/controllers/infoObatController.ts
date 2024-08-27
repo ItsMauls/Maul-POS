@@ -105,7 +105,7 @@ export const infoObatController = {
           search ? {
             OR: [
               { nm_brgdg: { contains: search, mode: 'insensitive' } },
-              { barcode: { contains: search, mode: 'insensitive' } },
+              { barcode: { equals: search } },
             ],
           } : {},
           kategori ? { id_kategori: kategori } : {},

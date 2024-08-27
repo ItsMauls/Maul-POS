@@ -67,6 +67,33 @@ export default function Page() {
     setIsObatModalOpen(false);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Insert') {
+        event.preventDefault();
+        handleAddItem(data.length);
+      } else if (event.key === 'Delete') {
+        event.preventDefault();
+        if (data.length > 0) {
+          handleRemoveItem(data.length - 1);
+        }
+      } else if (event.key === 'F2') {
+        event.preventDefault();
+        setSelectedRowIndex(data.length - 1);
+        setIsObatModalOpen(true);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsObatModalOpen(false);
+      }
+    };
+  
+    window.addEventListener('keydown', handleKeyDown);
+  
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [data.length]);
+
   const accordionMenus = [
     {
       trigger: 'Pelanggan',

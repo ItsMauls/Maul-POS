@@ -16,6 +16,7 @@ import { useState, ChangeEvent, useEffect } from "react";
 import { useTransactionStore } from "@/store/transactionStore";
 import { usePost, useGet } from '@/hooks/useApi';
 import { API_URL } from '@/constants/api';
+import { SHORTCUTS } from "@/constants/shorcuts";
 
 export default function Page() {
   const { data, addItem, removeItem, updateItem, calculateValues, pelanggan, dokter, clearTransaction } = useTransactionStore();
@@ -69,19 +70,19 @@ export default function Page() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Insert') {
+      if (event.key === SHORTCUTS.ADD_ITEM) {
         event.preventDefault();
         handleAddItem(data.length);
-      } else if (event.key === 'Delete') {
+      } else if (event.key === SHORTCUTS.DELETE_ITEM) {
         event.preventDefault();
         if (data.length > 0) {
           handleRemoveItem(data.length - 1);
         }
-      } else if (event.key === 'F2') {
+      } else if (event.key === SHORTCUTS.OPEN_OBAT_MODAL) {
         event.preventDefault();
         setSelectedRowIndex(data.length - 1);
         setIsObatModalOpen(true);
-      } else if (event.key === 'Escape') {
+      } else if (event.key === SHORTCUTS.CLOSE_MODAL) {
         event.preventDefault();
         setIsObatModalOpen(false);
       }

@@ -1,5 +1,6 @@
 export const SHORTCUTS = {
     ADD_ITEM: 'Insert',
+    DELETE_ITEM: 'Delete',
     SELECT_DATE: 'F3',
     RESET_SP: 'F10',
     APPROVAL: 'F5',

@@ -19,11 +19,12 @@ interface SessionStore {
   signIn: (data: { phone_number: string; password: string }) => Promise<User>;
   fetchCurrentUser: () => Promise<User>;
   logout: () => Promise<void>;
+  refreshToken: () => Promise<void>;
 }
 
 const useSession = create<SessionStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       setUser: (user) => set({ user }),
       signIn: async (data): Promise<User> => {
@@ -55,15 +56,13 @@ const useSession = create<SessionStore>()(
             }
           });
 
-          console.log("User data response:", response.data); // Debug log
-
           const userData = response.data;
 
           set({ user: userData });
           return userData;
         } catch (error) {
           console.error("Fetch current user error:", error);
-          set({ user: null });
+          await get().refreshToken();
           throw error;
         }
       },
@@ -81,6 +80,29 @@ const useSession = create<SessionStore>()(
           set({ user: null });
         } catch (error) {
           console.error("Logout error:", error);
+          throw error;
+        }
+      },
+      refreshToken: async (): Promise<void> => {
+        try {
+          const refreshToken = Cookies.get('refresh_token');
+          if (!refreshToken) {
+            throw new Error('No refresh token available');
+          }
+
+          const response = await axios.post(API_URL.AUTH.refreshToken, {
+            refresh_token: refreshToken
+          });
+
+          const { access_token, refresh_token } = response.data;
+
+          Cookies.set('access_token', access_token, { expires: 1 });
+          Cookies.set('refresh_token', refresh_token, { expires: 7 });
+        } catch (error) {
+          console.error("Refresh token error:", error);
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          set({ user: null });
           throw error;
         }
       }

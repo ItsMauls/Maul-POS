@@ -14,6 +14,7 @@ interface TransactionState {
   calculateValues: (item: DataRow) => DataRow;
   setPelanggan: (data: any) => void;
   setDokter: (data: any) => void;
+  clearTransaction: () => void;
 }
 
 const customStorage: StateStorage = {
@@ -107,6 +108,28 @@ export const useTransactionStore = create(
       },
       setPelanggan: (data) => set((state) => ({ pelanggan: { ...state.pelanggan, ...data } })),
       setDokter: (data) => set((state) => ({ dokter: { ...state.dokter, ...data } })),
+      clearTransaction: () => set(() => ({
+        data: [{
+          index: 0,
+          rOption: "R",
+          kd_brgdg: "BRG001",
+          nm_brgdg: "New Item",
+          hj_ecer: 0,
+          qty: 1,
+          subJumlah: 0,
+          disc: 0,
+          sc: 0,
+          misc: 0,
+          jumlah: 0,
+          promo: 0,
+          discPromo: 0,
+          promoValue: 0,
+          up: 0,
+          noVoucher: "-",
+        }],
+        pelanggan: {},
+        dokter: {},
+      })),
     }),
     {
       name: 'transaction-storage',

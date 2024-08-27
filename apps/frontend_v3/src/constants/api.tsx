@@ -12,6 +12,12 @@ export const API_URL = {
         refreshToken : `${AUTH_URL}/refresh-token`,
         logout : `${AUTH_URL}/logout`
     },
+    ANTRIAN : {
+        createAntrian : `${SALES_URL}/antrian/add`,
+        finishAntrian : `${SALES_URL}/antrian/finish`,
+        getAntrianToday : `${SALES_URL}/antrian/today`,
+        getCurrentAntrianInfo : `${SALES_URL}/antrian/current-antrian-info/:kdCab`
+    },
     PAYMENT : {
         createPayment : `${PAYMENT_URL}`,
         getPayment : `${PAYMENT_URL}`

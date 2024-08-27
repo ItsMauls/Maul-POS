@@ -28,6 +28,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
   };
 
   const { mutate: createPayment, isPending, isError, error } = usePost(API_URL.PAYMENT.createPayment);
+  const { mutate: tambahAntrian } = usePost(API_URL.ANTRIAN.createAntrian);
 
   const onSubmit = async (data: any) => {
     const paymentType = Object.keys(paymentMethods).find(method => paymentMethods[method as keyof typeof paymentMethods]);
@@ -51,8 +52,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
       onSuccess: async () => {
         try {
           await createTransaction();
-          onClose();
-          // You might want to add some success feedback here
+          // Add antrian after successful transaction
+          tambahAntrian({ idPelanggan: 1, kdCab: 'CAB001' }, {
+            onSuccess: (antrianData) => {
+              console.log('Antrian created:', antrianData);
+              onClose();
+              // You might want to add some success feedback here
+            },
+            onError: (error) => {
+              console.error('Failed to create antrian:', error);
+              // You might want to add some error feedback here
+            }
+          });
         } catch (error) {
           console.error('Failed to create transaction:', error);
           // You might want to add some error feedback here

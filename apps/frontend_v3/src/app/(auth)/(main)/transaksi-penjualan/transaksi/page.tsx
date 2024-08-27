@@ -12,23 +12,39 @@ import { Table } from "@/components/Table";
 import { DataRow } from "@/types";
 import { formatRupiah } from "@/utils/currency";
 import { ColumnDef } from "@tanstack/react-table";
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import { useTransactionStore } from "@/store/transactionStore";
-import { usePost } from '@/hooks/useApi';
+import { usePost, useGet } from '@/hooks/useApi';
 import { API_URL } from '@/constants/api';
 
 export default function Page() {
-  const { data, addItem, removeItem, updateItem, calculateValues, pelanggan, dokter } = useTransactionStore();
+  const { data, addItem, removeItem, updateItem, calculateValues, pelanggan, dokter, clearTransaction } = useTransactionStore();
   const [isObatModalOpen, setIsObatModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
+  const { data: antrianInfo, isLoading: isLoadingAntrianInfo } = useGet(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
 
   const [headerInfo, setHeaderInfo] = useState({
-    Antrian: '84',
-    Periode: '03/07/2004',
-    'No Bon': 'R24073831357'
+    Antrian: '',
+    Periode: '',
+    'No Bon': ''
   });
+  
+  useEffect(() => {
+    if (antrianInfo) {
+      const noAntrian = antrianInfo.noAntrian.toString().padStart(2, '0');
+      const periode = antrianInfo.periode.replace(/\//g, '');
+      const noBon = `R${noAntrian}${periode}`;
+
+      setHeaderInfo(prev => ({
+        ...prev,
+        Antrian: noAntrian,
+        Periode: antrianInfo.periode,
+        'No Bon': noBon
+      }));
+    }
+  }, [antrianInfo]);
 
   const handleAddItem = (index: number) => {
     addItem(index);
@@ -247,6 +263,8 @@ export default function Page() {
           } else {
             console.warn('Receipt data not available');
           }
+          // Clear the transaction storage
+          clearTransaction();
           resolve();
         },
         onError: (error) => {
@@ -268,7 +286,7 @@ export default function Page() {
                 {key}:
               </span>
               <span>
-                {value}
+                {isLoadingAntrianInfo && (key === 'Antrian' || key === 'Periode') ? 'Loading...' : value}
               </span>
             </div>
           ))}

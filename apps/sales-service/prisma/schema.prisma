@@ -92,6 +92,7 @@ model Pelanggan {
   created_at DateTime    @default(now())
   updated_at DateTime    @updatedAt
   Transaksi  Transaksi[]
+  Antrian    Antrian[]
 }
 
 model Dokter {
@@ -128,6 +129,7 @@ model Transaksi {
   ReturPenjualan     ReturPenjualan[]
   cabang             Cabang            @relation(fields: [kd_cab], references: [kd_cab])
   kd_cab             String
+  antrian            Antrian[]
 }
 
 model TransaksiDetail {
@@ -187,4 +189,30 @@ model Cabang {
   updated_at  DateTime    @updatedAt
   Transaksi   Transaksi[]
   Mainstock   Mainstock[]
+  antrian     Antrian[]
+}
+
+model Antrian {
+  id_antrian      Int    @id @default(autoincrement())
+  id_trans        Int?
+  no_antrian      Int?
+  type_trans      String?   
+  mulai          String?   
+  selesai        String?   
+  timer          String?   
+  status_proses  Int?  
+  user_mulai     String?   
+  user_selesai   String?   
+  tgl_update      DateTime?
+  status          String?   
+  status_antrian  Boolean?
+  tanggal         DateTime?
+  status_racik    Boolean?
+  kd_cab          String
+  id_pelanggan    Int?
+
+  // Relationships
+  transaksi       Transaksi? @relation(fields: [id_trans], references: [id])
+  cabang          Cabang     @relation(fields: [kd_cab], references: [kd_cab])
+  pelanggan       Pelanggan? @relation(fields: [id_pelanggan], references: [id])
 }

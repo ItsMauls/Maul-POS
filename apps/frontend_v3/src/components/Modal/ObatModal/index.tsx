@@ -8,7 +8,7 @@ import { formatRupiah } from '@/utils/currency';
 interface ObatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (obat: DataRow) => void;
+  onSelect: (obat: any) => void;
 }
 
 export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect }) => {
@@ -16,13 +16,16 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
   const [debouncedSearch] = useDebounce(search, 300);
   const [page, setPage] = useState(1);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [lastInputTime, setLastInputTime] = useState<number>(0);
+  const [inputBuffer, setInputBuffer] = useState<string>('');
 
-  const { data, isLoading, error } = useGet(
+  const { data, isLoading, error } = useGet<any>(
     `${API_URL.SALES["info-obat"]}?limit=10&search=${debouncedSearch}&page=${page}`,
     { enabled: isOpen }
   );
 
   const obatList = data?.data || [];
+  console.log(obatList, 'obatList');
   const totalPages = data?.meta?.totalPages || 1;
 
   useEffect(() => {
@@ -43,6 +46,59 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
     }
   }, [data]);
 
+  useEffect(() => {
+    let barcodeBuffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const currentTime = Date.now();
+      if (currentTime - lastKeyTime > 50) {
+        barcodeBuffer = '';
+      }
+      lastKeyTime = currentTime;
+
+      if (e.key !== 'Enter') {
+        barcodeBuffer += e.key;
+      } else if (barcodeBuffer) {
+        setSearch(barcodeBuffer);
+        barcodeBuffer = '';
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const currentTime = new Date().getTime();
+    if (currentTime - lastInputTime > 50) {
+      setInputBuffer('');
+    }
+    setLastInputTime(currentTime);
+    setInputBuffer(prev => prev + e.key);
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (obatList.length === 1) {
+        handleSelect(obatList[0]);
+      }
+    }
+  };
+
+  const handleSelect = (obat: DataRow) => {
+    onSelect({
+      kd_brgdg: obat.kd_brgdg,
+      nm_brgdg: obat.nm_brgdg,
+      hj_ecer: obat.hj_ecer,
+      qty: 1,
+      rOption: 'R',
+    });
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -54,6 +110,7 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
           placeholder="Search obat..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="w-full p-2 mb-4 border rounded"
         />
         {isInitialLoad ? (

@@ -96,13 +96,14 @@ const useSession = create<SessionStore>()(
       },
       refreshToken: async (): Promise<void> => {
         try {
-          const refreshToken = Cookies.get('refresh_token');
+          const refreshToken = Cookies.get('refresh_token');          
+          
           if (!refreshToken) {
             throw new Error('No refresh token available');
           }
 
           const response = await axios.post(API_URL.AUTH.refreshToken, {
-            refresh_token: refreshToken
+            refreshToken
           });
 
           const { access_token, refresh_token } = response.data;

@@ -10,7 +10,7 @@ import { PaymentModal } from "@/components/Modal/PaymentModal";
 import { SelectField } from "@/components/SelectField";
 import { Table } from "@/components/Table";
 import { DataRow } from "@/types";
-import { formatRupiah } from "@/utils/currency";
+import { formatRupiah, roundUp } from "@/utils/currency";
 import { ColumnDef } from "@tanstack/react-table";
 import { useState, ChangeEvent, useEffect } from "react";
 import { useTransactionStore } from "@/store/transactionStore";
@@ -232,6 +232,13 @@ export default function Page() {
     return data.reduce((total, item) => total + item.jumlah, 0);
   };
 
+  const calculateGrandTotal = () => {
+    return data.reduce((total, item) => {
+      const roundedItemTotal = Math.ceil(item.subJumlah / 100) * 100;
+      return total + roundedItemTotal;
+    }, 0);
+  };
+
   const handleCreateTransaction = async () => {
     const formattedPelanggan = {
       nama: pelanggan.nama || undefined,
@@ -321,7 +328,7 @@ export default function Page() {
         </div>
         <div className="flex items-center space-x-2 rounded-xl px-12 drop-shadow-md py-2 bg-white">        
           <span className="font-semibold">Grand Total:</span>
-          <span>{formatRupiah(calculateTotalAmount())}</span>
+          <span>{formatRupiah(calculateGrandTotal())}</span>
         </div>
       </div>
   
@@ -339,6 +346,7 @@ export default function Page() {
             <TransaksiCardContent 
               data={data} 
               onPaymentClick={() => setIsPaymentModalOpen(true)}
+              // grandTotal={calculateGrandTotal()}
             />
           </Card>
           {accordionMenus.map((val, index) => (

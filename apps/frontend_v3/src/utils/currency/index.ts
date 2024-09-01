@@ -6,3 +6,8 @@ export const formatRupiah = (value: number) => {
         maximumFractionDigits: 0,
     }).format(value);
 };
+
+// utils/roundUp.ts
+export const roundUp = (value: number): number => {
+    return Math.ceil(value / 100) * 100;
+};

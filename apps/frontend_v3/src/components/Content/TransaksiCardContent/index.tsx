@@ -1,11 +1,9 @@
-// MainComponent.tsx
 import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { FormValues } from './type';
 import { InputField } from '@/components/Input';
 import { DataRow } from '@/types';
-
-
+import { formatRupiah, roundUp } from '@/utils/currency';
 
 export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: () => void }> = ({ data, onPaymentClick }) => {
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormValues>();
@@ -16,10 +14,16 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
 
   useEffect(() => {
     const subtotal = data.reduce((sum, item) => sum + item.subJumlah, 0);
+    const roundUpAmount = data.reduce((sum, item) => {
+      const roundedItemTotal = Math.ceil(item.subJumlah / 100) * 100;
+      return sum + (roundedItemTotal - item.subJumlah);
+    }, 0);
     setValue('subtotal', subtotal);
+    setValue('ru', roundUpAmount);
   }, [data, setValue]);
 
   const subtotal = watch('subtotal');
+  const roundUpAmount = watch('ru');
 
   return (
     <div className=''>
@@ -31,7 +35,7 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           error={errors.subtotal}
           labelPosition='left'
           readOnly
-          value={subtotal ? subtotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) : ''}
+          value={subtotal ? formatRupiah(subtotal) : ''}
         />
         <InputField
           label="Misc"
@@ -45,6 +49,8 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           name="ru"
           register={register}
           error={errors.ru}
+          readOnly
+          value={roundUpAmount ? formatRupiah(roundUpAmount) : ''}
           labelPosition='left'
         />
         <InputField

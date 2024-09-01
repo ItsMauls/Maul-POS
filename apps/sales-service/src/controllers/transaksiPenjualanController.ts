@@ -5,6 +5,7 @@ import * as Handlebars from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { HTTP_STATUS } from '../constants/httpStatus';
 import prisma from '../config/prisma';
+import * as pdfToPrinter from 'pdf-to-printer';
 
 interface AuthRequest extends Request {
   user: any;
@@ -161,7 +162,7 @@ export const transaksiPenjualanController = {
       const templateContent = fs.readFileSync(templatePath, 'utf-8');
       const template = Handlebars.compile(templateContent);
       const html = template(templateData);
-      console.log('Compiled HTML:', html);
+      // console.log('Compiled HTML:', html);
 
       const browser = await puppeteer.launch();
       const page = await browser.newPage();
@@ -170,6 +171,25 @@ export const transaksiPenjualanController = {
       await browser.close();
 
       const base64Pdf = Buffer.from(pdfBuffer).toString('base64');
+
+      // Save the PDF to a temporary file
+      const tempDir = path.join(__dirname, '..', 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      const pdfPath = path.join(tempDir, `receipt-${Date.now()}.pdf`);
+      fs.writeFileSync(pdfPath, pdfBuffer);
+
+      // Print the receipt
+      await pdfToPrinter.print(pdfPath, { printer: process.env.PRINTER_NAME || undefined });
+
+      // Update the transaction with the receipt
+      console.log('transaction', transaction.id);
+      
+      await prisma.transaksi.update({
+        where: { id: transaction.id },
+        data: { receipt: base64Pdf }
+      });
 
       res.status(HTTP_STATUS.CREATED).json({
         transaction,

@@ -130,6 +130,7 @@ model Transaksi {
   cabang             Cabang            @relation(fields: [kd_cab], references: [kd_cab])
   kd_cab             String
   antrian            Antrian[]
+  receipt            String?           // Add this line to store the base64-encoded PDF content
 }
 
 model TransaksiDetail {

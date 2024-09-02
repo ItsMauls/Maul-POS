@@ -57,27 +57,31 @@ export const authController = {
 
   async refreshToken(req: Request, res: Response) {
     const { refreshToken, sessionId } = req.body;
-
+    console.log('Refresh token:', refreshToken, 'Session ID:', sessionId);
+  
     try {
       const session = await getSession(sessionId);
+      console.log('Retrieved session:', session);
+  
       if (!session) {
         return res
           .status(HTTP_STATUS.UNAUTHORIZED)
           .json({ error: 'Invalid session' });
       }
-
+  
       const { userId, refreshToken: storedRefreshToken } = JSON.parse(session);
       if (refreshToken !== storedRefreshToken) {
         return res
           .status(HTTP_STATUS.UNAUTHORIZED)
           .json({ error: 'Invalid refresh token' });
       }
-
+  
       verifyRefreshToken(refreshToken);
-
+  
       const newAccessToken = signAccessToken(userId);
       res.json({ accessToken: newAccessToken });
     } catch (error) {
+      console.error('Error in refreshToken:', error);
       res
         .status(HTTP_STATUS.UNAUTHORIZED)
         .json({ error: 'Invalid refresh token' });

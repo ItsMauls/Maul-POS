@@ -1,5 +1,5 @@
 // apps/frontend_v3/src/components/Modal/PaymentModal.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SelectField } from '@/components/SelectField';
 import { formatRupiah } from '@/utils/currency';
 import { InputField } from '@/components/Input';
@@ -22,6 +22,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
     creditCard: false,
     debitCard: false,
   });   
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
 
   const togglePaymentMethod = (method: keyof typeof paymentMethods) => {
     setPaymentMethods(prev => ({ ...prev, [method]: !prev[method] }));

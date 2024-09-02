@@ -2,6 +2,8 @@ export const SHORTCUTS = {
     ADD_ITEM: 'Insert',
     DELETE_ITEM: 'Delete',
     SELECT_DATE: 'F3',
+    OPEN_PAYMENT_MODAL: 'F2',
+    OPEN_TUNDA_MODAL: 'F4',
     RESET_SP: 'F10',
     APPROVAL: 'F5',
     SEARCH: '/',
@@ -9,8 +11,8 @@ export const SHORTCUTS = {
     CANCEL: 'Esc',
     NEXT_PAGE: 'ArrowRight',
     PREV_PAGE: 'ArrowLeft',
-    OPEN_OBAT_MODAL: 'F2',
-    CLOSE_MODAL: 'Esc',
+    OPEN_OBAT_MODAL: 'F1',
+    CLOSE_MODAL: 'Escape',
   };
   
   export const SHORTCUT_ACTIONS = {

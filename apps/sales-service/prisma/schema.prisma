@@ -79,6 +79,7 @@ model Mainstock {
   ReturPenjualan          ReturPenjualan[]
   cabang                 Cabang             @relation(fields: [kd_cab], references: [kd_cab])
   kd_cab                 String
+  promos                  Promo[]            @relation("MainstockPromos")
 }
 
 model Pelanggan {
@@ -130,7 +131,7 @@ model Transaksi {
   cabang             Cabang            @relation(fields: [kd_cab], references: [kd_cab])
   kd_cab             String
   antrian            Antrian[]
-  receipt            String?           // Add this line to store the base64-encoded PDF content
+  receipt            String?           // Add this line to store the base64-encoded PDF content  
 }
 
 model TransaksiDetail {
@@ -145,11 +146,12 @@ model TransaksiDetail {
   subjumlah    Decimal   @db.Decimal(12, 2)
   disc         Decimal   @db.Decimal(10, 2)
   sc_misc      Decimal   @db.Decimal(10, 2)
-  promo        Decimal   @db.Decimal(10, 2)
-  disc_promo   Decimal   @db.Decimal(10, 2)
+  promo        Decimal   @db.Decimal(10, 2) // Promotion amount
+  disc_promo   Decimal   @db.Decimal(10, 2) // Discount amount
   up           Decimal   @db.Decimal(10, 2)
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
+  promos       Promo[]   @relation("TransaksiDetailPromos")
 }
 
 model ReturPenjualan {
@@ -216,4 +218,20 @@ model Antrian {
   transaksi       Transaksi? @relation(fields: [id_trans], references: [id])
   cabang          Cabang     @relation(fields: [kd_cab], references: [kd_cab])
   pelanggan       Pelanggan? @relation(fields: [id_pelanggan], references: [id])
+}
+
+model Promo {
+  id              Int       @id @default(autoincrement())
+  nama            String
+  deskripsi       String?
+  diskon          Float
+  tanggal_awal    DateTime
+  tanggal_akhir   DateTime
+  jam_awal_promo  String
+  jam_akhir_promo String
+  no_promo        String
+  jenis_promo     String
+  mainstock       Mainstock @relation("MainstockPromos", fields: [mainstockId], references: [kd_brgdg])
+  mainstockId     Int
+  TransaksiDetail TransaksiDetail[] @relation("TransaksiDetailPromos")
 }

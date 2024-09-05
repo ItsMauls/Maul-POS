@@ -1,18 +1,12 @@
 import { Request, Response } from 'express';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as Handlebars from 'handlebars';
-import * as puppeteer from 'puppeteer';
+import * as escpos from 'escpos';
+import nodeHtmlToImage from 'node-html-to-image';
+import Handlebars from 'handlebars';
+import fs from 'fs';
+import path from 'path';
+import puppeteer from 'puppeteer';
 import { HTTP_STATUS } from '../constants/httpStatus';
 import prisma from '../config/prisma';
-import * as pdfToPrinter from 'pdf-to-printer';
-import * as escpos from 'escpos';
-
-const nodeHtmlToImage = require('node-html-to-image')
-
-interface AuthRequest extends Request {
-  user: any;
-}
 
 export const transaksiPenjualanController = {
   async createTransaction(req: any, res: Response) {
@@ -166,41 +160,78 @@ export const transaksiPenjualanController = {
       const template = Handlebars.compile(templateContent);
       const html = template(templateData);
 
-      // Convert HTML to image
-      const image = await nodeHtmlToImage({
-        html: html,
-        quality: 100,
-        type: 'png',
-        puppeteerArgs: {
-          args: ['--no-sandbox'],
-        },
-      });
+      let receiptData;
+      try {
+        // Try printing using the POS printer
+        const image = await nodeHtmlToImage({
+          html: html,
+          quality: 100,
+          type: 'png',
+          puppeteerArgs: {
+            args: ['--no-sandbox'],
+          },
+        }) as any
 
-      // Set up the printer
-      // Note: You'll need to adjust this based on your specific printer setup
-      const device = new escpos.USB();
-      const options = { width: 512, height: 512 } as any// adjust based on your printer's capabilities
-      const printer = new escpos.Printer(device, options);
+        // Set up the printer
+        const device = new escpos.USB();
+        const options = { width: 512, height: 512 } as any;
+        const printer = new escpos.Printer(device, options);
 
-      // Print the receipt
-      device.open(function(error){
-        printer
-          .align('CT')
-          .image(image, 'S8')
-          .cut()
-          .close();
-      });
+        // Print the receipt
+        await new Promise((resolve, reject) => {
+          device.open(function(error){
+            if (error) {
+              console.error('Error opening USB device:', error);
+              reject(error);
+            } else {
+              printer
+                .align('CT')
+                .image(image, 'S8')
+                .cut()
+                .close();
+              resolve(void 0);
+            }
+          });
+        });
 
-      // Update the transaction with the receipt (if needed)
-      // You might want to store the HTML or image instead of PDF
+        receiptData = image.toString('base64');
+      } catch (printError) {
+        console.error('Error printing receipt:', printError);
+        
+        // Fallback to PDF generation
+        try {
+          const browser = await puppeteer.launch();
+          const page = await browser.newPage();
+          await page.setContent(html);
+          const pdf = await page.pdf({ format: 'A4' });
+          await browser.close();
+
+          if (Buffer.isBuffer(pdf)) {
+            receiptData = pdf.toString('base64');
+          } else if (Array.isArray(pdf) && pdf.every(item => typeof item === 'number')) {
+            receiptData = Buffer.from(pdf).toString('base64');
+          } else if (typeof pdf === 'object' && pdf !== null && pdf.buffer instanceof ArrayBuffer) {
+            receiptData = Buffer.from(pdf.buffer).toString('base64');
+          } else {
+            console.error('Unexpected PDF type:', typeof pdf);
+            throw new Error(`PDF generation failed: Unexpected PDF structure`);
+          }
+        } catch (pdfError: any) {
+          console.error('Error generating PDF:', pdfError);
+          console.error('PDF generation stack trace:', pdfError.stack);
+          throw new Error('Failed to generate PDF receipt: ' + pdfError.message);
+        }
+      }
+
+      // Update the transaction with the receipt
       await prisma.transaksi.update({
         where: { id: transaction.id },
-        data: { receipt: html } // or store the image if preferred
+        data: { receipt: receiptData }
       });
 
       res.status(HTTP_STATUS.CREATED).json({
         transaction,
-        receipt: html // or you could send the image if preferred
+        receipt: receiptData
       });
     } catch (error) {
       console.error('Error creating transaction:', error);

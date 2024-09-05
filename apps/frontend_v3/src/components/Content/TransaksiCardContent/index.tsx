@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { FormValues } from './type';
 import { InputField } from '@/components/Input';
@@ -25,6 +25,18 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
 
   const subtotal = watch('subtotal');
   const roundUpAmount = watch('ru');
+
+  // Calculate the total additional charge for R and RC options
+  const additionalCharge = useMemo(() => {
+    return data.reduce((sum, item) => {
+      if (item.rOption === 'R') {
+        return sum + 6000;
+      } else if (item.rOption === 'RC') {
+        return sum + 12000;
+      }
+      return sum;
+    }, 0);
+  }, [data]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -79,6 +91,8 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           register={register}
           error={errors.sc}
           labelPosition='left'
+          readOnly
+          value={formatRupiah(additionalCharge)}
         />
         <InputField
           label="Retur"

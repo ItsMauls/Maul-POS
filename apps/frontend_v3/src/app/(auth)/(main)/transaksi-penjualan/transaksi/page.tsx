@@ -57,11 +57,24 @@ export default function Page() {
 
   const handleObatSelect = (obat: DataRow) => {
     if (selectedRowIndex !== null) {
+      const currentItem = data[selectedRowIndex];
+      let adjustedPrice = obat.hj_ecer;
+      let sc = 0;
+
+      // Adjust price and SC based on rOption
+      if (currentItem.rOption === 'R') {
+        sc = 6000;
+      } else if (currentItem.rOption === 'RC') {
+        sc = 12000;
+      }
+
       const updatedItem = calculateValues({
-        ...data[selectedRowIndex],
+        ...currentItem,
         kd_brgdg: obat.kd_brgdg,
         nm_brgdg: obat.nm_brgdg,
-        hj_ecer: obat.hj_ecer,
+        hj_ecer: adjustedPrice,
+        sc: sc,
+        subJumlah: (adjustedPrice * (currentItem.qty || 1)) + sc,
       });
       updateItem(selectedRowIndex, updatedItem);
     }
@@ -145,7 +158,24 @@ export default function Page() {
           ]}
           placeholder="Select"
           value={row.original.rOption}
-          onChange={(e: ChangeEvent<HTMLSelectElement>) => updateItem(row.index, { rOption: e.target.value })}
+          onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+            const newROption = e.target.value;
+            let sc = 0;
+
+            if (newROption === 'R') {
+              sc = 6000;
+            } else if (newROption === 'RC') {
+              sc = 12000;
+            }
+
+            const updatedItem = calculateValues({
+              ...row.original,
+              rOption: newROption,
+              sc: sc,
+              subJumlah: (row.original.hj_ecer * (row.original.qty || 1)) + sc,
+            });
+            updateItem(row.index, updatedItem);
+          }}
         />
       ),
     },
@@ -190,6 +220,15 @@ export default function Page() {
     {
       accessorKey: "sc",
       header: "SC",
+      cell: ({ row }) => {
+        let sc = 0;
+        if (row.original.rOption === 'R') {
+          sc = 6000;
+        } else if (row.original.rOption === 'RC') {
+          sc = 12000;
+        }
+        return formatRupiah(sc);
+      },
     },
     {
       accessorKey: "misc",
@@ -228,13 +267,20 @@ export default function Page() {
     totalData: data.length
   };
 
-  const calculateTotalAmount = () => {
-    return data.reduce((total, item) => total + item.jumlah, 0);
-  };
-
   const calculateGrandTotal = () => {
     return data.reduce((total, item) => {
-      const roundedItemTotal = Math.ceil(item.subJumlah / 100) * 100;
+      let itemTotal = item.subJumlah;
+      
+      // Add SC based on rOption
+      if (item.rOption === 'R') {
+        itemTotal += 6000;
+      } else if (item.rOption === 'RC') {
+        itemTotal += 12000;
+      }
+      
+      // Round up to nearest 100
+      const roundedItemTotal = Math.ceil(itemTotal / 100) * 100;
+      
       return total + roundedItemTotal;
     }, 0);
   };
@@ -261,7 +307,7 @@ export default function Page() {
       jenis_penjualan: "Regular",
       invoice_eksternal: "INV-001",
       catatan: "Transaction note",
-      total_harga: calculateTotalAmount(),
+      total_harga: calculateGrandTotal(),
       total_disc: data.reduce((total, item) => total + (item.subJumlah * item.disc / 100), 0),
       total_sc_misc: data.reduce((total, item) => total + item.sc + item.misc, 0),
       total_promo: data.reduce((total, item) => total + item.promoValue, 0),
@@ -370,7 +416,7 @@ export default function Page() {
         transactionId={Math.random().toString(36).substring(2, 15)}
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
-        totalAmount={calculateTotalAmount()}                
+        totalAmount={calculateGrandTotal()}                
         createTransaction={handleCreateTransaction}
       />
     </>

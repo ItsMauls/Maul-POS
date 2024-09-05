@@ -6,6 +6,9 @@ import * as puppeteer from 'puppeteer';
 import { HTTP_STATUS } from '../constants/httpStatus';
 import prisma from '../config/prisma';
 import * as pdfToPrinter from 'pdf-to-printer';
+import * as escpos from 'escpos';
+
+const nodeHtmlToImage = require('node-html-to-image')
 
 interface AuthRequest extends Request {
   user: any;
@@ -157,43 +160,47 @@ export const transaksiPenjualanController = {
         }
       };
 
-      // Generate PDF receipt
+      // Generate HTML receipt
       const templatePath = path.join(__dirname, '..', 'resources', 'transaksiStruk.html');
       const templateContent = fs.readFileSync(templatePath, 'utf-8');
       const template = Handlebars.compile(templateContent);
       const html = template(templateData);
-      // console.log('Compiled HTML:', html);
 
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
-      await page.setContent(html);
-      const pdfBuffer = await page.pdf({ format: 'A4' });
-      await browser.close();
+      // Convert HTML to image
+      const image = await nodeHtmlToImage({
+        html: html,
+        quality: 100,
+        type: 'png',
+        puppeteerArgs: {
+          args: ['--no-sandbox'],
+        },
+      });
 
-      const base64Pdf = Buffer.from(pdfBuffer).toString('base64');
-
-      // Save the PDF to a temporary file
-      const tempDir = path.join(__dirname, '..', 'temp');
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-      const pdfPath = path.join(tempDir, `receipt-${Date.now()}.pdf`);
-      fs.writeFileSync(pdfPath, pdfBuffer);
+      // Set up the printer
+      // Note: You'll need to adjust this based on your specific printer setup
+      const device = new escpos.USB();
+      const options = { width: 512, height: 512 } as any// adjust based on your printer's capabilities
+      const printer = new escpos.Printer(device, options);
 
       // Print the receipt
-      await pdfToPrinter.print(pdfPath, { printer: process.env.PRINTER_NAME || undefined });
+      device.open(function(error){
+        printer
+          .align('CT')
+          .image(image, 'S8')
+          .cut()
+          .close();
+      });
 
-      // Update the transaction with the receipt
-      console.log('transaction', transaction.id);
-      
+      // Update the transaction with the receipt (if needed)
+      // You might want to store the HTML or image instead of PDF
       await prisma.transaksi.update({
         where: { id: transaction.id },
-        data: { receipt: base64Pdf }
+        data: { receipt: html } // or store the image if preferred
       });
 
       res.status(HTTP_STATUS.CREATED).json({
         transaction,
-        receipt: base64Pdf
+        receipt: html // or you could send the image if preferred
       });
     } catch (error) {
       console.error('Error creating transaction:', error);

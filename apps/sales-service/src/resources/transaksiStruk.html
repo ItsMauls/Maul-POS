@@ -1,170 +1,117 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>{{transaction.billNumber}}</title>
     <style>
         @page {
-            size: 7cm 50cm;
+            size: 80mm auto;
             margin: 0;
         }
-        .clearfix::after {
-            content: "";
-            clear: both;
-            display: table;
-        }
-        html, p, img, h1, td, th{
+        body {
+            width: 80mm;
             margin: 0;
             padding: 0;
-            color: #000000;
-            font:consolas;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 8pt;
+            line-height: 1.2;
         }
-        .tab-1 {
-            display: inline-block;
-            margin-left: 10px;
+        * {
+            box-sizing: border-box;
         }
-        .tab-2 {
-            display: inline-block;
-            margin-left: 130px;
+        p {
+            margin: 0;
+            padding: 0;
         }
-        .page-break{
-            page-break-inside : avoid;
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 1mm 0;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .right-align {
+            text-align: right;
         }
     </style>
 </head>
-<body style="color: black !important; width: 100% !important; margin: 0px;">
-    <div class="row">
-        <table>
-            <tr>
-                <td>
-                    <p style="font-size: 11px; text-align: center;">{{transaction.branch.header}}</p>
-                    <p style="font-size: 11px; text-align: center;">{{transaction.branch.address}}</p>
-                    <p style="font-size: 11px; text-align: center;">Telp : {{transaction.branch.phoneNumber}} WA : {{transaction.branch.mobileNumber}}</p>
-                    <p style="font-size: 11px; text-align: center;">{{transaction.branch.outlet}}</p>
-                    <p style="font-size: 11px; text-align: center;">Email : {{transaction.branch.email}}</p>
-                    <p style="font-size: 11px; text-align: center; padding-top:10px">NO.{{transaction.billNumber}}</p>
-                    <p style="font-size: 11px; padding-top:5px; margin-left:25px;">Tgl:{{transaction.date}}  Kasir:{{transaction.cashier}}<span class="tab-1"></span>shift:{{transaction.shift}}  Ks:{{transaction.kassa}}</p>
-                    <p style="margin-left: 8px;margin-right: 8px;">---------------------------------------------</p>
-                </td>
-            </tr>
-        </table>
+<body>
+    <p>{{transaction.branch.header}}</p>
+    <p>{{transaction.branch.address}}</p>
+    <p>Telp: {{transaction.branch.phoneNumber}} WA: {{transaction.branch.mobileNumber}}</p>
+    <p>{{transaction.branch.outlet}}</p>
+    <p>Email: {{transaction.branch.email}}</p>
+    <p>NO.{{transaction.billNumber}}</p>
+    <p>Tgl:{{transaction.date}} Kasir:{{transaction.cashier}}</p>
+    <p>shift:{{transaction.shift}} Ks:{{transaction.kassa}}</p>
 
-        <table style="border-style: none; margin-left: 25px;margin-right:8px;">
-            {{#each transaction.productList}}
-            <tr>
-                <td style="font-size: 11px;width:79%;">{{this.productName}}</td>
-                <td style="font-size: 11px;width:17%;">{{this.qty}}</td>
-                <td style="font-size: 11px;width:30%;text-align:right;">{{this.amount}}</td>
-            </tr>
-            {{#if this.nDisc}}
-            <tr>
-                <td style="font-size: 11px;width:79%;">Disc</td>
-                <td style="font-size: 11px;width:17%;">(</td>
-                <td style="font-size: 11px;width:30%;text-align:right;">{{this.nDisc}})</td>
-            </tr>
-            {{/if}}
-            {{/each}}
-        </table>
+    <div class="divider"></div>
 
-        <p style="margin-left: 8px;margin-right: 8px;">----------------------------------------------</p>
-
-        <table style="margin-left: 25px; margin-right: 8px;">
-            <tr>
-                <td rowspan="21" style="font-size: 11px;text-align:center;" align="center">PEMBAYARAN</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px;">Subtotal</td>
-                <td style="font-size: 11px;padding-left:30px;">:</td>
-                <td style="font-size: 11px;width:15%;text-align:right;padding-right:8px;">{{transaction.subTotal}}</td>
-            </tr>
-            {{#if transaction.totDiscount}}
-            <tr>
-                <td style="font-size: 11px;">Disc</td>
-                <td style="font-size: 11px;padding-left:30px;">:</td>
-                <td style="font-size: 11px;width:15%;text-align:right;padding-right:8px;">{{transaction.totDiscount}}</td>
-            </tr>
-            {{/if}}
-            {{#if transaction.totPromo}}
-            <tr>
-                <td style="font-size: 11px;white-space: nowrap;">Disc Promo</td>
-                <td style="font-size: 11px;padding-left:30px;">:</td>
-                <td style="font-size: 11px;width:15%;text-align:right;padding-right:8px;">{{transaction.totPromo}}</td>
-            </tr>
-            {{/if}}
-            <tr>
-                <td colspan="3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-----------------</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px;">Total</td>
-                <td style="font-size: 11px;padding-left:30px;">:</td>
-                <td style="font-size: 11px;width:15%;text-align:right;padding-right:8px;">{{transaction.grandTotal}}</td>
-            </tr>
-            {{#with transaction.payment.[0]}}
-            <tr>
-                <td style="font-size: 11px;">Bayar</td>
-                <td style="font-size: 11px;padding-left:30px;">:</td>
-                <td style="font-size: 11px;width:15%;text-align:right;padding-right:8px;">{{this.payFormat}}</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px;">Cash</td>
-                <td style="font-size: 11px;padding-left:30px;">:</td>
-                <td style="font-size: 11px;width:15%;text-align:right;padding-right:8px;">{{this.cashFormat}}</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px;">Kembali</td>
-                <td style="font-size: 11px;padding-left:30px;">:</td>
-                <td style="font-size: 11px;width:15%;text-align:right;padding-right:8px;">{{this.changeFormat}}</td>
-            </tr>
-            {{/with}}
-        </table>
-
-        <p style="margin-left: 8px;margin-right: 8px;">----------------------------------------------</p>
-
-        <table style="border-style: none; margin-left: 25px;">
-            <tr>
-                <td style="font-size: 11px;">Pro</td>
-                <td style="font-size: 11px;">:</td>
-                <td style="font-size: 11px;">{{transaction.customer.pro}}</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px;">Addr</td>
-                <td style="font-size: 11px;">:</td>
-                <td style="font-size: 11px;">{{transaction.customer.address}}</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px;">Telp</td>
-                <td style="font-size: 11px;">:</td>
-                <td style="font-size: 11px;">{{transaction.customer.phoneNumberCust}}</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px;">Dokter</td>
-                <td style="font-size: 11px;">:</td>
-                <td style="font-size: 11px;">{{transaction.doctor}}</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px;">Itm</td>
-                <td style="font-size: 11px;">:</td>
-                <td style="font-size: 11px;">{{transaction.item}}</td>
-            </tr>
-        </table>
-
-        <tr>
-            <td>
-                <p style="font-size: 11px; margin-left: 8px; text-align: center; margin-top: 10px;">{{transaction.footerLine1}}</p>
-                <p style="font-size: 11px; margin-left: 8px; text-align: center;">{{transaction.footerLine2}}</p>
-                <p style="font-size: 11px; margin-left: 8px; text-align: center;">{{transaction.footerLine3}}</p>
-                <p style="font-size: 11px; margin-left: 8px; text-align: center;">{{transaction.footerLine4}}</p>
-                <p style="font-size: 11px; margin-left: 8px; text-align: center;">{{transaction.footerLine5}}</p>
-            </td>
-        </tr>
-
-        <tr>
-            <td>
-                <p style="margin-left: 25px; font-size: 11px; text-align: left; margin-top: 7px;">Print :{{transaction.print}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; By {{transaction.createdBy}}</p>
-            </td>
-        </tr>
+    {{#each transaction.productList}}
+    <div class="item-row">
+        <span>{{this.productName}} {{this.qty}}</span>
+        <span class="right-align">{{this.amount}}</span>
     </div>
+    {{#if this.nDisc}}
+    <div class="item-row">
+        <span>Disc</span>
+        <span class="right-align">({{this.nDisc}})</span>
+    </div>
+    {{/if}}
+    {{/each}}
+
+    <div class="divider"></div>
+
+    <div class="item-row">
+        <span>Subtotal</span>
+        <span class="right-align">{{transaction.subTotal}}</span>
+    </div>
+    {{#if transaction.totDiscount}}
+    <div class="item-row">
+        <span>Disc</span>
+        <span class="right-align">{{transaction.totDiscount}}</span>
+    </div>
+    {{/if}}
+    {{#if transaction.totPromo}}
+    <div class="item-row">
+        <span>Disc Promo</span>
+        <span class="right-align">{{transaction.totPromo}}</span>
+    </div>
+    {{/if}}
+    <div class="item-row">
+        <span>Total</span>
+        <span class="right-align">{{transaction.grandTotal}}</span>
+    </div>
+    {{#with transaction.payment.[0]}}
+    <div class="item-row">
+        <span>Bayar</span>
+        <span class="right-align">{{this.payFormat}}</span>
+    </div>
+    <div class="item-row">
+        <span>Cash</span>
+        <span class="right-align">{{this.cashFormat}}</span>
+    </div>
+    <div class="item-row">
+        <span>Kembali</span>
+        <span class="right-align">{{this.changeFormat}}</span>
+    </div>
+    {{/with}}
+
+    <div class="divider"></div>
+
+    <p>Pro: {{transaction.customer.pro}}</p>
+    <p>Addr: {{transaction.customer.address}}</p>
+    <p>Telp: {{transaction.customer.phoneNumberCust}}</p>
+    <p>Dokter: {{transaction.doctor}}</p>
+    <p>Itm: {{transaction.item}}</p>
+
+    <p>{{transaction.footerLine1}}</p>
+    <p>{{transaction.footerLine2}}</p>
+    <p>{{transaction.footerLine3}}</p>
+    <p>{{transaction.footerLine4}}</p>
+    <p>{{transaction.footerLine5}}</p>
+    <p>Print:{{transaction.print}} By {{transaction.createdBy}}</p>
 </body>
 </html>

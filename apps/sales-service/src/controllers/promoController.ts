@@ -10,7 +10,10 @@ export const createPromo = async (req: Request, res: Response) => {
     tanggalAkhir, 
     jamAwalPromo, 
     jamAkhirPromo, 
-    noPromo, jenisPromo, mainstockId } = req.body;
+    noPromo, 
+    jenisPromo, 
+    mainstockId 
+  } = req.body;
 
   try {
     const promo = await prisma.promo.create({

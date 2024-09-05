@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 import { StateStorage } from 'zustand/middleware';
 import { DataRow } from '@/types';
 
+
 interface TransactionState {
   data: DataRow[];
   pelanggan: any;
@@ -50,6 +51,7 @@ export const useTransactionStore = create(
         promoValue: 0,
         up: 0,
         noVoucher: "-",
+        activePromo: null, // Initialize with null
       }],
       pelanggan: {},
       dokter: {},
@@ -72,6 +74,7 @@ export const useTransactionStore = create(
           promoValue: 0,
           up: 0,
           noVoucher: "-",
+          activePromo: null, // Explicitly set to null for new items
         };
         set((state) => ({
           data: [...state.data.slice(0, index + 1), newItem, ...state.data.slice(index + 1)]
@@ -83,27 +86,52 @@ export const useTransactionStore = create(
         }));
       },
       updateItem: (index, item) => {
-        
         set((state) => ({
           data: state.data.map((dataItem, i) => 
-            i === index ? { ...dataItem, ...item } : dataItem
+            i === index ? { 
+              ...dataItem, 
+              ...item, 
+              activePromo: item.activePromo !== undefined ? item.activePromo : dataItem.activePromo 
+            } : dataItem
           )
         }));
+        console.log('Updated item:', get().data[index]); // Add this line for debugging
       },
       calculateValues: (item) => {
         const subJumlah = item.qty * item.hj_ecer;
         const discAmount = subJumlah * (item.disc / 100);
+        let promoAmount = 0;
+
+        if (item.activePromo) {
+          switch (item.activePromo.jenis_promo) {
+            case 'PERSENTASE_DISKON':
+              promoAmount = subJumlah * (item.activePromo.diskon / 100);
+              if (item.activePromo.max_diskon) {
+                promoAmount = Math.min(promoAmount, item.activePromo.max_diskon);
+              }
+              break;
+            case 'POTONGAN_HARGA':
+              promoAmount = item.activePromo.diskon * item.qty;
+              break;
+            case 'BUY_ONE_GET_ONE':
+              if (item.qty >= item.activePromo.kuantitas_beli) {
+                const freeItems = Math.floor(item.qty / item.activePromo.kuantitas_beli) * item.activePromo.kuantitas_gratis;
+                promoAmount = freeItems * item.hj_ecer;
+              }
+              break;
+          }
+        }
+
         const scAmount = subJumlah * (item.sc / 100);
-        const jumlah = subJumlah - discAmount + scAmount + item.misc;
-        const promoAmount = jumlah * (item.promo / 100);
-        const finalJumlah = jumlah - promoAmount;
+        const jumlah = subJumlah - discAmount - promoAmount + scAmount + item.misc;
 
         return {
           ...item,
           subJumlah,
-          jumlah: finalJumlah,
+          jumlah,
           discPromo: promoAmount,
           promoValue: promoAmount,
+          activePromo: item.activePromo, // Ensure activePromo is included in the returned object
         };
       },
       setPelanggan: (data) => set((state) => ({ pelanggan: { ...state.pelanggan, ...data } })),
@@ -126,6 +154,7 @@ export const useTransactionStore = create(
           promoValue: 0,
           up: 0,
           noVoucher: "-",
+          activePromo: null, // Set to null when clearing
         }],
         pelanggan: {},
         dokter: {},

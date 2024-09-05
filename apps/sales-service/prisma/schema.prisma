@@ -233,5 +233,13 @@ model Promo {
   jenis_promo     String
   mainstock       Mainstock @relation("MainstockPromos", fields: [mainstockId], references: [kd_brgdg])
   mainstockId     Int
+
+  min_pembelian   Int?
+  max_diskon      Float?
+  kuantitas_beli  Int?
+  kuantitas_gratis Int?
+
+  deleted_at      DateTime?
+
   TransaksiDetail TransaksiDetail[] @relation("TransaksiDetailPromos")
 }

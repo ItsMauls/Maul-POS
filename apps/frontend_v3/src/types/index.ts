@@ -15,4 +15,14 @@ export interface DataRow {
   promoValue: number;
   up: number;
   noVoucher: string;
+  activePromo?: {
+    id: number;
+    nama: string;
+    diskon: number;
+    jenis_promo: string;
+    min_pembelian?: number;
+    max_diskon?: number;
+    kuantitas_beli?: number;
+    kuantitas_gratis?: number;
+  } | null;
 }

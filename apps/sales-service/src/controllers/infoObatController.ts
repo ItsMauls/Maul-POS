@@ -112,25 +112,59 @@ export const infoObatController = {
         ],
       };
 
+      const currentDate = new Date();
+
       const [obatList, totalCount] = await Promise.all([
         prisma.mainstock.findMany({
           where,
           skip,
           take: limit,
           orderBy: { [sortBy]: sortOrder },
-          include: { kategori: true },
+          include: { 
+            kategori: true,
+            promos: {
+              where: {
+                tanggal_awal: { lte: currentDate },
+                tanggal_akhir: { gte: currentDate },
+                deleted_at: null,
+              },
+            },
+          },
         }),
         prisma.mainstock.count({ where }),
       ]);
+    
+      const processedObatList = obatList.map((obat: any) => {
+        const activePromo = obat.promos.find((promo: any) => 
+          promo.tanggal_awal <= currentDate && 
+          promo.tanggal_akhir >= currentDate && 
+          promo.deleted_at === null
+        );
+        return {
+          ...obat,
+          activePromo: activePromo ? {
+            id: activePromo.id,
+            nama: activePromo.nama,
+            diskon: activePromo.diskon,
+            jenis_promo: activePromo.jenis_promo,
+            min_pembelian: activePromo.min_pembelian,
+            max_diskon: activePromo.max_diskon,
+            kuantitas_beli: activePromo.kuantitas_beli,
+            kuantitas_gratis: activePromo.kuantitas_gratis,
+          } : null,
+        };
+      });
+
+      // Log only the data with active promos
+      const obatWithActivePromos = processedObatList.filter((obat: any) => obat.activePromo !== null);
+      console.log('Obat with active promos:', JSON.stringify(obatWithActivePromos, null, 2));
 
       const totalPages = Math.ceil(totalCount / limit);
 
-      res
-      .status(HTTP_STATUS.OK)
-      .json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
         message: 'Obat list retrieved successfully',
-        data: obatList,
+        data: processedObatList,
         meta: {
           currentPage: page,
           totalPages,
@@ -141,9 +175,7 @@ export const infoObatController = {
     } catch (error) {
       console.log(error instanceof Error ? error.message : String(error));
       
-      res
-      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Failed to fetch obat list',
         error: error instanceof Error ? error.message : String(error),
@@ -194,6 +226,59 @@ export const infoObatController = {
       .json({
         success: false,
         message: 'Failed to delete obat',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  },
+
+  async getById(req: Request, res: Response) {
+    try {
+      const { kd_brgdg } = req.params;
+      const obat = await prisma.mainstock.findUnique({
+        where: { kd_brgdg: parseInt(kd_brgdg) },
+        include: { 
+          kategori: true,
+          promos: {
+            // where: {
+            //   tanggal_awal: { lte: new Date() },
+            //   tanggal_akhir: { gte: new Date() },
+            //   deleted_at: null,
+            // },
+          },
+        },
+      });
+
+      if (!obat) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          success: false,
+          message: 'Obat not found',
+        });
+      }
+
+      const processedObat = {
+        ...obat,
+        activePromo: obat.promos.length > 0 ? {
+          id: obat.promos[0].id,
+          nama: obat.promos[0].nama,
+          diskon: obat.promos[0].diskon,
+          jenis_promo: obat.promos[0].jenis_promo,
+          min_pembelian: obat.promos[0].min_pembelian,
+          max_diskon: obat.promos[0].max_diskon,
+          kuantitas_beli: obat.promos[0].kuantitas_beli,
+          kuantitas_gratis: obat.promos[0].kuantitas_gratis,
+        } : null,
+      };
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        message: 'Obat retrieved successfully',
+        data: processedObat,
+      });
+    } catch (error) {
+      console.error('Error fetching obat:', error);
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to fetch obat',
         error: error instanceof Error ? error.message : String(error),
       });
     }

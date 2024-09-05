@@ -115,6 +115,7 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           register={register}
           error={errors.promo}
           labelPosition='left'
+          value={formatRupiah(data.reduce((sum, item) => sum + (item.discPromo || 0), 0))}
         />
         <InputField
           label="Diskon"
@@ -123,6 +124,7 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           error={errors.discount}
           labelPosition='left'
           suffix="%"
+          value={(data.reduce((sum, item) => sum + (item.activePromo?.diskon || 0), 0))}
         />
         <div className="flex mt-4">
           <button type="submit" className="flex-1 bg-emerald-600 text-white rounded mr-2" onClick={onPaymentClick}>

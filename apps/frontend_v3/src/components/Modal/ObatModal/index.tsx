@@ -121,6 +121,7 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
       kd_brgdg: obat.kd_brgdg,
       nm_brgdg: obat.nm_brgdg,
       hj_ecer: obat.hj_ecer,
+      activePromo: obat.activePromo,
       qty: 1,
       rOption: 'R',
     });
@@ -170,7 +171,7 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
                 </tr>
               </thead>
               <tbody>
-                {obatList.map((obat, index) => (
+                {obatList.map((obat: any, index: number) => (
                   <tr
                     key={obat.kd_brgdg}
                     className={`hover:bg-gray-100 text-center ${index === selectedIndex ? 'bg-blue-100' : ''}`}

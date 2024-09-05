@@ -21,6 +21,8 @@ import { MiscModal } from "@/components/Modal/MiscModal/index";
 
 export default function Page() {
   const { data, addItem, removeItem, updateItem, calculateValues, pelanggan, dokter, clearTransaction } = useTransactionStore();
+  console.log(data, 'datdasda');
+  
   const [isObatModalOpen, setIsObatModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -56,7 +58,7 @@ export default function Page() {
     removeItem(index);
   };
 
-  const handleObatSelect = (obat: DataRow) => {
+  const handleObatSelect = (obat: DataRow) => {    
     if (selectedRowIndex !== null) {
       const currentItem = data[selectedRowIndex];
       let adjustedPrice = obat.hj_ecer;
@@ -76,6 +78,7 @@ export default function Page() {
         hj_ecer: adjustedPrice,
         sc: sc,
         subJumlah: (adjustedPrice * (currentItem.qty || 1)) + sc,
+        activePromo: obat.activePromo,
       });
       updateItem(selectedRowIndex, updatedItem);
     }
@@ -247,8 +250,15 @@ export default function Page() {
       cell: ({ row }) => `${formatRupiah(row.original.subJumlah)}`,
     },
     {
-      accessorKey: "disc",
+      accessorKey: "activePromo.diskon",
       header: "Disc (%)",
+      cell: ({ row }) => {
+        const activePromo = row.original.activePromo;
+        if (activePromo) {
+          return `${activePromo.diskon}%`;
+        }
+        return '-';
+      },
     },
     {
       accessorKey: "sc",
@@ -274,17 +284,47 @@ export default function Page() {
       cell: ({ row }) => `${formatRupiah(row.original.jumlah)}`,
     },
     {
-      accessorKey: "promo",
-      header: "Promo (%)",
+      accessorKey: "activePromo",
+      header: "Promo",
+      cell: ({ row }) => {
+        const activePromo = row.original.activePromo;   
+
+        if (activePromo) {
+          return (
+            <div>
+              <div>{activePromo.nama}</div>
+              {activePromo.jenis_promo === 'PERSENTASE_DISKON' && (
+                <div>{activePromo.diskon}%</div>
+              )}
+            </div>
+          );
+        }
+        return "No active promo";
+      },
     },
     {
       accessorKey: "discPromo",
       header: "Disc Promo",
-      cell: ({ row }) => `${formatRupiah(row.original.discPromo)}`,
+      cell: ({ row }) => {
+        const activePromo = row.original.activePromo;
+        if (activePromo) {
+          switch (activePromo.jenis_promo) {
+            case 'PERSENTASE_DISKON':
+              return `${formatRupiah(row.original.discPromo)}`;
+            case 'POTONGAN_HARGA':
+              return formatRupiah(activePromo.diskon);
+            case 'BUY_ONE_GET_ONE':
+              return `Buy ${activePromo.kuantitas_beli} Get ${activePromo.kuantitas_gratis}`;
+            default:
+              return '-';
+          }
+        }
+        return '-';
+      },
     },
     {
       accessorKey: "promoValue",
-      header: "Promo",
+      header: "Promo Value",
       cell: ({ row }) => `${formatRupiah(row.original.promoValue)}`,
     },
     {
@@ -364,8 +404,10 @@ export default function Page() {
         promo: item.promo,
         disc_promo: item.discPromo || 0,
         up: item.up,
+        activePromo: item.activePromo,
       }))
     };
+    console.log(transactionData, 'transactionData');
     
     return new Promise<void>((resolve, reject) => {
       createTransaction(transactionData, {
@@ -441,9 +483,9 @@ export default function Page() {
               content={val.content}
             />
           ))}
-          <Card className="h-[242px]">
+          {/* <Card className="h-[242px]">
             <AdditionalTransaksiContent />
-          </Card>
+          </Card> */}
         </div>
       </div>
       <ObatModal

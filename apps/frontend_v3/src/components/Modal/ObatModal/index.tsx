@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { DataRow } from '@/types';
 import { useGet } from '@/hooks/useApi';
 import { API_URL } from '@/constants/api';
@@ -18,6 +18,10 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [lastInputTime, setLastInputTime] = useState<number>(0);
   const [inputBuffer, setInputBuffer] = useState<string>('');
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, error } = useGet<any>(
     `${API_URL.SALES["info-obat"]}?limit=10&search=${debouncedSearch}&page=${page}`,
@@ -30,9 +34,12 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
 
   useEffect(() => {
     if (isOpen) {
-      setPage(1);
+      setSelectedIndex(-1);
       setSearch('');
       setIsInitialLoad(true);
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
     }
   }, [isOpen]);
 
@@ -65,14 +72,14 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown as unknown as EventListener);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown as unknown as EventListener);
     };
   }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     const currentTime = new Date().getTime();
     if (currentTime - lastInputTime > 50) {
       setInputBuffer('');
@@ -80,13 +87,34 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
     setLastInputTime(currentTime);
     setInputBuffer(prev => prev + e.key);
 
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (obatList.length === 1) {
-        handleSelect(obatList[0]);
-      }
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev => Math.min(prev + 1, obatList.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => Math.max(prev - 1, -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < obatList.length) {
+          handleSelect(obatList[selectedIndex]);
+        } else if (obatList.length === 1) {
+          handleSelect(obatList[0]);
+        }
+        break;
     }
   };
+
+  useEffect(() => {
+    if (listRef.current && selectedIndex >= 0) {
+      const selectedElement = listRef.current.children[selectedIndex] as HTMLElement;
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [selectedIndex]);
 
   const handleSelect = (obat: DataRow) => {
     onSelect({
@@ -99,6 +127,12 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
     onClose();
   };
 
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -106,6 +140,7 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
       <div className="bg-white p-4 rounded-lg w-3/4 max-h-3/4 overflow-auto">
         <h2 className="text-xl font-bold mb-4">Select Obat</h2>
         <input
+          ref={searchInputRef}
           type="text"
           placeholder="Search obat..."
           value={search}
@@ -124,7 +159,7 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
         ) : error ? (
           <p>Error: {error.message}</p>
         ) : (
-          <>
+          <div ref={listRef}>
             <table className="w-full">
               <thead>
                 <tr>
@@ -135,15 +170,17 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
                 </tr>
               </thead>
               <tbody>
-                {obatList.map((obat) => (
+                {obatList.map((obat, index) => (
                   <tr
-                    className='hover:bg-gray-100 text-center'
-                    key={obat.kd_brgdg}>
+                    key={obat.kd_brgdg}
+                    className={`hover:bg-gray-100 text-center ${index === selectedIndex ? 'bg-blue-100' : ''}`}
+                    onClick={() => handleSelect(obat)}
+                  >
                     <td>{obat.kd_brgdg}</td>
                     <td>{obat.nm_brgdg}</td>
                     <td>{formatRupiah(obat.hj_ecer)}</td>
                     <td>
-                      <button onClick={() => onSelect(obat)} className="bg-blue-500 text-white px-2 py-1 rounded">
+                      <button onClick={() => handleSelect(obat)} className="bg-blue-500 text-white px-2 py-1 rounded">
                         Select
                       </button>
                     </td>
@@ -151,16 +188,7 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
                 ))}
               </tbody>
             </table>
-            <div className="mt-4 flex justify-between">
-              <button onClick={() => setPage(page - 1)} disabled={page === 1} className="bg-gray-300 px-2 py-1 rounded">
-                Previous
-              </button>
-              <span>Page {page} of {totalPages}</span>
-              <button onClick={() => setPage(page + 1)} disabled={page === totalPages} className="bg-gray-300 px-2 py-1 rounded">
-                Next
-              </button>
-            </div>
-          </>
+          </div>
         )}
         <button onClick={onClose} className="mt-4 bg-red-500 text-white px-4 py-2 rounded">Close</button>
       </div>

@@ -19,6 +19,11 @@ import { API_URL } from '@/constants/api';
 import { SHORTCUTS } from "@/constants/shorcuts";
 import { MiscModal } from "@/components/Modal/MiscModal/index";
 
+interface AntrianInfo {
+  noAntrian: number;
+  periode: string;
+}
+
 export default function Page() {
   const { data, addItem, removeItem, updateItem, calculateValues, pelanggan, dokter, clearTransaction } = useTransactionStore();
   console.log(data, 'datdasda');
@@ -27,7 +32,7 @@ export default function Page() {
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
-  const { data: antrianInfo, isLoading: isLoadingAntrianInfo } = useGet(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
+  const { data: antrianInfo, isLoading: isLoadingAntrianInfo } = useGet<AntrianInfo>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
 
   const [headerInfo, setHeaderInfo] = useState({
     Antrian: '',

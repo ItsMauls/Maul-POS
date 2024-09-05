@@ -13,6 +13,14 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
     console.log(data);
   };
 
+  const subtotal = watch('subtotal');
+  const roundUpAmount = watch('ru');
+
+  // Calculate total misc charges
+  const totalMisc = useMemo(() => {
+    return data.reduce((sum, item) => sum + (item.misc || 0), 0);
+  }, [data]);
+
   useEffect(() => {
     const subtotal = data.reduce((sum, item) => sum + item.subJumlah, 0);
     const roundUpAmount = data.reduce((sum, item) => {
@@ -21,10 +29,8 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
     }, 0);
     setValue('subtotal', subtotal);
     setValue('ru', roundUpAmount);
-  }, [data, setValue]);
-
-  const subtotal = watch('subtotal');
-  const roundUpAmount = watch('ru');
+    setValue('misc', totalMisc);
+  }, [data, setValue, totalMisc]);
 
   // Calculate the total additional charge for R and RC options
   const additionalCharge = useMemo(() => {
@@ -75,6 +81,8 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           register={register}
           error={errors.misc}
           labelPosition='left'
+          readOnly
+          value={formatRupiah(totalMisc)}
         />
         <InputField
           label="RU"

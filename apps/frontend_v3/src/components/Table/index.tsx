@@ -23,7 +23,13 @@ export const Table = ({
   tableClassName,
   meta,
   enableSorting = true,
-}: TableTypes & { enableSorting?: boolean }) => {
+  onRowClick,
+  selectedRow,
+}: TableTypes & { 
+  enableSorting?: boolean,
+  onRowClick?: (index: number) => void,
+  selectedRow?: number | null,
+}) => {
   const [data, setData] = useState<DataRow[]>([...defaultData]);
   const [sorting, setSorting] = useState<ColumnSort[]>([]);
 
@@ -75,15 +81,19 @@ export const Table = ({
           <tbody>
             {table.getRowModel().rows.map((row, idx) => (
               <tr 
-                className={cn(idx % 2 === 0 ? 'bg-gray-50' : 'bg-white',
-                  'border-b-gray-200 text-sm border-b text-gray-500 ',
+                className={cn(
+                  idx % 2 === 0 ? 'bg-gray-50' : 'bg-white',
+                  'border-b-gray-200 text-sm border-b text-gray-500',
+                  selectedRow === idx ? 'bg-blue-200' : '',
                   rowClassName
                 )}
                 key={row.id}
+                onClick={() => onRowClick && onRowClick(idx)}
+                style={{ cursor: onRowClick ? 'pointer' : 'default' }}
               >
                 {row.getVisibleCells().map(cell => (
                   <td 
-                    className={cn('p-4 ')}                                
+                    className={cn('p-4')}                                
                     key={cell.id}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

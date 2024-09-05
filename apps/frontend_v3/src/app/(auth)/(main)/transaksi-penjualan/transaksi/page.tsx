@@ -17,6 +17,7 @@ import { useTransactionStore } from "@/store/transactionStore";
 import { usePost, useGet } from '@/hooks/useApi';
 import { API_URL } from '@/constants/api';
 import { SHORTCUTS } from "@/constants/shorcuts";
+import { MiscModal } from "@/components/Modal/MiscModal/index";
 
 export default function Page() {
   const { data, addItem, removeItem, updateItem, calculateValues, pelanggan, dokter, clearTransaction } = useTransactionStore();
@@ -81,6 +82,33 @@ export default function Page() {
     setIsObatModalOpen(false);
   };
 
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+
+  // Add this function to handle row selection
+  const handleRowSelect = (index: number) => {
+    setSelectedRow(index);
+    setSelectedRowIndex(index);
+  };
+
+  const [isMiscModalOpen, setIsMiscModalOpen] = useState(false);
+  const [miscOptions, setMiscOptions] = useState([
+    { value: 'salep', label: 'Salep', price: 5000 },
+    { value: 'kapsul', label: 'Kapsul', price: 3000 },
+    // Add more misc options as needed
+  ]);
+
+  const handleMiscSelect = (miscOption: { value: string, label: string, price: number }) => {
+    if (selectedRow !== null) {
+      const updatedItem = {
+        ...data[selectedRow],
+        misc: miscOption.price,
+        subJumlah: data[selectedRow].subJumlah + miscOption.price
+      };
+      updateItem(selectedRow, updatedItem);
+    }
+    setIsMiscModalOpen(false);
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === SHORTCUTS.ADD_ITEM) {
@@ -98,6 +126,11 @@ export default function Page() {
       } else if (event.key === SHORTCUTS.CLOSE_MODAL) {
         event.preventDefault();
         setIsObatModalOpen(false);
+      } else if (event.key === 'F12') {
+        event.preventDefault();
+        if (selectedRow !== null) {
+          setIsMiscModalOpen(true);
+        }
       }
     };
   
@@ -106,7 +139,7 @@ export default function Page() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [data.length]);
+  }, [data.length, selectedRow]);
 
   const accordionMenus = [
     {
@@ -227,7 +260,8 @@ export default function Page() {
         } else if (row.original.rOption === 'RC') {
           sc = 12000;
         }
-        return formatRupiah(sc);
+        const totalSC = sc + (row.original.misc || 0);
+        return formatRupiah(totalSC);
       },
     },
     {
@@ -277,6 +311,9 @@ export default function Page() {
       } else if (item.rOption === 'RC') {
         itemTotal += 12000;
       }
+      
+      // Add misc charge
+      itemTotal += item.misc || 0;
       
       // Round up to nearest 100
       const roundedItemTotal = Math.ceil(itemTotal / 100) * 100;
@@ -385,6 +422,8 @@ export default function Page() {
             defaultData={data}
             columns={createColumns}
             enableSorting={false}
+            onRowClick={handleRowSelect}
+            selectedRow={selectedRow}
           />
         </div>
         <div className="w-[280px] space-y-4">
@@ -418,6 +457,12 @@ export default function Page() {
         onClose={() => setIsPaymentModalOpen(false)}
         totalAmount={calculateGrandTotal()}                
         createTransaction={handleCreateTransaction}
+      />
+      <MiscModal
+        isOpen={isMiscModalOpen}
+        onClose={() => setIsMiscModalOpen(false)}
+        onSelect={handleMiscSelect}
+        options={miscOptions}
       />
     </>
   );

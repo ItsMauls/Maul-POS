@@ -22,7 +22,7 @@ export interface DataRow {
     jenis_promo: string;
     min_pembelian?: number;
     max_diskon?: number;
-    kuantitas_beli?: number;
-    kuantitas_gratis?: number;
+    kuantitas_beli?: number | null;
+    kuantitas_gratis?: number | null;
   } | null;
 }

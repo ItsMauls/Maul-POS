@@ -1,6 +1,6 @@
 // apps/frontend_v3/src/store/transactionStore.ts
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, PersistStorage } from 'zustand/middleware';
 import { StateStorage } from 'zustand/middleware';
 import { DataRow } from '@/types';
 
@@ -114,8 +114,8 @@ export const useTransactionStore = create(
               promoAmount = item.activePromo.diskon * item.qty;
               break;
             case 'BUY_ONE_GET_ONE':
-              if (item.qty >= item.activePromo.kuantitas_beli) {
-                const freeItems = Math.floor(item.qty / item.activePromo.kuantitas_beli) * item.activePromo.kuantitas_gratis;
+              if (item.activePromo.kuantitas_beli && item.qty >= item.activePromo.kuantitas_beli) {
+                const freeItems = Math.floor(item.qty / item.activePromo.kuantitas_beli) * (item.activePromo.kuantitas_gratis || 0);
                 promoAmount = freeItems * item.hj_ecer;
               }
               break;
@@ -162,7 +162,7 @@ export const useTransactionStore = create(
     }),
     {
       name: 'transaction-storage',
-      storage: typeof window !== 'undefined' ? customStorage : undefined,
+      storage: typeof window !== 'undefined' ? customStorage as unknown as PersistStorage<TransactionState> : undefined,
     }
   )
 );

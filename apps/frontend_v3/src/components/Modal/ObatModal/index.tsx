@@ -158,7 +158,7 @@ export const ObatModal: React.FC<ObatModalProps> = ({ isOpen, onClose, onSelect 
             <div className="spinner"></div>
           </div>
         ) : error ? (
-          <p>Error: {error.message}</p>
+          <p>Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
         ) : (
           <div ref={listRef}>
             <table className="w-full">

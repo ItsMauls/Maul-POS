@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "outDir": "./dist",
-    "rootDir": "./src"
-    // ... opsi lainnya ...
+    "paths": {
+      "@auth": ["./src"]
+    },
+    "types": ["ms"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }

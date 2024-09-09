@@ -13,3 +13,12 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE DATABASE db_sales;
 \connect db_sales;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE DATABASE db_payment;
+\connect db_payment;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE DATABASE db_report;
+\connect db_report;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+

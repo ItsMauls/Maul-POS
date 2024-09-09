@@ -5,8 +5,7 @@
     "rootDir": "../../",
     "baseUrl": "../../",
     "paths": {
-      "@auth/*": ["libs/@auth/src/*"],
-      "@auth": ["libs/@auth/src"]
+      "@shared-middleware/auth": ["libs/@auth/src"]
     },
     "typeRoots": ["./node_modules/@types", "./types"],
     "outDir": "./dist",

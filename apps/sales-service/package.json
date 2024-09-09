@@ -18,6 +18,7 @@
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
     "@prisma/client": "^5.13.0",
+    "@shared-middleware/auth": "file:../../libs/@auth",
     "@types/cors": "^2.8.17",
     "@types/escpos": "^2.5.5",
     "@types/js-yaml": "^4.0.9",

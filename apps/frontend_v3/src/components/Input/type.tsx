@@ -1,10 +1,11 @@
 // types.ts
-import { FieldError } from 'react-hook-form';
+import { FieldError, RegisterOptions } from 'react-hook-form';
 
 export interface InputFieldProps {
   label?: string;
   name?: string;
   register?: any;
+  rules?: RegisterOptions;
   placeholder?: string;
   error?: FieldError | any;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;

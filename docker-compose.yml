@@ -7,9 +7,9 @@ services:
     restart: unless-stopped
     build:
       context: .
-      dockerfile: ./frontend_v3/Dockerfile.dev
+      dockerfile: ./apps/frontend_v3/Dockerfile.dev
     volumes:
-       - ./frontend_v3:/app
+       - ./apps/frontend_v3:/app
        - /app/.next
        - /app/node_modules
     ports:
@@ -23,12 +23,12 @@ services:
     hostname: user-service-host
     build:
       context: .
-      dockerfile: ./user-service/Dockerfile
+      dockerfile: ./apps/user-service/Dockerfile
     networks:
       - pbf-network
     restart: on-failure
     volumes:
-      - ./user-service/cmd/config.yml:/cmd/config.yml
+      - ./apps/user-service/cmd/config.yml:/cmd/config.yml
     depends_on:
       - postgres
     environment:
@@ -42,12 +42,12 @@ services:
     hostname: auth-service-host
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile
+      dockerfile: ./apps/auth-service/Dockerfile
     networks:
       - pbf-network
     restart: on-failure
     volumes:
-      - ./auth-service/cmd/config.yml:/cmd/config.yml
+      - ./apps/auth-service/cmd/config.yml:/cmd/config.yml
     depends_on:
       - postgres
       - redis
@@ -60,30 +60,30 @@ services:
         REDIS_PASSWORD: ""
         JWT_SECRET_KEY: "JWT_SECRET_KEY_APP_APOTEK_PBF))(**"
   
-  sales-service:
-    hostname: sales-service-host
-    build:
-      context: .
-      dockerfile: ./sales-service/Dockerfile
-    networks:
-      - pbf-network
-    restart: on-failure
-    volumes:
-      - ./sales-service/cmd/config.yml:/cmd/config.yml
-    depends_on:
-      - postgres
-    environment:
-      - CONFIG_FILE=/cmd/config.yml
-      - DATABASE_URL=postgresql://root:password@postgres:5432/db_sales?schema=public
+  # sales-service:
+  #   hostname: sales-service-host
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/sales-service/Dockerfile
+  #   networks:
+  #     - pbf-network
+  #   restart: on-failure
+  #   volumes:
+  #     - ./apps/sales-service/cmd/config.yml:/cmd/config.yml
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     - CONFIG_FILE=/cmd/config.yml
+  #     - DATABASE_URL=postgresql://root:password@postgres:5432/db_sales?schema=public
 
-    ports:
-      - "3005:3005"
+  #   ports:
+  #     - "3005:3005"
 
   inventory-service-pembelian:
     hostname: inventory-service-pembelian-host
     build:
       context: .
-      dockerfile: ./inventory-service-pembelian/Dockerfile
+      dockerfile: ./apps/inventory-service-pembelian/Dockerfile
     networks:
       - pbf-network
     restart: on-failure
@@ -93,7 +93,7 @@ services:
       - postgres
     environment:
       - PORT=3003
-      - DATABASE_URL=postgresql://root:password@postgres:5432/db_inventory_pembelian?schema=public
+      - DATABASE_URL=postgresql://root:password@localhost:5433/db_inventory_pembelian?schema=public
 
 
   postgres:
@@ -132,7 +132,7 @@ services:
     depends_on:
       - app
       - user-service      
-      - sales-service  
+      # - sales-service  
       - inventory-service-pembelian      
 
 networks:

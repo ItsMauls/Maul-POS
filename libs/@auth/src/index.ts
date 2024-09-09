@@ -1,2 +1,2 @@
 // libs/@auth/src/index.ts
-export * from './authenticate';
+export { authenticate, AuthRequest } from './authenticate';

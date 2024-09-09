@@ -4,7 +4,7 @@ import cors from 'cors';
 import fs from 'fs';
 import router from './routes';
 import errorMiddleware from './middlewares/error';
-import { authenticate } from '../../../libs/@auth/src/authenticate';
+import { authenticate } from '@shared-middleware/auth';
 
 const app = express();
 const configFile = process.env.CONFIG_FILE || './cmd/config.yml';

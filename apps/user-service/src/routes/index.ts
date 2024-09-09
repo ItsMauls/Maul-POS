@@ -1,6 +1,6 @@
 import express from 'express';
 import { userController } from '../controllers';
-import { authenticate } from '../../../../libs/@auth/src/authenticate';
+import { authenticate } from '@auth/authenticate';
 
 const router = express.Router();
 

@@ -387,7 +387,7 @@ export default function Page() {
       pelanggan: formattedPelanggan,
       dokter: formattedDokter,
       jenis_penjualan: "Regular",
-      invoice_eksternal: "INV-001",
+      invoice_eksternal: `INV-${headerInfo['No Bon']}`,
       catatan: "Transaction note",
       total_harga: calculateGrandTotal(),
       total_disc: data.reduce((total, item) => total + (item.subJumlah * item.disc / 100), 0),

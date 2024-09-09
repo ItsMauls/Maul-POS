@@ -1,14 +1,21 @@
 FROM node:18-alpine
 
-WORKDIR /usr/src/app
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+COPY ./apps/auth-service/package.json ./apps/auth-service/yarn.lock* ./apps/auth-service/package-lock.json* ./apps/auth-service/pnpm-lock.yaml* ./
 
-COPY . .
+RUN \
+    if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then npm ci; \
+    elif [ -f pnpm-lock.yaml ]; then npm i -g pnpm && pnpm i --frozen-lockfile; \
+    else echo 'Lockfile not found.' && exit 1; \
+    fi
 
-RUN npx prisma generate
+COPY ./apps/auth-service .
 
-EXPOSE 3000
+RUN npm run build
 
-CMD ["npx", "ts-node", "src/index.ts"]
+CMD ["npm", "start"]
+
+EXPOSE 3007

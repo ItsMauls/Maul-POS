@@ -3,7 +3,7 @@ import React, { FC } from 'react';
 import { InputFieldProps } from './type';
 import { cn } from '@/lib/cn';
 
-export const InputField: FC<InputFieldProps> = ({ label, name, register, error, readOnly = false, suffix, labelPosition = 'top', type = 'text', className, ...props }) => {
+export const InputField: FC<InputFieldProps> = ({ label, name, rules, register, error, readOnly = false, suffix, labelPosition = 'top', type = 'text', className, ...props }) => {
   return (
     <div className={cn(
       `mb-4 ${labelPosition === 'left' ? 'flex items-center' : ''}`      
@@ -14,7 +14,7 @@ export const InputField: FC<InputFieldProps> = ({ label, name, register, error, 
       <div className="relative flex-1">
         <input
           type={type}
-          {...register(name)}
+          {...register(name, rules)}
           readOnly={readOnly}
           className={cn(
             `border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`,

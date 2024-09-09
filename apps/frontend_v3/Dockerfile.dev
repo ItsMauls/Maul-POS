@@ -3,7 +3,7 @@ FROM node:18-alpine
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY ./frontend_v3/package.json ./frontend_v3/yarn.lock* ./frontend_v3/package-lock.json* ./frontend_v3/pnpm-lock.yaml* ./
+COPY ./apps/frontend_v3/package.json ./apps/frontend_v3/yarn.lock* ./apps/frontend_v3/package-lock.json* ./apps/frontend_v3/pnpm-lock.yaml* ./
 
 RUN \
     if [ -f yarn.lock ]; then echo 'Installing with Yarn' && yarn install --frozen-lockfile --prefer-offline; \

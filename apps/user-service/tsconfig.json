@@ -2,21 +2,19 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "rootDir": "../../",
-    "baseUrl": "./",
+    "rootDir": "../..",
+    "baseUrl": "../..",
     "paths": {
-      "@auth/*": ["../../libs/@auth/src/*"]
+      "@auth/*": ["libs/@auth/src/*"],
+      "@auth": ["libs/@auth/src"]
     },
-    "typeRoots": ["./node_modules/@types", "../../node_modules/@types", "./types"],
+    "typeRoots": ["./node_modules/@types", "./types"],
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "composite": true,
-  "include": ["src/**/*"],
-  "references": [
-    { "path": "../../libs/@auth" },
-  ]
+  "include": ["src/**/*", "../../libs/@auth/src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

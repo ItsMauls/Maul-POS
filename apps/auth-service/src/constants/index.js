@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.REDIS_PORT = exports.REDIS_HOST = exports.USER_SERVICE_URL = exports.REFRESH_TOKEN_SECRET = exports.JWT_SECRET = void 0;
+var JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+exports.JWT_SECRET = JWT_SECRET;
+var REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret-key';
+exports.REFRESH_TOKEN_SECRET = REFRESH_TOKEN_SECRET;
+var USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3006/api/users';
+exports.USER_SERVICE_URL = USER_SERVICE_URL;
+var REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+exports.REDIS_HOST = REDIS_HOST;
+var REDIS_PORT = process.env.REDIS_PORT || 6379;
+exports.REDIS_PORT = REDIS_PORT;

@@ -3,18 +3,12 @@ FROM node:18-alpine
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY ./apps/user-service/package.json ./apps/user-service/yarn.lock* ./apps/user-service/package-lock.json* ./apps/user-service/pnpm-lock.yaml* ./
+COPY . .
 
-RUN \
-    if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then npm i -g pnpm && pnpm i --frozen-lockfile; \
-    else echo 'Lockfile not found.' && exit 1; \
-    fi
+WORKDIR /app/apps/user-service
 
-COPY ./apps/user-service .
+RUN npm install
 
-# RUN npx prisma migrate dev
 RUN npx prisma generate
 RUN npm run build
 

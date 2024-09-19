@@ -26,19 +26,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importStar(require("express"));
-const js_yaml_1 = __importDefault(require("js-yaml"));
-const fs_1 = __importDefault(require("fs"));
-const routes_1 = __importDefault(require("./routes"));
-const error_1 = __importDefault(require("./middlewares/error"));
-const app = (0, express_1.default)();
-const configFile = process.env.CONFIG_FILE || './cmd/config.yml';
-const config = js_yaml_1.default.load(fs_1.default.readFileSync(configFile, 'utf8'));
-const PORT = config.HTTP_PORT || '3005';
-app.use(express_1.default.json());
-app.use((0, express_1.urlencoded)({ extended: true }));
-app.use(routes_1.default);
-app.use(error_1.default);
-app.listen(PORT, () => {
-    console.log(`${config.APP_NAME} listening on port ${PORT}`);
-});
+exports.authenticate = void 0;
+const jwt = __importStar(require("jsonwebtoken"));
+const services_1 = __importDefault(require("../../../apps/auth-service/src/services"));
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const authenticate = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res
+            .status(401)
+            .json({ error: 'No authorization header provided' });
+    }
+    const [bearer, token] = authHeader.split(' ');
+    if (bearer !== 'Bearer' || !token) {
+        return res
+            .status(401)
+            .json({ error: 'Invalid authorization format' });
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        console.log(decoded.userId, 'decoded');
+        const user = await services_1.default.findUserById(decoded.userId);
+        console.log(user, 'user');
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+        req.user = user;
+        next();
+    }
+    catch (error) {
+        console.log('error', error);
+        return res
+            .status(401)
+            .json({ error: 'Invalid token' });
+    }
+};
+exports.authenticate = authenticate;

@@ -5,6 +5,7 @@ const infoObatController_1 = require("../controllers/infoObatController");
 const router = (0, express_1.Router)();
 router.post('/', infoObatController_1.infoObatController.create);
 router.get('/', infoObatController_1.infoObatController.getAll);
+router.get('/:kd_brgdg', infoObatController_1.infoObatController.getById);
 router.put('/:kd_brgdg', infoObatController_1.infoObatController.update);
 router.delete('/:kd_brgdg', infoObatController_1.infoObatController.delete);
 exports.default = router;

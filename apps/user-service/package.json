@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "start": "node dist/src/index.js",
+    "start": "node dist/apps/user-service/src/index.js",
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -17,12 +17,15 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.18.0",
-    "@shared-middleware/auth": "../../libs/@auth",
+    "@shared-middleware/auth": "file:../../libs/@auth",
     "@types/cors": "^2.8.17",
+    "axios": "^1.7.7",
     "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "prisma": "^5.18.0"
-  },  
+    "express": "^4.19.3",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^5.18.0",
+    "user-service": "file:"
+  },
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^22.0.0",

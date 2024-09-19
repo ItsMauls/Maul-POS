@@ -5,16 +5,22 @@ WORKDIR /app
 
 COPY ./apps/sales-service/package.json ./apps/sales-service/yarn.lock* ./apps/sales-service/package-lock.json* ./apps/sales-service/pnpm-lock.yaml* ./
 
-RUN \
-    if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then npm i -g pnpm && pnpm i --frozen-lockfile; \
-    else echo 'Lockfile not found.' && exit 1; \
-    fi
+# Debug: Display contents of package.json
+RUN cat ./package.json
+
+# Check npm and node versions
+RUN node --version && npm --version
+
+# Clear npm cache
+RUN npm cache clean --force
+
+# Remove package-lock.json if exists
+RUN rm -f package-lock.json
+
+# Install dependencies with verbose logging
+RUN npm i --verbose
 
 COPY ./apps/sales-service .
-
-COPY ./libs/@auth /app/libs/@auth
 
 # RUN npx prisma migrate dev
 RUN npx prisma generate
@@ -22,4 +28,4 @@ RUN npm run build
 
 CMD ["npm", "start"]
 
-EXPOSE 3005
+EXPOSE 3007

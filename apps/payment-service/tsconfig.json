@@ -15,5 +15,6 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
       },
-      "include": ["../payment-service/src/**/*", "../../libs/@auth/src/**/*"]
+      "include": ["src/**/*", "../../libs/@auth/src/**/*"],
+      "exclude": ["node_modules", "dist"]
     }

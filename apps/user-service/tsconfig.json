@@ -3,10 +3,10 @@
     "target": "ES2020",
     "module": "commonjs",
     "rootDir": "../..",
-    "baseUrl": "../..",
+    "baseUrl": ".",
     "paths": {
-      "@auth/*": ["libs/@auth/src/*"],
-      "@auth": ["libs/@auth/src"]
+      "@auth/*": ["../../libs/@auth/src/*"],
+      "@auth": ["../../libs/@auth/src"]
     },
     "typeRoots": ["./node_modules/@types", "./types"],
     "outDir": "./dist",
@@ -17,4 +17,5 @@
   },
   "include": ["src/**/*", "../../libs/@auth/src/**/*"],
   "exclude": ["node_modules", "dist"]
-}
+
+} 

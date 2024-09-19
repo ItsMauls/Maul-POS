@@ -10,5 +10,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "prisma/**/*"]
+  "include": ["src/**/*", "../../libs/@auth/src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

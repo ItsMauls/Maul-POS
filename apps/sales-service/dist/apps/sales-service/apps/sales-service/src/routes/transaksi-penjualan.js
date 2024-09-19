@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const transaksiPenjualanController_1 = require("../controllers/transaksiPenjualanController");
 const router = (0, express_1.Router)();
-router.post('/', transaksiPenjualanController_1.transaksiPenjualanController.create);
+router.post('/', transaksiPenjualanController_1.transaksiPenjualanController.createTransaction);
 router.get('/', transaksiPenjualanController_1.transaksiPenjualanController.getAll);
 router.get('/:id', transaksiPenjualanController_1.transaksiPenjualanController.getById);
 router.put('/:id', transaksiPenjualanController_1.transaksiPenjualanController.update);

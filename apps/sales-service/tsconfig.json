@@ -2,17 +2,19 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "rootDir": "../../",
-    "baseUrl": "../../",
+    "rootDir": "../..",
+    "baseUrl": ".",
     "paths": {
-      "@shared-middleware/auth": ["libs/@auth/src"]
+      "@auth/*": ["../../libs/@auth/src/*"],
+      "@auth": ["../../libs/@auth/src"]
     },
     "typeRoots": ["./node_modules/@types", "./types"],
-    "outDir": "./dist",
+    "outDir": "./dist/apps/sales-service",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "../../libs/@auth/src/**/*"]
+  "include": ["src/**/*", "../../libs/@auth/src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -9,7 +9,7 @@
       "@auth": ["../../libs/@auth/src"]
     },
     "typeRoots": ["./node_modules/@types", "./types"],
-    "outDir": "./dist/apps/sales-service",
+    "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

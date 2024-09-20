@@ -3,27 +3,21 @@ FROM node:18-alpine
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY ./apps/sales-service/package.json ./apps/sales-service/yarn.lock* ./apps/sales-service/package-lock.json* ./apps/sales-service/pnpm-lock.yaml* ./
+# Copy entire project
+COPY . .
 
-# Debug: Display contents of package.json
-RUN cat ./package.json
+# Install dependencies for @auth
+WORKDIR /app/libs/@auth
+RUN npm install
 
-# Check npm and node versions
-RUN node --version && npm --version
+# Build @auth
+RUN npm run build
 
-# Clear npm cache
-RUN npm cache clean --force
+# Install dependencies for sales-service
+WORKDIR /app/apps/sales-service
+RUN npm install
 
-# Remove package-lock.json if exists
-RUN rm -f package-lock.json
-
-# Install dependencies with verbose logging
-RUN npm i --verbose
-
-COPY ./apps/sales-service .
-
-# RUN npx prisma migrate dev
-RUN npx prisma generate
+# Build sales-service
 RUN npm run build
 
 CMD ["npm", "start"]

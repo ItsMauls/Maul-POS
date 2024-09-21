@@ -13,7 +13,7 @@ const userService = {
     return response.data;
   },
 
-  async createUser(userData: { email: string; password: string; username: string }) {
+  async createUser(userData: { email: string; password: string; username: string; phoneNumber: string }) {
     const response = await axios.post(`${USER_SERVICE_URL}/`, userData);
     return response.data;
   },

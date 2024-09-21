@@ -34,8 +34,10 @@ services:
     environment:
         APP_NAME: "user-rest-service"
         HTTP_PORT: "8081"
-        DB_DSN: "postgres://root:password@postgres:5432/db_user_pbf?sslmode=disable"
+        DATABASE_URL: "postgresql://root:password@postgres:5432/db_user?schema=public"
         API_AUTH_URL: "http://auth-service-host/api/auth"
+    ports:
+      - "3006:3006"
 
 
   auth-service:
@@ -54,11 +56,13 @@ services:
     environment:
         APP_NAME: "auth-rest-service"
         HTTP_PORT: "8081"
-        DB_DSN: "postgres://root:password@postgres:5432/db_user_pbf?sslmode=disable"
+        DATABASE_URL: "postgresql://root:password@postgres:5432/db_user?schema=public"
         REDIS_HOST: "redis"
         REDIS_PORT: "6379"
         REDIS_PASSWORD: ""
         JWT_SECRET_KEY: "JWT_SECRET_KEY_APP_APOTEK_PBF))(**"
+    ports:
+      - "3007:3007"
   
   sales-service:
     hostname: sales-service-host

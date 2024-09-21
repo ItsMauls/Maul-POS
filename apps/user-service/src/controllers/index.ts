@@ -17,7 +17,7 @@ export const userController = {
         .status(HTTP_STATUS.OK)
       .json(users);
     } catch (error) {
-      res.status(500).json({ error: 'Error fetching users' });
+      res.status(500).json({ error: 'Error fetching users', message: error });
     }
   },
 
@@ -42,10 +42,10 @@ export const userController = {
 
   // Create new user
   async createUser(req: Request, res: Response) {
-    const { email, username, password, firstName, lastName } = req.body;
+    const { email, username, password, firstName, lastName, phoneNumber } = req.body;
     try {
       const newUser = await prisma.user.create({
-        data: { email, username, password, firstName, lastName }
+        data: { email, username, password, firstName, lastName, phone_number: phoneNumber }
       });
       res
         .status(HTTP_STATUS.CREATED)

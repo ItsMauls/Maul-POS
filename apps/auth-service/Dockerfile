@@ -1,5 +1,8 @@
 FROM node:18-alpine
 
+# Install dependencies required for bcrypt
+RUN apk add --no-cache make gcc g++ python3
+
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -13,6 +16,9 @@ RUN \
     fi
 
 COPY ./apps/auth-service .
+
+# Rebuild bcrypt
+RUN npm rebuild bcrypt --build-from-source
 
 RUN npm run build
 

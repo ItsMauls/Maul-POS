@@ -53,6 +53,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - user-service
     environment:
         APP_NAME: "auth-rest-service"
         HTTP_PORT: "8081"
@@ -76,6 +77,7 @@ services:
       - ./apps/sales-service/cmd/config.yml:/cmd/config.yml
     depends_on:
       - postgres
+      - user-service
     environment:
       - CONFIG_FILE=/cmd/config.yml
       - DATABASE_URL=postgresql://root:password@postgres:5432/db_sales?schema=public

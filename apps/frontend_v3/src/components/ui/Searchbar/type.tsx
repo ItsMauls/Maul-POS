@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 
 export type SearchBarProps = {
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    value?: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     placeholder?: string;
     className?: any;
     rightIcon?: ReactNode;

@@ -1,4 +1,5 @@
 
+
 import { SearchBar } from "../Searchbar";
 import { BranchInfo } from "./BranchInfo";
 import { NavigationMenu } from "./NavigationMenu";

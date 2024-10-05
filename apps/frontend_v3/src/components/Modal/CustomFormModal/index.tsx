@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import Button from '../../ui/Button';
 import { InputField } from '@/components/Input';
@@ -42,9 +42,9 @@ const CustomFormModal: React.FC<CustomFormModalProps> = ({
   const [items, setItems] = useState<Item[]>([{ id: 1 }]);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleClickOutside = useCallback((event: MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(event.target as Node)) onClose();          
-  };
+  }, [onClose]);
 
   useEffect(() => {
     if (isVisible) {
@@ -54,7 +54,7 @@ const CustomFormModal: React.FC<CustomFormModalProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isVisible, onClose]);
+  }, [isVisible, onClose, handleClickOutside]);
 
   // ... useEffect hooks remain the same ...
 

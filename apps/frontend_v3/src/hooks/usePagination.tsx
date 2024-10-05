@@ -1,6 +1,5 @@
 import { cn } from "@/lib/cn";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import useSearchParams from "./useSearchParams";
 
@@ -17,7 +16,6 @@ export const usePagination = ({
 } : UsePaginationTypes) => {
   const [currentPage, setCurrentPage] = useState(currPage);
   const { setSearchParams } = useSearchParams()
-  const router = useRouter()
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   
   const handlePrevPage = useCallback(() => {
@@ -25,14 +23,14 @@ export const usePagination = ({
         setCurrentPage(currentPage - 1);
         setSearchParams(`table-page`, (currentPage - 1).toString())
     }
-  }, [currentPage, router]);
+  }, [currentPage, setSearchParams]);
   
   const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
         setCurrentPage(currentPage + 1);
         setSearchParams(`table-page`, (currentPage + 1).toString())
     }
-  }, [currentPage, totalPages, router]);
+  }, [currentPage, totalPages, setSearchParams]);
 
   const renderPageNumbers = () => {
     const pageNumbers = [];

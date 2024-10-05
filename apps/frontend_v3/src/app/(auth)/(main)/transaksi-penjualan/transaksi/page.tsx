@@ -18,6 +18,7 @@ import { usePost, useGet } from '@/hooks/useApi';
 import { API_URL } from '@/constants/api';
 import { SHORTCUTS } from "@/constants/shorcuts";
 import { MiscModal } from "@/components/Modal/MiscModal/index";
+import { useForm } from 'react-hook-form';
 
 interface AntrianInfo {
   noAntrian: number;
@@ -33,6 +34,7 @@ export default function Page() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
   const { data: antrianInfo, isLoading: isLoadingAntrianInfo } = useGet<AntrianInfo>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
+  const { register } = useForm();
 
   const [headerInfo, setHeaderInfo] = useState({
     Antrian: '',
@@ -147,7 +149,7 @@ export default function Page() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [data.length, selectedRow]);
+  }, [data.length, selectedRow, handleAddItem, handleRemoveItem]);
 
   const accordionMenus = [
     {
@@ -192,7 +194,7 @@ export default function Page() {
         <SelectField
           label=""
           name={`jenis`}
-          register={() => {}}
+          register={register}
           options={[
             { value: "R", label: "R" },
             { value: "RC", label: "RC" }
@@ -217,6 +219,7 @@ export default function Page() {
             });
             updateItem(row.index, updatedItem);
           }}
+          {...({ value: row.original.rOption } as any)}
         />
       ),
     },

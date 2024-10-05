@@ -1,0 +1,29 @@
+# Base stage
+FROM node:18-alpine AS base
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Auth library stage
+FROM base AS auth
+COPY libs/@auth ./libs/@auth
+WORKDIR /app/libs/@auth
+RUN npm install
+RUN npm run build
+
+# Sales service stage
+FROM base AS sales
+COPY apps/sales-service ./apps/sales-service
+COPY libs ./libs
+WORKDIR /app/apps/sales-service
+RUN npm install
+RUN npx prisma generate
+RUN npm run build
+
+# Final stage
+FROM base AS final
+COPY --from=auth /app/libs/@auth ./libs/@auth
+COPY --from=sales /app/apps/sales-service ./apps/sales-service
+WORKDIR /app/apps/sales-service
+
+CMD ["npm", "start"]
+EXPOSE 3007

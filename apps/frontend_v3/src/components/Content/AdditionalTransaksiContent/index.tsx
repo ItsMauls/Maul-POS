@@ -2,13 +2,12 @@
 import { InputField } from '@/components/Input';
 import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { FormValues } from './type';
 
 
 export const AdditionalTransaksiContent: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
+  const { register, handleSubmit, formState: { errors } } = useForm<any>();
 
-  const onSubmit: SubmitHandler<FormValues> = data => {
+  const onSubmit: SubmitHandler<any> = data => {
     console.log(data);
   };
 

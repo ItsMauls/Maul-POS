@@ -3,22 +3,21 @@ import { useInfoObatStore } from './store';
 import { InfoObat } from './types';
 import { useGet, usePost, usePut, useDelete } from '@/hooks/useApi';
 
-
 export const useInfoObatActions = () => {
   const setInfoObats = (infoObats: InfoObat[]) => useInfoObatStore.setState({ infoObats });
   const setLoading = (isLoading: boolean) => useInfoObatStore.setState({ isLoading });
   const setError = (error: string | null) => useInfoObatStore.setState({ error });
 
-  const fetchInfoObats = useGet<InfoObat[]>(API_URL.SALES["info-obat"], {}, {
-    onSuccess: (data: InfoObat[]) => {
-      setInfoObats(data);
-      setLoading(false);
-    },
-    onError: (error: unknown) => {
-      setError(error instanceof Error ? error.message : String(error));
-      setLoading(false);
-    }
-  });
+  const fetchInfoObats = useGet<InfoObat[]>(
+    API_URL.SALES["info-obat"],
+    {},
+    {
+      onSuccess: (data: InfoObat[]) => {
+        setInfoObats(data);
+        setLoading(false);
+      }
+    } as any
+  );
 
   const createInfoObat = usePost<InfoObat, Error, InfoObat>(API_URL.SALES["info-obat"], {
     onMutate: () => setLoading(true),

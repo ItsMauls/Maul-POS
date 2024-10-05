@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 import * as Accordion from '@radix-ui/react-accordion';
-import { AccordionContentProps, AccordionItemProps } from "@radix-ui/react-accordion";
+import { AccordionItemProps } from "@radix-ui/react-accordion";
 import React from "react";
 import { CustomAccordionContentProps, CustomAccordionTriggerProps } from "../type";
 import { SingleAccordionTypes } from "./type";
@@ -57,6 +57,7 @@ const AccordionTrigger = React.forwardRef<HTMLButtonElement, CustomAccordionTrig
     </Accordion.Trigger>
   </Accordion.Header>
 ));
+AccordionTrigger.displayName = 'AccordionTrigger';
 
 const AccordionContent = React.forwardRef(({ children, className, ...props }: CustomAccordionContentProps, forwardedRef: any) => (
   <Accordion.Content

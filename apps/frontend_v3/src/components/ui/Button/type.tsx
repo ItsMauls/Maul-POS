@@ -7,7 +7,7 @@ export type ButtonTypes = {
     iconPosition?: 'left' | 'right',
     className?: string,
     disabled?: boolean,
-    type: 'submit' | any
+    type?: 'submit' | 'button' | 'reset'
 }
 
 

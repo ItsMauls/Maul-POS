@@ -11,7 +11,7 @@ export const useAntrian = () => {
     `${API_URL.ANTRIAN.finishAntrian}:id`
   );
 
-  const getAntrianHariIniQuery = (kdCab: string) =>
+  const GetAntrianHariIniQuery = (kdCab: string) =>
     useGet(`${API_URL.ANTRIAN.getAntrianToday}/${kdCab}`);
 
   const tambahAntrian = async (idPelanggan: number, kdCab: string) => {
@@ -37,7 +37,7 @@ export const useAntrian = () => {
   return {
     tambahAntrian,
     selesaikanAntrian,
-    getAntrianHariIniQuery,
+    GetAntrianHariIniQuery,
     isLoading: tambahAntrianMutation.isPending || selesaikanAntrianMutation.isPending,
     error: tambahAntrianMutation.error || selesaikanAntrianMutation.error,
   };

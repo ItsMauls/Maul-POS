@@ -5,7 +5,7 @@ export const Menu: React.FC = () => {
   return (
     <div className="flex gap-4 bg-blue-500 p-4 justify-center rounded-lg">
       {homeMenus.map((item, index) => (
-        <Link href={item.link ?? ''}>
+        <Link href={item.link ?? ''} key={index}>
         <div 
           key={index} 
           className="flex flex-col items-center border-8 border-blue-500 border-opacity-85 bg-white py-6 px-3 rounded-2xl shadow-md min-h-[150px] flex-shrink w-[150px]"

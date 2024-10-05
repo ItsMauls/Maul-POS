@@ -4,7 +4,7 @@ import { IoMdArrowDropright } from "react-icons/io";
 import { useModifiedPathName } from "@/hooks/useModifiedPathName";
 import { cn } from "@/lib/cn";
 
-export const BreadCrumbs = ({ className }) => {
+export const BreadCrumbs = ({ className }: { className: string }) => {
     const { firstPath, secondPath } = useModifiedPathName()
 
     return (

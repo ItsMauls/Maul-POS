@@ -146,7 +146,7 @@ export default function Page() {
         status_bayar: "Belum Lunas",
       };
 
-      const response = await createFakturPembelian(fakturData);
+      const response = await createFakturPembelian(fakturData) as any;
       if (response.success) {
         console.log('Faktur pembelian berhasil dibuat:', response.data);
         setIsAddModalOpen(false);

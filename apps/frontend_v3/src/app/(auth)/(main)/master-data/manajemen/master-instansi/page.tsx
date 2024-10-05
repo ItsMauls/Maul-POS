@@ -2,7 +2,7 @@
 import { Table } from "@/components/Table";
 import Button from "@/components/ui/Button";
 import { SearchBar } from "@/components/ui/Searchbar";
-import { createColumns, defaultData } from "@/constants";
+// import { createColumns, defaultData } from "@/constants";
 import { GoDownload } from 'react-icons/go'
 import { Limiter } from "@/components/Limiter";
 
@@ -14,15 +14,15 @@ const meta = {
         <> 
         <div className="flex justify-between items-center">
             <div className="flex items-center gap-x-4">
-                <SearchBar
+                {/* <SearchBar
                     rightIcon={<div className="border border-gray-300 font-semibold px-1 rounded-md">\</div>}
                     className={"w-[295px] px-4 border-2 my-4 border-gray-100 font-normal"}
                     id="monitoringSearchbar"
                     placeholder="Cari Intansi disini..."
-                />
+                /> */}
             </div>
             <div className="flex gap-x-4">
-            <Limiter />
+            {/* <Limiter /> */}
             <Button 
                 hasIcon
                 icon={<GoDownload />}
@@ -30,14 +30,14 @@ const meta = {
              </Button>
             </div>
         </div>
-        <Table
+        {/* <Table
             meta={meta}
             tableClassName="max-w-[1350px]"
             defaultData={defaultData}
             columns={createColumns}
             pagination
             enableSorting
-        />
+        /> */}
      
         </>
     )

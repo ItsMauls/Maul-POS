@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: apotekweb.system-apotekroxy.com  # Replace with your actual domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port: 
+              number: 80
+      - path: /api/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port: 
+              number: 80
+      - path: /api/users
+        pathType: Prefix
+        backend:
+          service:
+            name: user-service
+            port: 
+              number: 80
+      - path: /api/sales
+        pathType: Prefix
+        backend:
+          service:
+            name: sales
+            port: 
+              number: 80
+      - path: /api/inventory-pembelian
+        pathType: Prefix
+        backend:
+          service:
+            name: inventory-service-pembelian
+            port: 
+              number: 80

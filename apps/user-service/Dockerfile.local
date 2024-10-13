@@ -9,12 +9,11 @@ COPY . .
 # Install dependencies
 WORKDIR /app/apps/user-service
 RUN npm install --verbose
+RUN npm i nodemon -g
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build the application
-RUN npm run build
 
 CMD ["npm", "run", "dev"]
 

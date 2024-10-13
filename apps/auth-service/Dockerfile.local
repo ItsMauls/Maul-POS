@@ -18,9 +18,8 @@ RUN \
 COPY ./apps/auth-service .
 
 # Rebuild bcrypt
+RUN npm i nodemon -g
 RUN npm rebuild bcrypt --build-from-source
-
-RUN npm run build
 
 CMD ["npm", "run", "dev"]
 

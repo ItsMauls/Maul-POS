@@ -15,8 +15,8 @@ RUN \
 COPY ./apps/inventory-service-pembelian .
 
 # RUN npx prisma migrate dev
+RUN npm i nodemon -g
 RUN npx prisma generate
-RUN npm run build
 
 CMD ["npm", "run", "dev"]
 

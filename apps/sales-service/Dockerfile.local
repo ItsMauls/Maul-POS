@@ -17,11 +17,9 @@ RUN npm run build
 WORKDIR /app/apps/sales-service
 RUN npm install
 
+RUN npm i nodemon -g
 # Generate Prisma client
 RUN npx prisma generate
-
-# Build sales-service
-RUN npm run build
 
 CMD ["npm", "run", "dev"]
 

@@ -32,6 +32,8 @@ export default function Page() {
   const [isObatModalOpen, setIsObatModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [change, setChange] = useState(0);
+  const [paymentData, setPaymentData] = useState<any>({});
   const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
   const { data: antrianInfo, isLoading: isLoadingAntrianInfo } = useGet<AntrianInfo>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
   const { register } = useForm();
@@ -106,6 +108,18 @@ export default function Page() {
     { value: 'kapsul', label: 'Kapsul', price: 3000 },
     // Add more misc options as needed
   ]);
+  console.log(paymentData, 'paymentData');
+  
+  const handlePaymentData = (paymentData: any) => {
+    setPaymentData(paymentData);
+    // if (paymentData.paymentType === 'CASH') {
+      const cashAmount = paymentData && paymentData.cashPayment && paymentData.cashPayment.amount;
+      const changeAmount = cashAmount - calculateGrandTotal();
+      setChange(changeAmount);
+    // } else {
+    //   setChange(0);
+    // }
+  };
 
   const handleMiscSelect = (miscOption: { value: string, label: string, price: number }) => {
     if (selectedRow !== null) {
@@ -370,7 +384,12 @@ export default function Page() {
     }, 0);
   };
 
-  const handleCreateTransaction = async () => {
+  const handleCreateTransaction = async (paymentData: any) => {
+    if (!paymentData || Object.keys(paymentData).length === 0) {
+      console.error('Payment data is not available');
+      return Promise.reject('Payment data is required');
+    }
+
     const formattedPelanggan = {
       nama: pelanggan.nama || undefined,
       alamat: pelanggan.alamat || undefined,
@@ -401,6 +420,8 @@ export default function Page() {
       interval_transaksi: 0,
       buffer_transaksi: 0,
       kd_cab: "CAB001",
+      payment_data: paymentData,
+      change: paymentData.cashPayment ? paymentData.cashPayment.amount - calculateGrandTotal() : 0,
       items: data.map(item => ({
         kd_brgdg: item.kd_brgdg,
         jenis: item.rOption || 'R',
@@ -505,9 +526,14 @@ export default function Page() {
         transactionId={Math.random().toString(36).substring(2, 15)}
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
-        totalAmount={calculateGrandTotal()}                
-        createTransaction={handleCreateTransaction}
+        totalAmount={calculateGrandTotal()}
+        onPaymentComplete={(paymentData) => {
+          handlePaymentData(paymentData);
+          handleCreateTransaction(paymentData);
+        }}
+        // createTransaction={() => handleCreateTransaction()}
       />
+
       <MiscModal
         isOpen={isMiscModalOpen}
         onClose={() => setIsMiscModalOpen(false)}

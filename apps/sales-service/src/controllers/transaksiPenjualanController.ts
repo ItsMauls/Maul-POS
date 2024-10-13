@@ -23,6 +23,7 @@ export const transaksiPenjualanController = {
         total_sc_misc,
         total_promo,
         total_up,
+        payment_data,        
         no_voucher,
         interval_transaksi,
         buffer_transaksi,
@@ -84,13 +85,15 @@ export const transaksiPenjualanController = {
           dokter: true,
           TransaksiDetail: {
             include: {
-              mainstock: true // Include this if you need product details
+              tmainstock: true // Include this if you need product details
             }
           },
           cabang: true,
         },
       });
-
+      console.log(transaction, 'gue butuh kembalian');
+      console.log(payment_data, 'gue butuh PAYMENT');
+      
       // Prepare data for the HTML template
       const templateData = {
         transaction: {
@@ -110,7 +113,7 @@ export const transaksiPenjualanController = {
           shift: 'Shift Info',
           kassa: 'Kassa Info',
           productList: transaction.TransaksiDetail.map((detail: any) => ({
-            productName: detail.mainstock.nm_brgdg,
+            productName: detail.tmainstock.nm_brgdg,
             qty: detail.qty,
             amount: detail.subjumlah,
             nDisc: detail.disc,
@@ -125,8 +128,8 @@ export const transaksiPenjualanController = {
           grandTotal: transaction.total_harga - transaction.total_disc - transaction.total_promo,
           payment: [{
             payFormat: transaction.total_harga - transaction.total_disc - transaction.total_promo,
-            cashFormat: transaction.total_harga - transaction.total_disc - transaction.total_promo,
-            changeFormat: '0',
+            cashFormat: payment_data.cashPayment && payment_data.cashPayment.amount,
+            changeFormat: payment_data.cashPayment && payment_data.cashPayment.amount - (transaction.total_harga - transaction.total_disc - transaction.total_promo),
             creditCardFormat: '0',
             debitCardFormat: '0',
             eWalletFormat: '0',

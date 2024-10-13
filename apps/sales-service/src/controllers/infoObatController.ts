@@ -64,7 +64,7 @@ export const infoObatController = {
       // Separate id_kategori from the rest of the data
       const { id_kategori, ...mainStockData } = obatData;
 
-      const newObat = await prisma.mainstock.create({
+      const newObat = await prisma.tmainstock.create({
         data: {
           ...mainStockData,
           kategori: id_kategori ? { connect: { id: id_kategori } } : undefined,
@@ -115,7 +115,7 @@ export const infoObatController = {
       const currentDate = new Date();
 
       const [obatList, totalCount] = await Promise.all([
-        prisma.mainstock.findMany({
+        prisma.tmainstock.findMany({
           where,
           skip,
           take: limit,
@@ -131,7 +131,7 @@ export const infoObatController = {
             },
           },
         }),
-        prisma.mainstock.count({ where }),
+        prisma.tmainstock.count({ where }),
       ]);
     
       const processedObatList = obatList.map((obat: any) => {
@@ -186,7 +186,7 @@ export const infoObatController = {
   async update(req: Request, res: Response) {
     try {
       const { kd_brgdg } = req.params;
-      const updatedObat = await prisma.mainstock.update({
+      const updatedObat = await prisma.tmainstock.update({
         where: { kd_brgdg: parseInt(kd_brgdg) },
         data: req.body,
       });
@@ -211,7 +211,7 @@ export const infoObatController = {
   async delete(req: Request, res: Response) {
     try {
       const { kd_brgdg } = req.params;
-      await prisma.mainstock.delete({
+      await prisma.tmainstock.delete({
         where: { kd_brgdg: parseInt(kd_brgdg) },
       });
       res
@@ -234,7 +234,7 @@ export const infoObatController = {
   async getById(req: Request, res: Response) {
     try {
       const { kd_brgdg } = req.params;
-      const obat = await prisma.mainstock.findUnique({
+      const obat = await prisma.tmainstock.findUnique({
         where: { kd_brgdg: parseInt(kd_brgdg) },
         include: { 
           kategori: true,

@@ -94,7 +94,7 @@ async function seedMainstock(categoryCount: number, cabangCount: number) {
     kd_cab: `CAB${String(faker.number.int({ min: 1, max: Math.max(1, cabangCount) })).padStart(3, '0')}`,
   }));
 
-  const createdMainstock = await prisma.mainstock.createMany({
+  const createdMainstock = await prisma.tmainstock.createMany({
     data: mainstockData,
     skipDuplicates: true,
   });

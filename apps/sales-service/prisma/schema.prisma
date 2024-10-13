@@ -14,10 +14,10 @@ model Kategori {
   description String?
   created_at  DateTime    @default(now())
   updated_at  DateTime    @updatedAt
-  Mainstock   Mainstock[]
+  tmainstock  tmainstock[]
 }
 
-model Mainstock {
+model tmainstock {
   kd_brgdg                Int               @id @default(autoincrement())
   nm_brgdg                String
   id_dept                 Int?
@@ -80,7 +80,7 @@ model Mainstock {
   ReturPenjualan          ReturPenjualan[]
   cabang                 Cabang             @relation(fields: [kd_cab], references: [kd_cab])
   kd_cab                 String
-  promos                  Promo[]            @relation("MainstockPromos")
+  promos                  Promo[]            @relation("tmainstockPromos")
 }
 
 model Pelanggan {
@@ -139,7 +139,7 @@ model TransaksiDetail {
   id           Int       @id @default(autoincrement())
   transaksi    Transaksi @relation(fields: [id_transaksi], references: [id])
   id_transaksi Int
-  mainstock    Mainstock @relation(fields: [kd_brgdg], references: [kd_brgdg])
+  tmainstock    tmainstock @relation(fields: [kd_brgdg], references: [kd_brgdg])
   kd_brgdg     Int
   jenis        String // R(resep) atau RC(racikan)
   harga        Decimal   @db.Decimal(10, 2)
@@ -159,7 +159,7 @@ model ReturPenjualan {
   id                  Int       @id @default(autoincrement())
   transaksi           Transaksi @relation(fields: [id_transaksi], references: [id])
   id_transaksi        Int
-  mainstock           Mainstock @relation(fields: [kd_brgdg], references: [kd_brgdg])
+  tmainstock           tmainstock @relation(fields: [kd_brgdg], references: [kd_brgdg])
   kd_brgdg            Int
   detail              String?
   qty                 Int
@@ -192,7 +192,7 @@ model Cabang {
   created_at  DateTime    @default(now())
   updated_at  DateTime    @updatedAt
   Transaksi   Transaksi[]
-  Mainstock   Mainstock[]
+  tmainstock   tmainstock[]
   antrian     Antrian[]
 }
 
@@ -232,8 +232,8 @@ model Promo {
   jam_akhir_promo String
   no_promo        String
   jenis_promo     String
-  mainstock       Mainstock @relation("MainstockPromos", fields: [mainstockId], references: [kd_brgdg])
-  mainstockId     Int
+  tmainstock       tmainstock @relation("tmainstockPromos", fields: [tmainstockId], references: [kd_brgdg])
+  tmainstockId     Int
 
   min_pembelian   Int?
   max_diskon      Float?

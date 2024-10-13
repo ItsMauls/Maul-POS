@@ -9,13 +9,14 @@ import { API_URL } from '@/constants/api';
 
 interface PaymentModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (paymentData?: any) => void
   totalAmount: number;
   transactionId: string;
-  createTransaction: () => Promise<void>;
+  onPaymentComplete: (paymentData: any) => void;
+  // createTransaction: () => any;
 }
 
-export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, totalAmount, transactionId, createTransaction }) => {
+export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, totalAmount, transactionId, onPaymentComplete }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [paymentMethods, setPaymentMethods] = useState({
     cash: true,
@@ -61,15 +62,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, tot
       }),
     };
 
+    onPaymentComplete(paymentData);
+    onClose();
+
     createPayment(paymentData, {
       onSuccess: async () => {
         try {
-          await createTransaction();
+          // await createTransaction();
           // Add antrian after successful transaction
           tambahAntrian({ idPelanggan: 1, kdCab: 'CAB001' }, {
             onSuccess: (antrianData) => {
               console.log('Antrian created:', antrianData);
-              onClose();
+              onClose(paymentData);
               // You might want to add some success feedback here
             },
             onError: (error) => {

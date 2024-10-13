@@ -1,0 +1,151 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    hostname: frontend-host
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./apps/frontend_v3/Dockerfile.local
+    volumes:
+       - ./apps/frontend_v3:/app
+       - /app/.next
+       - /app/node_modules
+    ports:
+      - "3000:3000"
+    # env_file:
+    #   - ./frontend/.env
+    networks:
+      - pbf-network
+
+  user-service:
+    hostname: user-service-host
+    build:
+      context: .
+      dockerfile: ./apps/user-service/Dockerfile.local
+    networks:
+      - pbf-network
+    restart: on-failure
+    volumes:
+      - ./apps/user-service/cmd/config.yml:/cmd/config.yml
+    depends_on:
+      - postgres
+    environment:
+        APP_NAME: "user-rest-service"
+        HTTP_PORT: "8081"
+        DATABASE_URL: "postgresql://root:password@postgres:5432/db_user?schema=public"
+        API_AUTH_URL: "http://auth-service-host/api/auth"
+    ports:
+      - "3006:3006"
+
+
+  auth-service:
+    hostname: auth-service-host
+    build:
+      context: .
+      dockerfile: ./apps/auth-service/Dockerfile.local
+    networks:
+      - pbf-network
+    restart: on-failure
+    volumes:
+      - ./apps/auth-service/cmd/config.yml:/cmd/config.yml
+    depends_on:
+      - postgres
+      - redis
+      - user-service
+    environment:
+        APP_NAME: "auth-rest-service"
+        HTTP_PORT: "8081"
+        DATABASE_URL: "postgresql://root:password@postgres:5432/db_user?schema=public"
+        REDIS_HOST: "redis"
+        REDIS_PORT: "6379"
+        REDIS_PASSWORD: ""
+        JWT_SECRET_KEY: "JWT_SECRET_KEY_APP_APOTEK_PBF))(**"
+    ports:
+      - "3007:3007"
+  
+  sales-service:
+    hostname: sales-service-host
+    build:
+      context: .
+      dockerfile: ./apps/sales-service/Dockerfile.local
+    networks:
+      - pbf-network
+    restart: on-failure
+    volumes:
+      - ./apps/sales-service/cmd/config.yml:/cmd/config.yml
+    depends_on:
+      - postgres
+      - user-service
+    environment:
+      - CONFIG_FILE=/cmd/config.yml
+      - DATABASE_URL=postgresql://root:password@postgres:5432/db_sales?schema=public
+
+    ports:
+      - "3005:3005"
+
+  inventory-service-pembelian:
+    hostname: inventory-service-pembelian-host
+    build:
+      context: .
+      dockerfile: ./apps/inventory-service-pembelian/Dockerfile.local
+    networks:
+      - pbf-network
+    restart: on-failure
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres
+    environment:
+      - PORT=3003
+      - DATABASE_URL=postgresql://root:password@localhost:5433/db_inventory_pembelian?schema=public
+
+
+  postgres:
+    image: postgres:latest
+    container_name: postgresql
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - pbf-network
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      - pbf-network
+      - net
+
+  reverse-proxy:
+    build:
+      context: .
+      dockerfile: ./infra/reverse-proxy/Dockerfile
+    restart: on-failure
+    volumes:
+      - "/run/docker.sock:/run/run/docker.sock:ro"
+    networks:
+      - pbf-network
+      - net
+    ports:
+      - '8001:80'
+    depends_on:
+      - app
+      - user-service      
+      # - sales-service  
+      - inventory-service-pembelian      
+
+networks:
+    pbf-network:
+      external: false
+    net:
+      external: true
+
+volumes:
+    postgres-data:

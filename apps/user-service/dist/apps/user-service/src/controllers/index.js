@@ -1,14 +1,16 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userController = void 0;
+const prisma_1 = __importDefault(require("../config/prisma"));
 const httpStatus_1 = require("../constants/httpStatus");
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
 exports.userController = {
     // Get all users
     async getAllUsers(req, res) {
         try {
-            const users = await prisma.user.findMany({
+            const users = await prisma_1.default.user.findMany({
                 select: { id: true, email: true, username: true, role: true, isActive: true }
             });
             res
@@ -16,17 +18,14 @@ exports.userController = {
                 .json(users);
         }
         catch (error) {
-            res.status(500).json({
-                error: 'Error fetching users',
-                message: error
-            });
+            res.status(500).json({ error: 'Error fetching users', message: error });
         }
     },
     // Get user by ID
     async getUserById(req, res) {
         const { id } = req.params;
         try {
-            const user = await prisma.user.findUnique({
+            const user = await prisma_1.default.user.findUnique({
                 where: { id },
                 include: { profile: true }
             });
@@ -43,10 +42,10 @@ exports.userController = {
     },
     // Create new user
     async createUser(req, res) {
-        const { email, username, password, firstName, lastName } = req.body;
+        const { email, username, password, firstName, lastName, phoneNumber } = req.body;
         try {
-            const newUser = await prisma.user.create({
-                data: { email, username, password, firstName, lastName }
+            const newUser = await prisma_1.default.user.create({
+                data: { email, username, password, firstName, lastName, phone_number: phoneNumber }
             });
             res
                 .status(httpStatus_1.HTTP_STATUS.CREATED)
@@ -62,7 +61,7 @@ exports.userController = {
         const { id } = req.params;
         const { email, username, firstName, lastName, isActive } = req.body;
         try {
-            const updatedUser = await prisma.user.update({
+            const updatedUser = await prisma_1.default.user.update({
                 where: { id },
                 data: { email, username, firstName, lastName, isActive }
             });
@@ -78,7 +77,7 @@ exports.userController = {
     async deleteUser(req, res) {
         const { id } = req.params;
         try {
-            await prisma.user.delete({ where: { id } });
+            await prisma_1.default.user.delete({ where: { id } });
             res
                 .status(httpStatus_1.HTTP_STATUS.OK)
                 .json({ message: 'User deleted successfully' });
@@ -91,7 +90,7 @@ exports.userController = {
     async findUserByPhoneNumber(req, res) {
         const { phoneNumber: phone_number } = req.params;
         try {
-            const user = await prisma.user.findUnique({
+            const user = await prisma_1.default.user.findUnique({
                 where: { phone_number },
                 select: { id: true, phone_number: true, username: true, password: true, role: true, isActive: true }
             });
@@ -108,7 +107,7 @@ exports.userController = {
     async validateUserCredentials(req, res) {
         const { email, password } = req.body;
         try {
-            const user = await prisma.user.findUnique({
+            const user = await prisma_1.default.user.findUnique({
                 where: { email },
                 select: { id: true, email: true, password: true }
             });
@@ -131,7 +130,7 @@ exports.userController = {
         const { id } = req.params;
         const { password } = req.body;
         try {
-            const updatedUser = await prisma.user.update({
+            const updatedUser = await prisma_1.default.user.update({
                 where: { id },
                 data: { password },
                 select: { id: true, email: true, username: true }
@@ -149,7 +148,7 @@ exports.userController = {
             if (!userId) {
                 return res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json({ error: 'User not authenticated' });
             }
-            const user = await prisma.user.findUnique({
+            const user = await prisma_1.default.user.findUnique({
                 where: { id: userId },
                 select: {
                     id: true,

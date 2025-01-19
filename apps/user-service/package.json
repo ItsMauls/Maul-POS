@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@maul-pos/database": "file:../database-service",
     "@prisma/client": "^5.18.0",
     "@shared-middleware/auth": "file:../../libs/@auth",
     "@types/cors": "^2.8.17",
@@ -23,6 +24,7 @@
     "cors": "^2.8.5",
     "express": "^4.19.3",
     "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.9",
     "prisma": "^5.18.0",
     "user-service": "file:"
   },

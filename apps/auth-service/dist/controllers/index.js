@@ -13,10 +13,10 @@ const httpStatus_1 = require("../constants/httpStatus");
 const index_1 = __importDefault(require("../services/index"));
 exports.authController = {
     async register(req, res) {
-        const { email, password, username } = req.body;
+        const { email, password, username, phoneNumber } = req.body;
         try {
             const hashedPassword = await (0, bcrypt_1.hashPassword)(password);
-            const user = await index_1.default.createUser({ email, password: hashedPassword, username });
+            const user = await index_1.default.createUser({ email, password: hashedPassword, username, phoneNumber });
             res
                 .status(httpStatus_1.HTTP_STATUS.CREATED)
                 .json({ message: 'User registered successfully', userId: user.id });
@@ -25,7 +25,10 @@ exports.authController = {
             console.log(error);
             res
                 .status(httpStatus_1.HTTP_STATUS.BAD_REQUEST)
-                .json({ error: 'Registration failed' });
+                .json({
+                error: 'Registration failed',
+                message: error.message
+            });
         }
     },
     async login(req, res) {
@@ -45,10 +48,23 @@ exports.authController = {
             res.json({ accessToken, refreshToken, sessionId });
         }
         catch (error) {
-            console.log(error);
-            res
-                .status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR)
-                .json({ error: 'Login failed' });
+            console.error('Login error:', error);
+            if (error.code === 'ECONNREFUSED') {
+                res
+                    .status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR)
+                    .json({
+                    error: 'User service is unavailable',
+                    message: 'Please try again later'
+                });
+            }
+            else {
+                res
+                    .status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR)
+                    .json({
+                    error: 'Login failed',
+                    message: error.message || 'An unexpected error occurred'
+                });
+            }
         }
     },
     async refreshToken(req, res) {

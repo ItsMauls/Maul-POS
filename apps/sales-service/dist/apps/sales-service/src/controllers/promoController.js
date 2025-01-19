@@ -65,7 +65,7 @@ const getPromos = async (req, res) => {
     try {
         const promos = await prisma_1.default.promo.findMany({
             include: {
-                mainstock: true,
+                tmainstock: true,
                 TransaksiDetail: true,
             },
         });

@@ -1,5 +1,3 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient() as any
+import { prisma } from '@maul-pos/database';
 
 export default prisma;

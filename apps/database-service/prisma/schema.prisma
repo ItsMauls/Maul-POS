@@ -8,20 +8,20 @@ generator client {
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
-
+// ============= AUTH & USER MANAGEMENT =============
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  phone_number String? @unique
-  username  String   @unique
-  firstName String?
-  lastName  String?
-  password  String
-  role      Role     @default(USER)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  profile   Profile?
+  id           String   @id @default(uuid())
+  email        String   @unique
+  phone_number String?  @unique
+  username     String   @unique
+  firstName    String?
+  lastName     String?
+  password     String
+  role         Role     @default(USER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  profile      Profile?
 
   @@map("user")
 }
@@ -44,6 +44,7 @@ enum Role {
   MODERATOR
 }
 
+// ============= MASTER DATA =============
 model MKategori {
   id_kategori Int      @id @default(autoincrement())
   nm_kategori String   @unique
@@ -67,6 +68,36 @@ model MSatuan {
   @@map("msatuan")
 }
 
+model ReturPenjualan {
+  id                  Int        @id @default(autoincrement())
+  transaksi           Transaksi  @relation(fields: [id_transaksi], references: [id])
+  id_transaksi        Int
+  mainstock           TMainStock @relation(fields: [kd_brgdg], references: [kd_brgdg])
+  kd_brgdg            Int
+  detail              String?
+  qty                 Int
+  harga               Decimal    @db.Decimal(10, 2)
+  discount            Decimal    @db.Decimal(10, 2)
+  ppn                 Decimal    @db.Decimal(10, 2)
+  subtotal_harga      Decimal    @db.Decimal(12, 2)
+  subtotal_discount   Decimal    @db.Decimal(12, 2)
+  subtotal_ppn        Decimal    @db.Decimal(12, 2)
+  no_batch            String?
+  tgl_batch           DateTime?
+  id_hretur_cabang    Int?
+  detail_retur_cabang String?
+  status_retur        String?
+  nominal_retur       Decimal?   @db.Decimal(12, 2)
+  hpp                 Decimal    @db.Decimal(10, 2)
+  total_hpp           Decimal    @db.Decimal(12, 2)
+  wso2transfer        Boolean
+  id_htransb          Int
+  created_at          DateTime   @default(now())
+  updated_at          DateTime   @updatedAt
+
+  @@map("retur_penjualan")
+}
+
 model MCabang {
   kd_cab            String    @id
   nm_cab            String    @db.VarChar(100)
@@ -88,12 +119,6 @@ model MCabang {
   tanggal_update    DateTime? @db.Date
   time_off          DateTime? @db.Time()
 
-  // Relasi (uncomment dan sesuaikan jika tabel relasinya sudah ada)
-  // tipe_cabang      MTipeCabang  @relation(fields: [id_tipe_cabang], references: [id])
-  // area             MArea        @relation(fields: [id_area], references: [id])
-  // instansi         MInstansi    @relation(fields: [id_instansi], references: [id])
-
-  // Tambahkan relasi balik ke TMainStock
   mainStocks TMainStock[]
   Transaksi  Transaksi[]
   Antrian    Antrian[]
@@ -101,6 +126,61 @@ model MCabang {
   @@map("mcabang")
 }
 
+model MPabrik {
+  id              Int       @id @default(autoincrement())
+  nm_pabrik       String
+  alamat          String?   @db.Text
+  no_telepon      String?   @db.VarChar(20)
+  email           String?   @db.VarChar(100)
+  no_npwp         String?   @db.VarChar(50)
+  nm_npwp         String?
+  alamat_npwp     String?   @db.Text
+  created_at      DateTime  @default(now())
+  deleted_status  Boolean   @default(false)
+  deleted_at      DateTime?
+  min_bulan_ed    Int?
+  informasi_retur String?   @db.Text
+  prf_telp        String?   @db.VarChar(20)
+
+  mainStocks TMainStock[]
+
+  @@map("mpabrik")
+}
+
+model MKLProduk {
+  id_kl      Int      @id @default(autoincrement())
+  nm_kl      String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  mainStocks TMainStock[]
+
+  @@map("mkl_produk")
+}
+
+model MRackPusdis {
+  id_dept_pusdis Int       @id @default(autoincrement())
+  nm_dept        String
+  id_kategori    Int?
+  parent_id      Int?
+  created_at     DateTime  @default(now())
+  created_by     String?
+  updated_at     DateTime  @updatedAt
+  updated_by     String?
+  deleted_at     DateTime?
+  deleted_by     String?
+  is_deleted     Boolean   @default(false)
+  nm_kategori    String?
+
+  parent     MRackPusdis?  @relation("RackPusdisToRackPusdis", fields: [parent_id], references: [id_dept_pusdis])
+  children   MRackPusdis[] @relation("RackPusdisToRackPusdis")
+  kategori   MKategori?    @relation(fields: [id_kategori], references: [id_kategori])
+  mainStocks TMainStock[]
+
+  @@map("mrack_pusdis")
+}
+
+// ============= INVENTORY & STOCK =============
 model TMainStock {
   kd_brgdg                Int       @id @default(autoincrement())
   nm_brgdg                String
@@ -163,7 +243,6 @@ model TMainStock {
   kd_cab                  String
   id_dept_pusdis          Int?
 
-  // Relasi
   kategori        MKategori?        @relation(fields: [id_kategori], references: [id_kategori])
   cabang          MCabang           @relation(fields: [kd_cab], references: [kd_cab])
   satuan          MSatuan?          @relation(fields: [id_satuan], references: [id_satuan])
@@ -171,71 +250,13 @@ model TMainStock {
   kl_produk       MKLProduk?        @relation(fields: [id_kl], references: [id_kl])
   rack_pusdis     MRackPusdis?      @relation(fields: [id_dept_pusdis], references: [id_dept_pusdis])
   TransaksiDetail TransaksiDetail[]
+  promos          Promo[]           @relation("MainStockToPromo")
+  ReturPenjualan  ReturPenjualan[]
 
   @@map("tmainstock")
 }
 
-model MPabrik {
-  id              Int       @id @default(autoincrement())
-  nm_pabrik       String
-  alamat          String?   @db.Text
-  no_telepon      String?   @db.VarChar(20)
-  email           String?   @db.VarChar(100)
-  no_npwp         String?   @db.VarChar(50)
-  nm_npwp         String?
-  alamat_npwp     String?   @db.Text
-  created_at      DateTime  @default(now())
-  deleted_status  Boolean   @default(false)
-  deleted_at      DateTime?
-  min_bulan_ed    Int?
-  informasi_retur String?   @db.Text
-  prf_telp        String?   @db.VarChar(20)
-
-  // Add relation to TMainStock since it references id_pabrik
-  mainStocks TMainStock[]
-
-  @@map("mpabrik")
-}
-
-model MKLProduk {
-  id_kl      Int      @id @default(autoincrement())
-  nm_kl      String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  // Relation to TMainStock
-  mainStocks TMainStock[]
-
-  @@map("mkl_produk")
-}
-
-model MRackPusdis {
-  id_dept_pusdis Int       @id @default(autoincrement())
-  nm_dept        String
-  id_kategori    Int?
-  parent_id      Int?
-  created_at     DateTime  @default(now())
-  created_by     String?
-  updated_at     DateTime  @updatedAt
-  updated_by     String?
-  deleted_at     DateTime?
-  deleted_by     String?
-  is_deleted     Boolean   @default(false)
-  nm_kategori    String?
-
-  // Self-relation for parent/child relationship
-  parent   MRackPusdis?  @relation("RackPusdisToRackPusdis", fields: [parent_id], references: [id_dept_pusdis])
-  children MRackPusdis[] @relation("RackPusdisToRackPusdis")
-
-  // Relation to kategori if needed
-  kategori MKategori? @relation(fields: [id_kategori], references: [id_kategori])
-
-  // Add this relation
-  mainStocks TMainStock[]
-
-  @@map("mrack_pusdis")
-}
-
+// ============= TRANSACTION & SALES =============
 model Transaksi {
   id                 Int      @id @default(autoincrement())
   id_pelanggan       Int
@@ -257,12 +278,12 @@ model Transaksi {
   updated_at         DateTime @updatedAt
   receipt            String?
 
-  // Relations
   pelanggan       Pelanggan         @relation(fields: [id_pelanggan], references: [id])
   dokter          Dokter            @relation(fields: [id_dokter], references: [id])
   cabang          MCabang           @relation(fields: [kd_cab], references: [kd_cab])
   TransaksiDetail TransaksiDetail[]
   antrian         Antrian[]
+  ReturPenjualan  ReturPenjualan[]
 
   @@map("transaksi")
 }
@@ -283,13 +304,14 @@ model TransaksiDetail {
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 
-  // Relations
   transaksi Transaksi  @relation(fields: [id_transaksi], references: [id])
   mainStock TMainStock @relation(fields: [kd_brgdg], references: [kd_brgdg])
+  promos    Promo[]    @relation("TransaksiDetailPromos")
 
   @@map("transaksi_detail")
 }
 
+// ============= QUEUE MANAGEMENT =============
 model Antrian {
   id_antrian     Int       @id @default(autoincrement())
   id_trans       Int?
@@ -309,7 +331,6 @@ model Antrian {
   tanggal        DateTime?
   status_racik   Boolean?
 
-  // Relations
   transaksi Transaksi? @relation(fields: [id_trans], references: [id])
   cabang    MCabang    @relation(fields: [kd_cab], references: [kd_cab])
   pelanggan Pelanggan? @relation(fields: [id_pelanggan], references: [id])
@@ -317,30 +338,109 @@ model Antrian {
   @@map("antrian")
 }
 
+// ============= CUSTOMER & DOCTOR =============
 model Pelanggan {
-  id         Int         @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   nama       String?
   alamat     String?
   no_telp    String?
   usia       Int?
   instansi   String?
   korp       String?
-  created_at DateTime    @default(now())
-  updated_at DateTime    @updatedAt
-  Transaksi  Transaksi[]
-  Antrian    Antrian[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  Transaksi Transaksi[]
+  Antrian   Antrian[]
 
   @@map("pelanggan")
 }
 
 model Dokter {
-  id           Int         @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   nama         String?
   alamat       String?
   spesialisasi String?
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
-  Transaksi    Transaksi[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  Transaksi Transaksi[]
 
   @@map("dokter")
+}
+
+// ============= PROMOTION =============
+model Promo {
+  id               Int       @id @default(autoincrement())
+  nama             String
+  deskripsi        String?
+  diskon           Float
+  tanggal_awal     DateTime
+  tanggal_akhir    DateTime
+  jam_awal_promo   String
+  jam_akhir_promo  String
+  no_promo         String
+  jenis_promo      String
+  min_pembelian    Int?
+  max_diskon       Float?
+  kuantitas_beli   Int?
+  kuantitas_gratis Int?
+  deleted_at       DateTime?
+
+  tmainstock      TMainStock        @relation("MainStockToPromo", fields: [tmainstockId], references: [kd_brgdg])
+  tmainstockId    Int
+  TransaksiDetail TransaksiDetail[] @relation("TransaksiDetailPromos")
+
+  @@map("promo")
+}
+// =====(Payment)====
+
+model Payment {
+  id            String      @id @default(uuid())
+  transactionId String
+  amount        Float
+  paymentType   PaymentType
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  cashPayment   CashPayment?
+  cardPayment   CardPayment?
+
+  @@map("payment")
+}
+
+model CashPayment {
+  id        String  @id @default(uuid())
+  paymentId String  @unique
+  amount    Float
+
+  payment   Payment @relation(fields: [paymentId], references: [id])
+
+  @@map("cash_payment")
+}
+
+model CardPayment {
+  id             String   @id @default(uuid())
+  paymentId      String   @unique
+  amount         Float
+  accountNumber  String
+  bank           String
+  edcMachine     String
+  cardType       CardType
+  cardBrand      String
+
+  payment        Payment  @relation(fields: [paymentId], references: [id])
+
+  @@map("card_payment")
+}
+
+enum PaymentType {
+  CASH
+  DEBIT
+  CREDIT
+}
+
+enum CardType {
+  DEBIT
+  CREDIT
 }

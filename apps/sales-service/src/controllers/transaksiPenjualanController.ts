@@ -85,7 +85,7 @@ export const transaksiPenjualanController = {
           dokter: true,
           TransaksiDetail: {
             include: {
-              tmainstock: true // Include this if you need product details
+              mainStock: true  // Pastikan nama relasi sesuai schema
             }
           },
           cabang: true,
@@ -95,6 +95,8 @@ export const transaksiPenjualanController = {
       console.log(payment_data, 'gue butuh PAYMENT');
       
       // Prepare data for the HTML template
+      const grandTotal = Number(transaction.total_harga) - Number(transaction.total_disc) - Number(transaction.total_promo);
+
       const templateData = {
         transaction: {
           transType: '2',
@@ -113,7 +115,7 @@ export const transaksiPenjualanController = {
           shift: 'Shift Info',
           kassa: 'Kassa Info',
           productList: transaction.TransaksiDetail.map((detail: any) => ({
-            productName: detail.tmainstock.nm_brgdg,
+            productName: detail.mainStock.nm_brgdg,  // Sesuaikan dengan nama relasi
             qty: detail.qty,
             amount: detail.subjumlah,
             nDisc: detail.disc,
@@ -125,11 +127,12 @@ export const transaksiPenjualanController = {
           subTotal: transaction.total_harga,
           totDiscount: transaction.total_disc,
           totPromo: transaction.total_promo,
-          grandTotal: transaction.total_harga - transaction.total_disc - transaction.total_promo,
+          grandTotal,
           payment: [{
-            payFormat: transaction.total_harga - transaction.total_disc - transaction.total_promo,
-            cashFormat: payment_data.cashPayment && payment_data.cashPayment.amount,
-            changeFormat: payment_data.cashPayment && payment_data.cashPayment.amount - (transaction.total_harga - transaction.total_disc - transaction.total_promo),
+            payFormat: grandTotal,
+            cashFormat: payment_data.cashPayment?.amount || 0,
+            changeFormat: payment_data.cashPayment ? 
+              Number(payment_data.cashPayment.amount) - grandTotal : 0,
             creditCardFormat: '0',
             debitCardFormat: '0',
             eWalletFormat: '0',
@@ -336,9 +339,13 @@ export const transaksiPenjualanController = {
   async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const transaksi = await prisma.transaksiPenjualan.findUnique({
+      const transaksi = await prisma.transaksi.findUnique({
         where: { id: parseInt(id) },
-        include: { items: true },
+        include: { 
+          TransaksiDetail: true,
+          pelanggan: true,
+          dokter: true,
+        },
       });
 
       if (!transaksi) {
@@ -365,7 +372,7 @@ export const transaksiPenjualanController = {
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const updatedTransaksi = await prisma.transaksiPenjualan.update({
+      const updatedTransaksi = await prisma.transaksi.update({
         where: { id: parseInt(id) },
         data: req.body,
       });
@@ -390,7 +397,7 @@ export const transaksiPenjualanController = {
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      await prisma.transaksiPenjualan.delete({
+      await prisma.transaksi.delete({
         where: { id: parseInt(id) },
       });
       res

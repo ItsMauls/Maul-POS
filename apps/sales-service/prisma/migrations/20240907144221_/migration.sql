@@ -1,6 +1,0 @@
--- AlterTable
-ALTER TABLE "Dokter" ALTER COLUMN "nama" DROP NOT NULL,
-ALTER COLUMN "alamat" DROP NOT NULL;
-
--- AlterTable
-ALTER TABLE "Pelanggan" ALTER COLUMN "nama" DROP NOT NULL;

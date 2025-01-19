@@ -64,10 +64,13 @@ export const infoObatController = {
       // Separate id_kategori from the rest of the data
       const { id_kategori, ...mainStockData } = obatData;
 
-      const newObat = await prisma.tmainstock.create({
+      const newObat = await prisma.tMainStock.create({
         data: {
+          nm_brgdg: obatData.nm_brgdg!,
+          strip: obatData.strip!,
+          kd_cab: "DEFAULT",
           ...mainStockData,
-          kategori: id_kategori ? { connect: { id: id_kategori } } : undefined,
+          id_kategori: id_kategori || null,
         },
       });
 
@@ -104,7 +107,7 @@ export const infoObatController = {
         AND: [
           search ? {
             OR: [
-              { nm_brgdg: { contains: search, mode: 'insensitive' } },
+              { nm_brgdg: { contains: search, mode: 'insensitive' as const } },
               { barcode: { equals: search } },
             ],
           } : {},
@@ -115,49 +118,21 @@ export const infoObatController = {
       const currentDate = new Date();
 
       const [obatList, totalCount] = await Promise.all([
-        prisma.tmainstock.findMany({
+        prisma.tMainStock.findMany({
           where,
           skip,
           take: limit,
           orderBy: { [sortBy]: sortOrder },
           include: { 
             kategori: true,
-            promos: {
-              where: {
-                tanggal_awal: { lte: currentDate },
-                tanggal_akhir: { gte: currentDate },
-                deleted_at: null,
-              },
-            },
           },
         }),
-        prisma.tmainstock.count({ where }),
+        prisma.tMainStock.count({ where }),
       ]);
     
-      const processedObatList = obatList.map((obat: any) => {
-        const activePromo = obat.promos.find((promo: any) => 
-          promo.tanggal_awal <= currentDate && 
-          promo.tanggal_akhir >= currentDate && 
-          promo.deleted_at === null
-        );
-        return {
-          ...obat,
-          activePromo: activePromo ? {
-            id: activePromo.id,
-            nama: activePromo.nama,
-            diskon: activePromo.diskon,
-            jenis_promo: activePromo.jenis_promo,
-            min_pembelian: activePromo.min_pembelian,
-            max_diskon: activePromo.max_diskon,
-            kuantitas_beli: activePromo.kuantitas_beli,
-            kuantitas_gratis: activePromo.kuantitas_gratis,
-          } : null,
-        };
-      });
-
-      // Log only the data with active promos
-      const obatWithActivePromos = processedObatList.filter((obat: any) => obat.activePromo !== null);
-      console.log('Obat with active promos:', JSON.stringify(obatWithActivePromos, null, 2));
+      const processedObatList = obatList.map((obat: any) => ({
+        ...obat,
+      }));
 
       const totalPages = Math.ceil(totalCount / limit);
 
@@ -186,7 +161,7 @@ export const infoObatController = {
   async update(req: Request, res: Response) {
     try {
       const { kd_brgdg } = req.params;
-      const updatedObat = await prisma.tmainstock.update({
+      const updatedObat = await prisma.tMainStock.update({
         where: { kd_brgdg: parseInt(kd_brgdg) },
         data: req.body,
       });
@@ -211,7 +186,7 @@ export const infoObatController = {
   async delete(req: Request, res: Response) {
     try {
       const { kd_brgdg } = req.params;
-      await prisma.tmainstock.delete({
+      await prisma.tMainStock.delete({
         where: { kd_brgdg: parseInt(kd_brgdg) },
       });
       res
@@ -234,17 +209,10 @@ export const infoObatController = {
   async getById(req: Request, res: Response) {
     try {
       const { kd_brgdg } = req.params;
-      const obat = await prisma.tmainstock.findUnique({
+      const obat = await prisma.tMainStock.findUnique({
         where: { kd_brgdg: parseInt(kd_brgdg) },
         include: { 
           kategori: true,
-          promos: {
-            // where: {
-            //   tanggal_awal: { lte: new Date() },
-            //   tanggal_akhir: { gte: new Date() },
-            //   deleted_at: null,
-            // },
-          },
         },
       });
 
@@ -256,17 +224,6 @@ export const infoObatController = {
       }
 
       const processedObat = {
-        ...obat,
-        activePromo: obat.promos.length > 0 ? {
-          id: obat.promos[0].id,
-          nama: obat.promos[0].nama,
-          diskon: obat.promos[0].diskon,
-          jenis_promo: obat.promos[0].jenis_promo,
-          min_pembelian: obat.promos[0].min_pembelian,
-          max_diskon: obat.promos[0].max_diskon,
-          kuantitas_beli: obat.promos[0].kuantitas_beli,
-          kuantitas_gratis: obat.promos[0].kuantitas_gratis,
-        } : null,
       };
 
       res.status(HTTP_STATUS.OK).json({

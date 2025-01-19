@@ -26,7 +26,8 @@
     "js-yaml": "^4.1.0",
     "kafkajs": "^2.2.4",
     "payment-service": "file:",
-    "redis": "^4.7.0"
+    "redis": "^4.7.0",
+    "@maul-pos/database": "file:../database-service"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

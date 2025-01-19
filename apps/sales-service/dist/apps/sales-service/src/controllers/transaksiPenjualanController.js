@@ -39,7 +39,7 @@ exports.transaksiPenjualanController = {
     async createTransaction(req, res) {
         try {
             const user = req.user;
-            const { pelanggan, dokter, jenis_penjualan, invoice_eksternal, catatan, total_harga, total_disc, total_sc_misc, total_promo, total_up, no_voucher, interval_transaksi, buffer_transaksi, kd_cab, items } = req.body;
+            const { pelanggan, dokter, jenis_penjualan, invoice_eksternal, catatan, total_harga, total_disc, total_sc_misc, total_promo, total_up, payment_data, no_voucher, interval_transaksi, buffer_transaksi, kd_cab, items } = req.body;
             const transaction = await prisma_1.default.transaksi.create({
                 data: {
                     pelanggan: {
@@ -94,13 +94,16 @@ exports.transaksiPenjualanController = {
                     dokter: true,
                     TransaksiDetail: {
                         include: {
-                            mainstock: true // Include this if you need product details
+                            mainStock: true // Include this if you need product details
                         }
                     },
                     cabang: true,
                 },
             });
+            console.log(transaction, 'gue butuh kembalian');
+            console.log(payment_data, 'gue butuh PAYMENT');
             // Prepare data for the HTML template
+            const grandTotal = Number(transaction.total_harga) - Number(transaction.total_disc) - Number(transaction.total_promo);
             const templateData = {
                 transaction: {
                     transType: '2',
@@ -119,7 +122,7 @@ exports.transaksiPenjualanController = {
                     shift: 'Shift Info',
                     kassa: 'Kassa Info',
                     productList: transaction.TransaksiDetail.map((detail) => ({
-                        productName: detail.mainstock.nm_brgdg,
+                        productName: detail.tmainstock.nm_brgdg,
                         qty: detail.qty,
                         amount: detail.subjumlah,
                         nDisc: detail.disc,
@@ -131,11 +134,12 @@ exports.transaksiPenjualanController = {
                     subTotal: transaction.total_harga,
                     totDiscount: transaction.total_disc,
                     totPromo: transaction.total_promo,
-                    grandTotal: transaction.total_harga - transaction.total_disc - transaction.total_promo,
+                    grandTotal,
                     payment: [{
-                            payFormat: transaction.total_harga - transaction.total_disc - transaction.total_promo,
-                            cashFormat: transaction.total_harga - transaction.total_disc - transaction.total_promo,
-                            changeFormat: '0',
+                            payFormat: grandTotal,
+                            cashFormat: payment_data.cashPayment?.amount || 0,
+                            changeFormat: payment_data.cashPayment ?
+                                Number(payment_data.cashPayment.amount) - grandTotal : 0,
                             creditCardFormat: '0',
                             debitCardFormat: '0',
                             eWalletFormat: '0',
@@ -331,9 +335,13 @@ exports.transaksiPenjualanController = {
     async getById(req, res) {
         try {
             const { id } = req.params;
-            const transaksi = await prisma_1.default.transaksiPenjualan.findUnique({
+            const transaksi = await prisma_1.default.transaksi.findUnique({
                 where: { id: parseInt(id) },
-                include: { items: true },
+                include: {
+                    TransaksiDetail: true,
+                    pelanggan: true,
+                    dokter: true,
+                },
             });
             if (!transaksi) {
                 return res.status(httpStatus_1.HTTP_STATUS.NOT_FOUND).json({
@@ -358,7 +366,7 @@ exports.transaksiPenjualanController = {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedTransaksi = await prisma_1.default.transaksiPenjualan.update({
+            const updatedTransaksi = await prisma_1.default.transaksi.update({
                 where: { id: parseInt(id) },
                 data: req.body,
             });
@@ -383,7 +391,7 @@ exports.transaksiPenjualanController = {
     async delete(req, res) {
         try {
             const { id } = req.params;
-            await prisma_1.default.transaksiPenjualan.delete({
+            await prisma_1.default.transaksi.delete({
                 where: { id: parseInt(id) },
             });
             res

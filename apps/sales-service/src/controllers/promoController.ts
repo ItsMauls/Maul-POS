@@ -78,7 +78,7 @@ export const getPromos = async (req: Request, res: Response) => {
   try {
     const promos = await prisma.promo.findMany({
       include: {
-        mainstock: true,
+        tmainstock: true,
         TransaksiDetail: true,
       },
     });

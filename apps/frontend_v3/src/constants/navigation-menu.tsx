@@ -152,14 +152,18 @@ export const masterDataMenus = [
 
 
 export const homeMenus : HomeMenuType[] = [
-    { name: 'Setup Kassa', icon: <FaUser /> },
+    { 
+      name: 'Setup Kassa', 
+      icon: <FaUser />, 
+      link: '/setup-kassa?modal=true'
+    },
     { name: 'Tutup Kasir', icon: <FaCashRegister /> },
     { name: 'Tutup Kasir Ulang', icon: <FaRedo /> },
     { name: 'Master Data', icon: <FaDatabase />, link: '/master-data/manajemen/master-instansi' },
     { name: 'Transaksi Pembelian', icon: <FaArrowDown />, link: '/transaksi-pembelian/surat-pesanan' },
     { name: 'Transaksi Penjualan', icon: <FaArrowUp />, link: '/transaksi-penjualan/transaksi' },
     { name: 'E-Ticket', icon: <FaTicketAlt />, link: '/e-ticket/overview' },
-  ];
+];
 
 export const eticketMenus = [
     {

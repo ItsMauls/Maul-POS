@@ -65,12 +65,12 @@ export const PelangganCardContent: React.FC = () => {
           register={register}
           labelPosition='left'
         />
-        <InputField
+        {/* <InputField
           label="ID"
           name="id"
           register={register}
           labelPosition='left'
-        />
+        /> */}
       </form>
     </>
   );

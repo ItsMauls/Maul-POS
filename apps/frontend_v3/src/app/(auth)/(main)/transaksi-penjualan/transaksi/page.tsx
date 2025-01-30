@@ -1,7 +1,6 @@
 'use client'
 import { SingleAccordion } from "@/components/Accordion/SingleAccordion";
 import { Card } from "@/components/Card";
-import { AdditionalTransaksiContent } from "@/components/Content/AdditionalTransaksiContent";
 import { DokterCardContent } from "@/components/Content/DokterCardContent";
 import { PelangganCardContent } from "@/components/Content/PelangganCardContent";
 import { TransaksiCardContent } from "@/components/Content/TransaksiCardContent";
@@ -265,6 +264,39 @@ export default function Page() {
     {
       accessorKey: "qty",
       header: "Qty",
+      cell: ({ row }) => {
+        const [localQty, setLocalQty] = useState(row.original.qty || 1) as any;
+    
+        return (
+          <input
+            type="number"
+            value={localQty}
+            onChange={(e) => setLocalQty(parseInt(e.target.value) || 1)}
+            onBlur={() => {
+              const newQty = parseInt(localQty) || 1;
+              const updatedItem = calculateValues({
+                ...row.original,
+                qty: newQty,
+                subJumlah: (row.original.hj_ecer * newQty) + (row.original.sc || 0)
+              });
+              updateItem(row.index, updatedItem);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const newQty = parseInt(localQty) || 1;
+                const updatedItem = calculateValues({
+                  ...row.original,
+                  qty: newQty,
+                  subJumlah: (row.original.hj_ecer * newQty) + (row.original.sc || 0)
+                });
+                updateItem(row.index, updatedItem);
+              }
+            }}
+            className="w-12"
+            min="1"
+          />
+        );
+      },
     },
     {
       accessorKey: "subJumlah",

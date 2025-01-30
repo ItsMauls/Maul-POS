@@ -7,11 +7,16 @@ import path from 'path';
 import puppeteer from 'puppeteer';
 import { HTTP_STATUS } from '../constants/httpStatus';
 import prisma from '../config/prisma';
+import { createError } from '../middlewares/error';
 
 export const transaksiPenjualanController = {
   async createTransaction(req: any, res: Response) {
     try {
       const user = req.user;
+ 
+      if (!user) {
+        throw createError('UNAUTHORIZED');
+      }
       const {
         pelanggan,
         dokter,        
@@ -31,6 +36,14 @@ export const transaksiPenjualanController = {
         items
       } = req.body;
 
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        throw createError('INVALID_INPUT');
+      }
+
+      if (!kd_cab) {
+        throw createError('INVALID_INPUT');
+      }
+
       // Start a transaction to ensure data consistency
       const result = await prisma.$transaction(async (prisma: any) => {
         // Update stock quantities first
@@ -40,13 +53,13 @@ export const transaksiPenjualanController = {
           });
 
           if (!currentStock) {
-            throw new Error(`Stock not found for item: ${item.kd_brgdg}`);
+            throw createError('NOT_FOUND');
           }
 
           const newQuantity = currentStock.q_akhir - (item.qty || 1);
           
           if (newQuantity < 0) {
-            throw new Error(`Insufficient stock for item: ${item.kd_brgdg}`);
+            throw createError('INSUFFICIENT_STOCK');
           }
 
           await prisma.tMainStock.update({

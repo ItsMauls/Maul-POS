@@ -175,5 +175,61 @@ export const userController = {
     }
   },
 
-  
+  // Get all pelanggan
+  async getAllPelanggan(req: Request, res: Response) {
+    try {
+      const pelanggan = await prisma.pelanggan.findMany({
+        select: {
+          id: true,
+          nama: true,
+          alamat: true,
+          no_telp: true,
+          usia: true,
+          instansi: true,
+          korp: true
+        }
+      });
+      
+      res.status(HTTP_STATUS.OK).json(pelanggan);
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
+        error: 'Error fetching pelanggan data',
+        message: error 
+      });
+    }
+  },
+
+  // Get pelanggan by phone number
+  async getPelangganByPhoneNumber(req: Request, res: Response) {
+    const { phoneNumber } = req.params;
+    try {
+      const pelanggan = await prisma.pelanggan.findFirst({
+        where: { 
+          no_telp: phoneNumber 
+        },
+        select: {
+          id: true,
+          nama: true,
+          alamat: true,
+          no_telp: true,
+          usia: true,
+          instansi: true,
+          korp: true
+        }
+      });
+
+      if (!pelanggan) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ 
+          error: 'Pelanggan not found' 
+        });
+      }
+
+      res.status(HTTP_STATUS.OK).json(pelanggan);
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
+        error: 'Error fetching pelanggan',
+        message: error 
+      });
+    }
+  },
 };

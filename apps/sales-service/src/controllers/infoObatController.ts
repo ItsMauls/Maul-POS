@@ -130,9 +130,14 @@ export const infoObatController = {
         prisma.tMainStock.count({ where }),
       ]);
     
-      const processedObatList = obatList.map((obat: any) => ({
-        ...obat,
-      }));
+      const processedObatList = obatList.map((obat: any) => {
+        return Object.fromEntries(
+          Object.entries(obat).map(([key, value]) => [
+            key,
+            typeof value === 'number' ? Math.round(value) : value
+          ])
+        );
+      });
 
       const totalPages = Math.ceil(totalCount / limit);
 

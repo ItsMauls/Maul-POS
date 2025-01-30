@@ -1,20 +1,31 @@
 'use client'
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { RadioGroup } from "@headlessui/react";
 import { useRouter } from "next/navigation";
+import { useSetupKassaStore } from "@/store/setupKassa";
 
 export default function SetupKassaModal() {
   const router = useRouter();
- 
-  const [selectedPosType, setSelectedPosType] = useState("01 - Swalayan");
-  const [selectedKassaStatus, setSelectedKassaStatus] = useState("Aktif");
-  const [selectedAntrianStatus, setSelectedAntrianStatus] = useState("Aktif");
+  const {
+    tipePOS,
+    statusKassa,
+    statusAntrian,
+    setTipePOS,
+    setStatusKassa,
+    setStatusAntrian
+  } = useSetupKassaStore();
 
   const handleClose = () => {
     const params = new URLSearchParams(window.location.search);
     params.delete("modal");
     router.replace(`?${params.toString()}`);
+  };
+
+  const handleSave = () => {
+    // Data sudah otomatis tersimpan di localStorage melalui zustand persist
+    // Tambahkan logika lain jika diperlukan disini
+    handleClose();
   };
 
   return (
@@ -58,8 +69,8 @@ export default function SetupKassaModal() {
                       Tipe POS
                     </label>
                     <RadioGroup
-                      value={selectedPosType}
-                      onChange={setSelectedPosType}
+                      value={tipePOS}
+                      onChange={setTipePOS}
                       className="mt-2"
                     >
                       <RadioGroup.Option value="01 - Swalayan">
@@ -93,8 +104,8 @@ export default function SetupKassaModal() {
                       Status Kassa
                     </label>
                     <RadioGroup
-                      value={selectedKassaStatus}
-                      onChange={setSelectedKassaStatus}
+                      value={statusKassa}
+                      onChange={setStatusKassa}
                       className="mt-2"
                     >
                       <div className="flex gap-4">
@@ -130,8 +141,8 @@ export default function SetupKassaModal() {
                       Status Antrian
                     </label>
                     <RadioGroup
-                      value={selectedAntrianStatus}
-                      onChange={setSelectedAntrianStatus}
+                      value={statusAntrian}
+                      onChange={setStatusAntrian}
                       className="mt-2"
                     >
                       <div className="flex gap-4">
@@ -170,7 +181,7 @@ export default function SetupKassaModal() {
                     Batal
                   </button>
                   <button
-                    onClick={handleClose}
+                    onClick={handleSave}
                     className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                   >
                     Simpan

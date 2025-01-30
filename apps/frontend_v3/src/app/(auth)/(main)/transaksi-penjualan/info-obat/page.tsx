@@ -46,7 +46,7 @@ export default function Page() {
     const columns: ColumnDef<ApiResponse['data'][0]>[] = [
         { accessorKey: "kd_brgdg", header: "Kode" },
         { accessorKey: "nm_brgdg", header: "Nama Obat" },
-        { accessorKey: "kategori.name", header: "Kategori" },   
+        { accessorKey: "kategori.nm_kategori", header: "Kategori" },   
         { accessorKey: "hj_ecer", header: "Harga Ecer" },
         { accessorKey: "hj_bbs", header: "Harga BBS" },
         { accessorKey: "q_akhir", header: "Stok" },

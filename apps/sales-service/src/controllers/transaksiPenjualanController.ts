@@ -31,71 +31,100 @@ export const transaksiPenjualanController = {
         items
       } = req.body;
 
-      const transaction = await prisma.transaksi.create({
-        data: {
-          pelanggan: {
-            create: {
-              nama: pelanggan.nama,
-              alamat: pelanggan.alamat,
-              no_telp: pelanggan.noTelp,
-              usia: parseInt(pelanggan.usia) || null,
-              instansi: pelanggan.instansi,
-              korp: pelanggan.korp,
-            }
-          },
-          dokter: {
-            create: {
-              nama: dokter.nama,
-              alamat: dokter.alamat,
-              spesialisasi: dokter.noTelp || null,
-            }
-          },
-          sales_pelayan: user.username,
-          jenis_penjualan,
-          invoice_eksternal,
-          catatan,
-          total_harga,
-          total_disc,
-          total_sc_misc,
-          total_promo,
-          total_up,
-          no_voucher,
-          interval_transaksi,
-          buffer_transaksi,
-          cabang: {
-            connect: { kd_cab: kd_cab }
-          },
-          TransaksiDetail: {
-            create: items.map((item: any) => ({
-              kd_brgdg: item.kd_brgdg,
-              jenis: item.rOption || 'R', // Provide a default value if jenis is undefined
-              harga: item.harga || 0,
-              qty: item.qty || 1,
-              subjumlah: item.subjumlah || 0,
-              disc: item.disc || 0,
-              sc_misc: item.sc_misc || 0,
-              promo: item.promo || 0,
-              disc_promo: item.disc_promo || 0,
-              up: item.up || 0,
-            }))
+      // Start a transaction to ensure data consistency
+      const result = await prisma.$transaction(async (prisma: any) => {
+        // Update stock quantities first
+        for (const item of items) {
+          const currentStock = await prisma.tMainStock.findUnique({
+            where: { kd_brgdg: item.kd_brgdg }
+          });
+
+          if (!currentStock) {
+            throw new Error(`Stock not found for item: ${item.kd_brgdg}`);
           }
-        },
-        include: {
-          pelanggan: true,
-          dokter: true,
-          TransaksiDetail: {
-            include: {
-              mainStock: true  // Pastikan nama relasi sesuai schema
+
+          const newQuantity = currentStock.q_akhir - (item.qty || 1);
+          
+          if (newQuantity < 0) {
+            throw new Error(`Insufficient stock for item: ${item.kd_brgdg}`);
+          }
+
+          await prisma.tMainStock.update({
+            where: { kd_brgdg: item.kd_brgdg },
+            data: { q_akhir: newQuantity }
+          });
+        }
+
+        // Create the transaction
+        const transaction = await prisma.transaksi.create({
+          data: {
+            pelanggan: {
+              create: {
+                nama: pelanggan.nama,
+                alamat: pelanggan.alamat,
+                no_telp: pelanggan.noTelp,
+                usia: parseInt(pelanggan.usia) || null,
+                instansi: pelanggan.instansi,
+                korp: pelanggan.korp,
+              }
+            },
+            dokter: {
+              create: {
+                nama: dokter.nama,
+                alamat: dokter.alamat,
+                spesialisasi: dokter.noTelp || null,
+              }
+            },
+            sales_pelayan: user.username,
+            jenis_penjualan,
+            invoice_eksternal,
+            catatan,
+            total_harga,
+            total_disc,
+            total_sc_misc,
+            total_promo,
+            total_up,
+            no_voucher,
+            interval_transaksi,
+            buffer_transaksi,
+            cabang: {
+              connect: { kd_cab: kd_cab }
+            },
+            TransaksiDetail: {
+              create: items.map((item: any) => ({
+                kd_brgdg: item.kd_brgdg,
+                jenis: item.rOption || 'R', // Provide a default value if jenis is undefined
+                harga: item.harga || 0,
+                qty: item.qty || 1,
+                subjumlah: item.subjumlah || 0,
+                disc: item.disc || 0,
+                sc_misc: item.sc_misc || 0,
+                promo: item.promo || 0,
+                disc_promo: item.disc_promo || 0,
+                up: item.up || 0,
+              }))
             }
           },
-          cabang: true,
-        },
+          include: {
+            pelanggan: true,
+            dokter: true,
+            TransaksiDetail: {
+              include: {
+                mainStock: true
+              }
+            },
+            cabang: true,
+          },
+        });
+
+        return transaction;
       });
-      console.log(transaction, 'gue butuh kembalian');
+
+      console.log(result, 'gue butuh kembalian');
       console.log(payment_data, 'gue butuh PAYMENT');
       
       // Prepare data for the HTML template
-      const grandTotal = Number(transaction.total_harga) - Number(transaction.total_disc) - Number(transaction.total_promo);
+      const grandTotal = Number(result.total_harga) - Number(result.total_disc) - Number(result.total_promo);
 
       const templateData = {
         transaction: {
@@ -108,13 +137,13 @@ export const transaksiPenjualanController = {
             outlet: 'Outlet Name',
             email: 'company@email.com'
           },
-          billNumber: transaction.invoice_eksternal,
+          billNumber: result.invoice_eksternal,
           queue: 'Queue Number',
           date: new Date().toLocaleString(),
           cashier: user.username,
           shift: 'Shift Info',
           kassa: 'Kassa Info',
-          productList: transaction.TransaksiDetail.map((detail: any) => ({
+          productList: result.TransaksiDetail.map((detail: any) => ({
             productName: detail.mainStock.nm_brgdg,  // Sesuaikan dengan nama relasi
             qty: detail.qty,
             amount: detail.subjumlah,
@@ -124,9 +153,9 @@ export const transaksiPenjualanController = {
             kdSc: '0',
             misc: false,
           })),
-          subTotal: transaction.total_harga,
-          totDiscount: transaction.total_disc,
-          totPromo: transaction.total_promo,
+          subTotal: result.total_harga,
+          totDiscount: result.total_disc,
+          totPromo: result.total_promo,
           grandTotal,
           payment: [{
             payFormat: grandTotal,
@@ -145,7 +174,7 @@ export const transaksiPenjualanController = {
             phoneNumberCust: pelanggan.no_telp
           },
           doctor: dokter.nama,
-          item: transaction.TransaksiDetail.length,
+          item: result.TransaksiDetail.length,
           print: new Date().toLocaleString(),
           createdBy: user.username,
           footerLine1: 'Thank you for your purchase',
@@ -231,17 +260,19 @@ export const transaksiPenjualanController = {
 
       // Update the transaction with the receipt
       await prisma.transaksi.update({
-        where: { id: transaction.id },
+        where: { id: result.id },
         data: { receipt: receiptData }
       });
 
       res.status(HTTP_STATUS.CREATED).json({
-        transaction,
+        transaction: result,
         receipt: receiptData
       });
     } catch (error) {
       console.error('Error creating transaction:', error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Failed to create transaction' });
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
+        error: error instanceof Error ? error.message : 'Failed to create transaction' 
+      });
     }
   },
 

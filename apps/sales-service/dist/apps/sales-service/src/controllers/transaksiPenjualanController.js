@@ -35,75 +35,107 @@ const path_1 = __importDefault(require("path"));
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const httpStatus_1 = require("../constants/httpStatus");
 const prisma_1 = __importDefault(require("../config/prisma"));
+const error_1 = require("../middlewares/error");
 exports.transaksiPenjualanController = {
     async createTransaction(req, res) {
         try {
             const user = req.user;
+            if (!user) {
+                throw (0, error_1.createError)('UNAUTHORIZED');
+            }
             const { pelanggan, dokter, jenis_penjualan, invoice_eksternal, catatan, total_harga, total_disc, total_sc_misc, total_promo, total_up, payment_data, no_voucher, interval_transaksi, buffer_transaksi, kd_cab, items } = req.body;
-            const transaction = await prisma_1.default.transaksi.create({
-                data: {
-                    pelanggan: {
-                        create: {
-                            nama: pelanggan.nama,
-                            alamat: pelanggan.alamat,
-                            no_telp: pelanggan.noTelp,
-                            usia: parseInt(pelanggan.usia) || null,
-                            instansi: pelanggan.instansi,
-                            korp: pelanggan.korp,
-                        }
-                    },
-                    dokter: {
-                        create: {
-                            nama: dokter.nama,
-                            alamat: dokter.alamat,
-                            spesialisasi: dokter.noTelp || null,
-                        }
-                    },
-                    sales_pelayan: user.username,
-                    jenis_penjualan,
-                    invoice_eksternal,
-                    catatan,
-                    total_harga,
-                    total_disc,
-                    total_sc_misc,
-                    total_promo,
-                    total_up,
-                    no_voucher,
-                    interval_transaksi,
-                    buffer_transaksi,
-                    cabang: {
-                        connect: { kd_cab: kd_cab }
-                    },
-                    TransaksiDetail: {
-                        create: items.map((item) => ({
-                            kd_brgdg: item.kd_brgdg,
-                            jenis: item.rOption || 'R', // Provide a default value if jenis is undefined
-                            harga: item.harga || 0,
-                            qty: item.qty || 1,
-                            subjumlah: item.subjumlah || 0,
-                            disc: item.disc || 0,
-                            sc_misc: item.sc_misc || 0,
-                            promo: item.promo || 0,
-                            disc_promo: item.disc_promo || 0,
-                            up: item.up || 0,
-                        }))
+            if (!items || !Array.isArray(items) || items.length === 0) {
+                throw (0, error_1.createError)('INVALID_INPUT');
+            }
+            if (!kd_cab) {
+                throw (0, error_1.createError)('INVALID_INPUT');
+            }
+            // Start a transaction to ensure data consistency
+            const result = await prisma_1.default.$transaction(async (prisma) => {
+                // Update stock quantities first
+                for (const item of items) {
+                    const currentStock = await prisma.tMainStock.findUnique({
+                        where: { kd_brgdg: item.kd_brgdg }
+                    });
+                    if (!currentStock) {
+                        throw (0, error_1.createError)('NOT_FOUND');
                     }
-                },
-                include: {
-                    pelanggan: true,
-                    dokter: true,
-                    TransaksiDetail: {
-                        include: {
-                            mainStock: true // Include this if you need product details
+                    const newQuantity = currentStock.q_akhir - (item.qty || 1);
+                    if (newQuantity < 0) {
+                        throw (0, error_1.createError)('INSUFFICIENT_STOCK');
+                    }
+                    await prisma.tMainStock.update({
+                        where: { kd_brgdg: item.kd_brgdg },
+                        data: { q_akhir: newQuantity }
+                    });
+                }
+                // Create the transaction
+                const transaction = await prisma.transaksi.create({
+                    data: {
+                        pelanggan: {
+                            create: {
+                                nama: pelanggan.nama,
+                                alamat: pelanggan.alamat,
+                                no_telp: pelanggan.noTelp,
+                                usia: parseInt(pelanggan.usia) || null,
+                                instansi: pelanggan.instansi,
+                                korp: pelanggan.korp,
+                            }
+                        },
+                        dokter: {
+                            create: {
+                                nama: dokter.nama,
+                                alamat: dokter.alamat,
+                                spesialisasi: dokter.noTelp || null,
+                            }
+                        },
+                        sales_pelayan: user.username,
+                        jenis_penjualan,
+                        invoice_eksternal,
+                        catatan,
+                        total_harga,
+                        total_disc,
+                        total_sc_misc,
+                        total_promo,
+                        total_up,
+                        no_voucher,
+                        interval_transaksi,
+                        buffer_transaksi,
+                        cabang: {
+                            connect: { kd_cab: kd_cab }
+                        },
+                        TransaksiDetail: {
+                            create: items.map((item) => ({
+                                kd_brgdg: item.kd_brgdg,
+                                jenis: item.rOption || 'R', // Provide a default value if jenis is undefined
+                                harga: item.harga || 0,
+                                qty: item.qty || 1,
+                                subjumlah: item.subjumlah || 0,
+                                disc: item.disc || 0,
+                                sc_misc: item.sc_misc || 0,
+                                promo: item.promo || 0,
+                                disc_promo: item.disc_promo || 0,
+                                up: item.up || 0,
+                            }))
                         }
                     },
-                    cabang: true,
-                },
+                    include: {
+                        pelanggan: true,
+                        dokter: true,
+                        TransaksiDetail: {
+                            include: {
+                                mainStock: true
+                            }
+                        },
+                        cabang: true,
+                    },
+                });
+                return transaction;
             });
-            console.log(transaction, 'gue butuh kembalian');
+            console.log(result, 'gue butuh kembalian');
             console.log(payment_data, 'gue butuh PAYMENT');
             // Prepare data for the HTML template
-            const grandTotal = Number(transaction.total_harga) - Number(transaction.total_disc) - Number(transaction.total_promo);
+            const grandTotal = Number(result.total_harga) - Number(result.total_disc) - Number(result.total_promo);
             const templateData = {
                 transaction: {
                     transType: '2',
@@ -115,14 +147,14 @@ exports.transaksiPenjualanController = {
                         outlet: 'Outlet Name',
                         email: 'company@email.com'
                     },
-                    billNumber: transaction.invoice_eksternal,
+                    billNumber: result.invoice_eksternal,
                     queue: 'Queue Number',
                     date: new Date().toLocaleString(),
                     cashier: user.username,
                     shift: 'Shift Info',
                     kassa: 'Kassa Info',
-                    productList: transaction.TransaksiDetail.map((detail) => ({
-                        productName: detail.tmainstock.nm_brgdg,
+                    productList: result.TransaksiDetail.map((detail) => ({
+                        productName: detail.mainStock.nm_brgdg, // Sesuaikan dengan nama relasi
                         qty: detail.qty,
                         amount: detail.subjumlah,
                         nDisc: detail.disc,
@@ -131,9 +163,9 @@ exports.transaksiPenjualanController = {
                         kdSc: '0',
                         misc: false,
                     })),
-                    subTotal: transaction.total_harga,
-                    totDiscount: transaction.total_disc,
-                    totPromo: transaction.total_promo,
+                    subTotal: result.total_harga,
+                    totDiscount: result.total_disc,
+                    totPromo: result.total_promo,
                     grandTotal,
                     payment: [{
                             payFormat: grandTotal,
@@ -152,7 +184,7 @@ exports.transaksiPenjualanController = {
                         phoneNumberCust: pelanggan.no_telp
                     },
                     doctor: dokter.nama,
-                    item: transaction.TransaksiDetail.length,
+                    item: result.TransaksiDetail.length,
                     print: new Date().toLocaleString(),
                     createdBy: user.username,
                     footerLine1: 'Thank you for your purchase',
@@ -236,17 +268,46 @@ exports.transaksiPenjualanController = {
             }
             // Update the transaction with the receipt
             await prisma_1.default.transaksi.update({
-                where: { id: transaction.id },
+                where: { id: result.id },
                 data: { receipt: receiptData }
             });
             res.status(httpStatus_1.HTTP_STATUS.CREATED).json({
-                transaction,
+                transaction: result,
                 receipt: receiptData
             });
         }
         catch (error) {
             console.error('Error creating transaction:', error);
-            res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Failed to create transaction' });
+            res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                error: error instanceof Error ? error.message : 'Failed to create transaction'
+            });
+        }
+    },
+    async tundaTransaction(req, res) {
+        try {
+            const { no_bon, items, pelanggan, dokter } = req.body;
+            // Create keranjang entry
+            const keranjang = await prisma_1.default.keranjang.create({
+                data: {
+                    no_bon,
+                    items: items,
+                    pelanggan: pelanggan || {},
+                    dokter: dokter || {},
+                }
+            });
+            res.status(httpStatus_1.HTTP_STATUS.CREATED).json({
+                success: true,
+                message: 'Transaction suspended successfully',
+                data: keranjang
+            });
+        }
+        catch (error) {
+            console.error('Error suspending transaction:', error);
+            res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Failed to suspend transaction',
+                error: error instanceof Error ? error.message : String(error),
+            });
         }
     },
     async getAll(req, res) {
@@ -411,4 +472,20 @@ exports.transaksiPenjualanController = {
             });
         }
     },
+    async getKeranjang(req, res) {
+        try {
+            const keranjang = await prisma_1.default.keranjang.findMany();
+            res.status(httpStatus_1.HTTP_STATUS.OK).json({
+                success: true,
+                data: keranjang
+            });
+        }
+        catch (error) {
+            res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Failed to fetch keranjang',
+                error: error instanceof Error ? error.message : String(error),
+            });
+        }
+    }
 };

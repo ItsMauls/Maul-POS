@@ -5,6 +5,7 @@ import { InputField } from '@/components/Input';
 import { DataRow } from '@/types';
 import { formatRupiah, roundUp } from '@/utils/currency';
 import { SHORTCUTS } from '@/constants/shorcuts';
+import { useRouter } from 'next/navigation';
 
 export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: () => void }> = ({ data, onPaymentClick }) => {
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormValues>();
@@ -15,6 +16,8 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
 
   const subtotal = watch('subtotal');
   const roundUpAmount = watch('ru');
+
+  const router = useRouter()
 
   // Calculate total misc charges
   const totalMisc = useMemo(() => {
@@ -60,6 +63,7 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
   }, [onPaymentClick]);
 
   const handleTundaClick = () => {
+    router.push('/transaksi-penjualan/tunda')
     console.log('Tunda clicked');
   };
 

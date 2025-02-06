@@ -18,6 +18,9 @@ import { API_URL } from '@/constants/api';
 import { SHORTCUTS } from "@/constants/shorcuts";
 import { MiscModal } from "@/components/Modal/MiscModal/index";
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import { Button } from "@/components/Button";
 
 interface AntrianInfo {
   noAntrian: number;
@@ -36,6 +39,8 @@ export default function Page() {
   const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
   const { data: antrianInfo, isLoading: isLoadingAntrianInfo } = useGet<AntrianInfo>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
   const { register } = useForm();
+  const { mutate: tundaTransaksi } = usePost(API_URL.TRANSAKSI_PENJUALAN.tundaTransaction);
+  const router = useRouter();
 
   const [headerInfo, setHeaderInfo] = useState({
     Antrian: '',
@@ -496,6 +501,27 @@ export default function Page() {
     });
   };
 
+  const handleTundaTransaksi = () => {
+    const transactionData = {
+      no_bon: headerInfo['No Bon'],
+      items: data,
+      pelanggan,
+      dokter
+    };
+
+    tundaTransaksi(transactionData, {
+      onSuccess: () => {
+        toast.success('Transaksi berhasil ditunda');
+        clearTransaction();
+        router.push('/transaksi-penjualan/tunda');
+      },
+      onError: (error) => {
+        toast.error('Gagal menunda transaksi');
+        console.error('Failed to suspend transaction:', error);
+      }
+    });
+  };
+
   return (
     <> 
       <div className="mb-4 flex justify-between items-center">
@@ -572,6 +598,12 @@ export default function Page() {
         onSelect={handleMiscSelect}
         options={miscOptions}
       />
+      <Button
+        onClick={handleTundaTransaksi}
+        className="border border-gray-400 rounded-xl py-0"
+      >
+        Tunda Transaksi
+      </Button>
     </>
   );
 }

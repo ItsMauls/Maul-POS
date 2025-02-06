@@ -83,9 +83,12 @@ exports.infoObatController = {
                 }),
                 prisma_1.default.tMainStock.count({ where }),
             ]);
-            const processedObatList = obatList.map((obat) => ({
-                ...obat,
-            }));
+            const processedObatList = obatList.map((obat) => {
+                return Object.fromEntries(Object.entries(obat).map(([key, value]) => [
+                    key,
+                    typeof value === 'number' ? Math.round(value) : value
+                ]));
+            });
             const totalPages = Math.ceil(totalCount / limit);
             res.status(httpStatus_1.HTTP_STATUS.OK).json({
                 success: true,

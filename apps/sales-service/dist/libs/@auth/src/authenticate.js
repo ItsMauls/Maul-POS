@@ -47,7 +47,7 @@ const authenticate = async (req, res, next) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         console.log(decoded.userId, 'decoded');
         const user = await services_1.default.findUserById(decoded.userId);
-        console.log(user, 'user');
+        // console.log(user, 'user');
         if (!user) {
             return res.status(401).json({ error: 'User not found' });
         }

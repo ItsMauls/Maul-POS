@@ -220,7 +220,8 @@ export const userController = {
 
       if (!pelanggan) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({ 
-          error: 'Pelanggan not found' 
+          error: 'Pelanggan not found',
+          message: 'Phone number is not registered' 
         });
       }
 
@@ -229,6 +230,95 @@ export const userController = {
       res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
         error: 'Error fetching pelanggan',
         message: error 
+      });
+    }
+  },
+
+  // Create new pelanggan
+  async createPelanggan(req: Request, res: Response) {
+    const { nama, alamat, no_telp, usia, instansi, korp } = req.body;
+
+    try {
+      // Check if phone number already exists
+      const existingPelanggan = await prisma.pelanggan.findFirst({
+        where: { no_telp }
+      });
+
+      if (existingPelanggan) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: 'Phone number already registered',
+          message: 'A customer with this phone number already exists'
+        });
+      }
+
+      // Create new pelanggan
+      const newPelanggan = await prisma.pelanggan.create({
+        data: {
+          nama,
+          alamat,
+          no_telp,
+          usia: usia ? parseInt(usia.toString()) : null,
+          instansi,
+          korp
+        },
+        select: {
+          id: true,
+          nama: true,
+          alamat: true,
+          no_telp: true,
+          usia: true,
+          instansi: true,
+          korp: true
+        }
+      });
+
+      res.status(HTTP_STATUS.CREATED).json({
+        message: 'Pelanggan created successfully',
+        data: newPelanggan
+      });
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: 'Error creating pelanggan',
+        message: error
+      });
+    }
+  },
+
+  // Update pelanggan
+  async updatePelanggan(req: Request, res: Response) {
+    const { id } = req.params;
+    const { nama, alamat, no_telp, usia, instansi, korp } = req.body;
+
+    try {
+      const updatedPelanggan = await prisma.pelanggan.update({
+        where: { id: parseInt(id) },
+        data: {
+          nama,
+          alamat,
+          no_telp,
+          usia: usia ? parseInt(usia.toString()) : null,
+          instansi,
+          korp
+        },
+        select: {
+          id: true,
+          nama: true,
+          alamat: true,
+          no_telp: true,
+          usia: true,
+          instansi: true,
+          korp: true
+        }
+      });
+
+      res.status(HTTP_STATUS.OK).json({
+        message: 'Pelanggan updated successfully',
+        data: updatedPelanggan
+      });
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        error: 'Error updating pelanggan',
+        message: error
       });
     }
   },

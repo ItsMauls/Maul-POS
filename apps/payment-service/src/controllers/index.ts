@@ -6,6 +6,19 @@ export class PaymentController {
     async createPayment(req: Request, res: Response) {
         try {
           const { transactionId, amount, paymentType, cashPayment, cardPayment } = req.body;
+          
+          // Validate payment amount
+          if (paymentType === 'CASH' && cashPayment.amount < amount) {
+            return res.status(401).json({ 
+              error: 'Cash payment amount must be equal to or greater than total amount' 
+            });
+          }
+
+          if ((paymentType === 'CREDIT' || paymentType === 'DEBIT') && cardPayment.amount < amount) {
+            return res.status(401).json({ 
+              error: 'Card payment amount must be equal to or greater than total amount' 
+            });
+          }
       
           const payment = await prisma.payment.create({
             data: {

@@ -289,6 +289,35 @@ export const transaksiPenjualanController = {
     }
   },
 
+  async tundaTransaction(req: Request, res: Response) {
+    try {
+      const { no_bon, items, pelanggan, dokter } = req.body;
+
+      // Create keranjang entry
+      const keranjang = await prisma.keranjang.create({
+        data: {
+          no_bon,
+          items: items,
+          pelanggan: pelanggan || {},
+          dokter: dokter || {},
+        }
+      });
+
+      res.status(HTTP_STATUS.CREATED).json({
+        success: true,
+        message: 'Transaction suspended successfully',
+        data: keranjang
+      });
+    } catch (error) {
+      console.error('Error suspending transaction:', error);
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to suspend transaction',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  },
+
   async getAll(req: Request, res: Response) {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -460,4 +489,21 @@ export const transaksiPenjualanController = {
       });
     }
   },
+
+  async getKeranjang(req: Request, res: Response) {
+    try {
+      const keranjang = await prisma.keranjang.findMany()
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: keranjang
+      });
+    } catch (error) {
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to fetch keranjang',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 };

@@ -30,7 +30,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     console.log(decoded.userId, 'decoded');
     
     const user = await userService.findUserById(decoded.userId);
-    console.log(user, 'user');
+    // console.log(user, 'user');
     
     if (!user) {
       return res.status(401).json({ error: 'User not found' });

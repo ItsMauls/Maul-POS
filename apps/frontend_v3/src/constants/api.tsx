@@ -23,7 +23,11 @@ export const API_URL = {
         getPayment : `${PAYMENT_URL}`
     },
     USER : {
-        currentUser : `${USER_URL}/current-user`
+        currentUser : `${USER_URL}/current-user`,
+        pelanggan : `${USER_URL}/pelanggan`,
+        pelangganByPhone : `${USER_URL}/pelanggan/phone/:phoneNumber`,
+        createPelanggan : `${USER_URL}/pelanggan`,
+        updatePelanggan : `${USER_URL}/pelanggan/:id`
     },
     REPORTS : {
         sellingOut : `${REPORT_URL}/sellingout`
@@ -35,7 +39,9 @@ export const API_URL = {
         returPenjualan: `${SALES_URL}/retur-penjualan`
     },
     TRANSAKSI_PENJUALAN : {
-        createTransaction : `${SALES_URL}/transaksi-penjualan`
+        createTransaction : `${SALES_URL}/transaksi-penjualan`,
+        tundaTransaction: `${SALES_URL}/transaksi-penjualan/tunda`,
+        getKeranjang: `${SALES_URL}/transaksi-penjualan/keranjang`,
     },
     PURCHASE_PEMBELIAN : {
         fakturPembelian : `${PURCHASE_PEMBELIAN_URL}/faktur-pembelian`,

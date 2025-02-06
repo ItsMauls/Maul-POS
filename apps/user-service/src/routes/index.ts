@@ -16,4 +16,9 @@ router.post('/validate-credentials', userController.validateUserCredentials);
 router.patch('/:id/password', userController.updateUserPassword);
 router.get('/by-phone-number/:phoneNumber', userController.findUserByPhoneNumber);
 
+router.get('/pelanggan', userController.getAllPelanggan);
+router.get('/pelanggan/phone/:phoneNumber', userController.getPelangganByPhoneNumber);
+router.post('/pelanggan', userController.createPelanggan);
+router.put('/pelanggan/:id', userController.updatePelanggan);
+
 export default router;

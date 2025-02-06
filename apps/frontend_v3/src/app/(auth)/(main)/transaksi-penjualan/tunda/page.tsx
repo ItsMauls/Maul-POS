@@ -51,16 +51,27 @@ export default function Page() {
     const router = useRouter();
     const { data: response, isLoading, error } = useGet<ApiResponse>(API_URL.TRANSAKSI_PENJUALAN.getKeranjang);
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedKeranjang, setSelectedKeranjang] = useState<KeranjangData | null>(null);
+    const [selectedRow, setSelectedRow] = useState<number | null>(null);
+
+    console.log(selectedKeranjang);
+    
 
     const handleBack = () => {
         router.push('/transaksi-penjualan/transaksi');
     }
 
+    const handleRowSelect = (index: number) => {
+        setSelectedRow(index);
+        const selectedData = filteredData[index];
+        setSelectedKeranjang(selectedData);
+    };
+
     const filteredData = response?.data?.filter(item => 
         item.pelanggan?.nama?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
 
-    const columns = [
+    const keranjangColumns = [
         { 
             accessorKey: "id_antrian", 
             header: "Nomor Antrian",
@@ -97,6 +108,47 @@ export default function Page() {
         },
     ];
 
+    const itemColumns = [
+        {
+            accessorKey: "index",
+            header: "No",
+            cell: ({ row }) => row.index + 1
+        },
+        {
+            accessorKey: "nm_brgdg",
+            header: "Nama Barang",
+            cell: ({ row }) => row.original.nm_brgdg || '-'
+        },
+        {
+            accessorKey: "qty",
+            header: "Qty",
+        },
+        {
+            accessorKey: "hj_ecer",
+            header: "Harga",
+            cell: ({ row }) => formatRupiah(row.original.hj_ecer || 0)
+        },
+        {
+            accessorKey: "disc",
+            header: "Disc (%)",
+        },
+        {
+            accessorKey: "sc",
+            header: "SC",
+            cell: ({ row }) => formatRupiah(row.original.sc || 0)
+        },
+        {
+            accessorKey: "misc",
+            header: "Misc",
+            cell: ({ row }) => formatRupiah(row.original.misc || 0)
+        },
+        {
+            accessorKey: "jumlah",
+            header: "Jumlah",
+            cell: ({ row }) => formatRupiah(row.original.jumlah || 0)
+        },
+    ];
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -106,7 +158,7 @@ export default function Page() {
     }
 
     return (
-        <>
+        <div className="space-y-4">
             <div className="flex justify-between">
                 <SearchBar 
                     leftIcon
@@ -118,18 +170,6 @@ export default function Page() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <div className="flex justify-between gap-x-4 my-4">
-                    <Button
-                        hasIcon
-                        icon={            
-                            <span className="ml-2 py-1 px-2 bg-black text-white rounded-lg text-xs">
-                                F10
-                            </span>
-                        }
-                        onClick={handleBack}
-                        className={'border border-gray-400 rounded-xl py-0'}
-                    >
-                        Jadikan Master Resep
-                    </Button>
                     <Button
                         hasIcon
                         icon={            
@@ -154,28 +194,34 @@ export default function Page() {
                     >
                         Kembali
                     </Button>
-                    <Button
-                        hasIcon
-                        icon={            
-                            <span className="ml-2 py-1 px-2 bg-red-500 text-red-500 rounded-lg text-xs">
-                                x
-                            </span>
-                        }
-                        onClick={handleBack}
-                        className={'border border-gray-400 rounded-xl py-0'}
-                    >
-                        Master Resep
-                    </Button>
                 </div>
             </div>
+
+            {/* Tabel Keranjang */}
             <Table
-                columns={columns}
+                columns={keranjangColumns}
                 defaultData={filteredData}
                 meta={{ totalCount: filteredData.length }}
                 totalData={filteredData.length}
                 enableSorting
+                onRowClick={handleRowSelect}
+                selectedRow={selectedRow}
             />
-        </>
+
+            {/* Tabel Items */}
+            {selectedKeranjang && (
+                <div className="mt-4">
+                    <h3 className="text-lg font-semibold mb-2">Detail Items</h3>
+                    <Table
+                        columns={itemColumns}
+                        defaultData={selectedKeranjang.items}
+                        meta={{ totalCount: selectedKeranjang.items.length }}
+                        totalData={selectedKeranjang.items.length}
+                        enableSorting={false}
+                    />
+                </div>
+            )}
+        </div>
     );
 }
     

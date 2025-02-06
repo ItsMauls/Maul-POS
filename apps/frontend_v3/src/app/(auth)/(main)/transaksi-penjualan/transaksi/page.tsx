@@ -18,9 +18,8 @@ import { API_URL } from '@/constants/api';
 import { SHORTCUTS } from "@/constants/shorcuts";
 import { MiscModal } from "@/components/Modal/MiscModal/index";
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-import { Button } from "@/components/Button";
+import { toast } from 'react-hot-toast';
 
 interface AntrianInfo {
   noAntrian: number;
@@ -28,7 +27,18 @@ interface AntrianInfo {
 }
 
 export default function Page() {
-  const { data, addItem, removeItem, updateItem, calculateValues, pelanggan, dokter, clearTransaction } = useTransactionStore();
+  const { 
+    data, 
+    addItem, 
+    removeItem, 
+    updateItem, 
+    calculateValues, 
+    pelanggan, 
+    dokter, 
+    setAntrian, 
+    clearTransaction ,
+    updateTotals
+  } = useTransactionStore();
   console.log(data, 'datdasda');
   
   const [isObatModalOpen, setIsObatModalOpen] = useState(false);
@@ -39,7 +49,6 @@ export default function Page() {
   const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
   const { data: antrianInfo, isLoading: isLoadingAntrianInfo } = useGet<AntrianInfo>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
   const { register } = useForm();
-  const { mutate: tundaTransaksi } = usePost(API_URL.TRANSAKSI_PENJUALAN.tundaTransaction);
   const router = useRouter();
 
   const [headerInfo, setHeaderInfo] = useState({
@@ -60,8 +69,24 @@ export default function Page() {
         Periode: antrianInfo.periode,
         'No Bon': noBon
       }));
+
+      setAntrian({
+        noAntrian,
+        periode: antrianInfo.periode,
+        noBon
+      });
+
+      updateTotals(
+       { 
+        total_harga: calculateGrandTotal(),
+        total_disc: data.reduce((total, item) => total + (item.subJumlah * item.disc / 100), 0),
+        total_sc_misc: data.reduce((total, item) => total + item.sc + item.misc, 0),
+        total_promo: data.reduce((total, item) => total + item.promoValue, 0),
+        total_up: data.reduce((total, item) => total + item.up, 0)
+      }
+      )
     }
-  }, [antrianInfo]);
+  }, [antrianInfo, setAntrian, updateTotals]);
 
   const handleAddItem = (index: number) => {
     addItem(index);
@@ -70,7 +95,7 @@ export default function Page() {
   const handleRemoveItem = (index: number) => {
     removeItem(index);
   };
-
+  console.log(data, 'items');
   const handleObatSelect = (obat: DataRow) => {    
     if (selectedRowIndex !== null) {
       const currentItem = data[selectedRowIndex];
@@ -501,27 +526,6 @@ export default function Page() {
     });
   };
 
-  const handleTundaTransaksi = () => {
-    const transactionData = {
-      no_bon: headerInfo['No Bon'],
-      items: data,
-      pelanggan,
-      dokter
-    };
-
-    tundaTransaksi(transactionData, {
-      onSuccess: () => {
-        toast.success('Transaksi berhasil ditunda');
-        clearTransaction();
-        router.push('/transaksi-penjualan/tunda');
-      },
-      onError: (error) => {
-        toast.error('Gagal menunda transaksi');
-        console.error('Failed to suspend transaction:', error);
-      }
-    });
-  };
-
   return (
     <> 
       <div className="mb-4 flex justify-between items-center">
@@ -598,12 +602,6 @@ export default function Page() {
         onSelect={handleMiscSelect}
         options={miscOptions}
       />
-      <Button
-        onClick={handleTundaTransaksi}
-        className="border border-gray-400 rounded-xl py-0"
-      >
-        Tunda Transaksi
-      </Button>
     </>
   );
 }

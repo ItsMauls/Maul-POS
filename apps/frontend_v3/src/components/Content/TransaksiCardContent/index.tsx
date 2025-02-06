@@ -6,9 +6,17 @@ import { DataRow } from '@/types';
 import { formatRupiah, roundUp } from '@/utils/currency';
 import { SHORTCUTS } from '@/constants/shorcuts';
 import { useRouter } from 'next/navigation';
+import { usePost } from '@/hooks/useApi';
+import { API_URL } from '@/constants/api';
+import toast from 'react-hot-toast';
+import { useTransactionStore } from '@/store/transactionStore';
 
 export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: () => void }> = ({ data, onPaymentClick }) => {
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormValues>();
+  const { pelanggan, dokter, antrian, totals, clearTransaction } = useTransactionStore();
+  const { mutate: tundaTransaksi } = usePost(API_URL.SALES.tundaPenjualan);
+
+  const router = useRouter();
 
   const onSubmit: SubmitHandler<FormValues> = data => {
     console.log(data);
@@ -16,8 +24,6 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
 
   const subtotal = watch('subtotal');
   const roundUpAmount = watch('ru');
-
-  const router = useRouter()
 
   // Calculate total misc charges
   const totalMisc = useMemo(() => {
@@ -52,7 +58,7 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
       if (event.key === SHORTCUTS.OPEN_PAYMENT_MODAL) {
         onPaymentClick();
       } else if (event.key === SHORTCUTS.OPEN_TUNDA_MODAL) {
-        handleTundaClick();
+        handleTundaTransaksi();
       }
     };
 
@@ -62,9 +68,26 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
     };
   }, [onPaymentClick]);
 
-  const handleTundaClick = () => {
-    router.push('/transaksi-penjualan/tunda')
-    console.log('Tunda clicked');
+  const handleTundaTransaksi = () => {
+    const transactionData = {
+      antrian,
+      items: data,
+      pelanggan,
+      totals,
+      dokter
+    };
+
+    tundaTransaksi(transactionData, {
+      onSuccess: () => {
+        toast.success('Transaksi berhasil ditunda');
+        clearTransaction()
+        router.push('/transaksi-penjualan/tunda');
+      },
+      onError: (error) => {
+        toast.error('Gagal menunda transaksi');
+        console.error('Failed to suspend transaction:', error);
+      }
+    });
   };
 
   return (
@@ -134,7 +157,7 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           <button type="submit" className="flex-1 bg-emerald-600 text-white rounded mr-2" onClick={onPaymentClick}>
             Bayar <span className="ml-2 bg-blue-500 rounded-lg p-1">F2</span>
           </button>
-          <button type="button" className="flex-1 bg-blue-600 text-white py-2 px-4 rounded" onClick={handleTundaClick}>
+          <button type="button" className="flex-1 bg-blue-600 text-white py-2 px-4 rounded" onClick={handleTundaTransaksi}>
             Tunda <span className="ml-2 bg-blue-500 rounded-lg p-1">F4</span>
           </button>
         </div>

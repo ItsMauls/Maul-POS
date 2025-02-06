@@ -291,22 +291,37 @@ export const transaksiPenjualanController = {
 
   async tundaTransaction(req: Request, res: Response) {
     try {
-      const { no_bon, items, pelanggan, dokter } = req.body;
-
-      // Create keranjang entry
-      const keranjang = await prisma.keranjang.create({
+      const { antrian, items, pelanggan, dokter, totals } = req.body;
+      console.log(totals, 'totals')
+      const antrianData = await prisma.antrian.create({
         data: {
-          no_bon,
-          items: items,
-          pelanggan: pelanggan || {},
-          dokter: dokter || {},
+          no_antrian: parseInt(antrian.noAntrian),
+          kd_cab: 'CAB001',
+          status: 'PENDING',
+          tanggal: new Date(),
+          keranjang: {
+            create: {
+              items: items,
+              pelanggan: pelanggan || {},
+              dokter: dokter || {},
+              total_harga: totals.total_harga,
+              total_disc: totals.total_disc,
+              total_sc_misc: totals.total_sc_misc,
+              total_promo: totals.total_promo,
+              total_up: totals.total_up,
+              no_voucher: totals.no_voucher || '',
+            }
+          }
+        },
+        include: {
+          keranjang: true
         }
       });
 
       res.status(HTTP_STATUS.CREATED).json({
         success: true,
         message: 'Transaction suspended successfully',
-        data: keranjang
+        data: antrianData
       });
     } catch (error) {
       console.error('Error suspending transaction:', error);

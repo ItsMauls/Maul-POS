@@ -9,12 +9,33 @@ interface TransactionState {
   data: DataRow[];
   pelanggan: any;
   dokter: any;
+  antrian: {
+    noAntrian: string;
+    periode: string;
+    noBon: string;
+  };
+  totals: {
+    total_harga: number;
+    total_disc: number;
+    total_sc_misc: number;
+    total_promo: number;
+    total_up: number;
+    no_voucher: string;
+  };
   addItem: (index: number) => void;
   removeItem: (index: number) => void;
   updateItem: (index: number, item: Partial<DataRow>) => void;
   calculateValues: (item: DataRow) => DataRow;
   setPelanggan: (data: any) => void;
   setDokter: (data: any) => void;
+  setAntrian: (data: any) => void;
+  updateTotals: (totals: {
+    total_harga: number;
+    total_disc: number;
+    total_sc_misc: number;
+    total_promo: number;
+    total_up: number;
+  }) => void;
   clearTransaction: () => void;
 }
 
@@ -55,6 +76,19 @@ export const useTransactionStore = create(
       }],
       pelanggan: {},
       dokter: {},
+      antrian: {
+        noAntrian: '',
+        periode: '',
+        noBon: ''
+      },
+      totals: {
+        total_harga: 0,
+        total_disc: 0,
+        total_sc_misc: 0,
+        total_promo: 0,
+        total_up: 0,
+        no_voucher: '',
+      },
       addItem: (index) => {
         const { data } = get();
         const newItem: DataRow = {
@@ -136,6 +170,15 @@ export const useTransactionStore = create(
       },
       setPelanggan: (data) => set((state) => ({ pelanggan: { ...state.pelanggan, ...data } })),
       setDokter: (data) => set((state) => ({ dokter: { ...state.dokter, ...data } })),
+      setAntrian: (data) => set((state) => ({ 
+        antrian: { ...state.antrian, ...data } 
+      })),
+      updateTotals: (totals) => set((state) => ({
+        totals: {
+          ...state.totals,
+          ...totals
+        }
+      })),
       clearTransaction: () => set(() => ({
         data: [{
           index: 0,
@@ -158,6 +201,19 @@ export const useTransactionStore = create(
         }],
         pelanggan: {},
         dokter: {},
+        antrian: {
+          noAntrian: '',
+          periode: '',
+          noBon: ''
+        },
+        totals: {
+          total_harga: 0,
+          total_disc: 0,
+          total_sc_misc: 0,
+          total_promo: 0,
+          total_up: 0,
+          no_voucher: '',
+        }
       })),
     }),
     {

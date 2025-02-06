@@ -3,7 +3,7 @@ const AUTH_URL = `http://localhost:3007/api/auth`
 const USER_URL = `http://localhost:3006/api/users`
 const PAYMENT_URL = `http://localhost:3010/api/payment`
 const REPORT_URL = `${BASE_URL}/report`
-const SALES_URL = `${BASE_URL}/sales/`
+const SALES_URL = `${BASE_URL}/sales`
 const PURCHASE_PEMBELIAN_URL = `http://localhost:3003/api/inventory-pembelian`
 
 export const API_URL = {
@@ -36,6 +36,7 @@ export const API_URL = {
         getSales : `${SALES_URL}/sales`,
         'info-obat': `${SALES_URL}/info-obat`,
         transaksiPenjualan: `${SALES_URL}/transaksi-penjualan`,
+        tundaPenjualan: `${SALES_URL}/transaksi-penjualan`,
         returPenjualan: `${SALES_URL}/retur-penjualan`
     },
     TRANSAKSI_PENJUALAN : {

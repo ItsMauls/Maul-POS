@@ -47,7 +47,7 @@ export default function Page() {
   const [change, setChange] = useState(0);
   const [paymentData, setPaymentData] = useState<any>({});
   const { mutate: createTransaction } = usePost(API_URL.TRANSAKSI_PENJUALAN.createTransaction);
-  const { data: antrianInfo, isLoading: isLoadingAntrianInfo } = useGet<AntrianInfo>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
+  const { data: antrianInfo, isLoading: isLoadingAntrianInfo, refetch: refetchAntrianInfo } = useGet<AntrianInfo>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
   const { register } = useForm();
   const router = useRouter();
 
@@ -507,7 +507,6 @@ export default function Page() {
           console.log(data, 'data');
           
           if (data.data.receipt) {
-            // Open PDF receipt in a new tab
             const pdfBlob = new Blob([Buffer.from(data.data.receipt, 'base64')], { type: 'application/pdf' });
             const pdfUrl = URL.createObjectURL(pdfBlob);
             window.open(pdfUrl, '_blank');
@@ -516,6 +515,9 @@ export default function Page() {
           }
           // Clear the transaction storage
           clearTransaction();
+          // Refetch antrian info and refresh the page
+          refetchAntrianInfo();
+          // router.refresh();
           resolve();
         },
         onError: (error) => {

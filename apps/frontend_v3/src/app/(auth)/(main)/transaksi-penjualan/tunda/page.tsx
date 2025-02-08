@@ -49,13 +49,10 @@ interface ApiResponse {
 
 export default function Page() {
     const router = useRouter();
-    const { data: response, isLoading, error } = useGet<ApiResponse>(API_URL.TRANSAKSI_PENJUALAN.getKeranjang);
+    const { data: response, isLoading, error, refetch } = useGet<ApiResponse>(API_URL.TRANSAKSI_PENJUALAN.getKeranjang);
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedKeranjang, setSelectedKeranjang] = useState<KeranjangData | null>(null);
     const [selectedRow, setSelectedRow] = useState<number | null>(null);
-
-    console.log(selectedKeranjang);
-    
+    const [selectedKeranjang, setSelectedKeranjang] = useState<KeranjangData | null>(null);
 
     const handleBack = () => {
         router.push('/transaksi-penjualan/transaksi');
@@ -66,6 +63,11 @@ export default function Page() {
         const selectedData = filteredData[index];
         setSelectedKeranjang(selectedData);
     };
+
+    // Refresh data setiap kali komponen di-mount atau di-update
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
 
     const filteredData = response?.data?.filter(item => 
         item.pelanggan?.nama?.toLowerCase().includes(searchTerm.toLowerCase())

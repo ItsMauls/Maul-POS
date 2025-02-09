@@ -1,4 +1,5 @@
-FROM node:18-alpine
+# Stage 1: Build
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
@@ -18,8 +19,19 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
-# Expose port if needed
-EXPOSE 5432
+# Stage 2: Run
+FROM node:18-alpine
 
-# Run migrations and start the service
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"] 
+WORKDIR /app
+
+# Copy necessary files from builder stage
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/dist ./dist
+
+# Expose port if needed (optional, depending on your service)
+EXPOSE 3000
+
+# Run migrations, seed data, and start the service in development mode
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && npm run dev"]

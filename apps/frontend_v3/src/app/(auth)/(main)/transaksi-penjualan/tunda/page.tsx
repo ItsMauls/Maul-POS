@@ -53,6 +53,7 @@ export default function Page() {
     const router = useRouter();
     const { data: response, isLoading, error, refetch } = useGet<ApiResponse>(API_URL.TRANSAKSI_PENJUALAN.getKeranjang);
     const { mutate: continueAntrian, isLoading: isContinueLoading } = usePost<any>(API_URL.ANTRIAN.continueAntrian);
+    const { refetch: refetchAntrianInfo } = useGet<any>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedRow, setSelectedRow] = useState<number | null>(null);
     const [selectedKeranjang, setSelectedKeranjang] = useState<KeranjangData | null>(null);
@@ -86,6 +87,8 @@ export default function Page() {
                             total_up: selectedKeranjang.total_up,
                         });
                         
+                        refetch();
+                        refetchAntrianInfo();
                         router.push('/transaksi-penjualan/transaksi');
                     },
                     onError: (error) => {

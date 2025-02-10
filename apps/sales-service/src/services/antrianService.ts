@@ -52,6 +52,47 @@ export const antrianService = {
     });
   },
 
+  async continuePendingAntrian(idAntrian: number) {
+    const antrian = await prisma.antrian.findUnique({
+      where: { id_antrian: idAntrian },
+      include: {
+        keranjang: true
+      }
+    });
+  
+    if (!antrian) throw new Error('Antrian tidak ditemukan');
+    // if (antrian.status !== 'PENDING') throw new Error('Antrian tidak dalam status PENDING');
+  
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    const lastAntrian = await prisma.antrian.findFirst({
+      where: {
+        tanggal: {
+          gte: today
+        },
+        kd_cab: antrian.kd_cab,
+        status: {
+          not: 'PENDING'
+        }
+      },
+      orderBy: {
+        no_antrian: 'desc'
+      }
+    });
+  
+    const nextAntrianNumber = lastAntrian?.no_antrian ? lastAntrian.no_antrian + 1 : 1;
+  
+    // Update antrian dengan nomor baru
+    return prisma.antrian.update({
+      where: { id_antrian: idAntrian },
+      data: {
+        status: 'MENUNGGU',
+        no_antrian: nextAntrianNumber
+      },
+    });
+  },
+
   async getAntrianToday(kdCab: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -85,7 +126,7 @@ export const antrianService = {
       }
     });
 
-    const noAntrian = lastAntrian ? lastAntrian.no_antrian! : 0;
+    const noAntrian = lastAntrian ? lastAntrian.no_antrian! : 1;
     const periode = today.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
     return {

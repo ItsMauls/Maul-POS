@@ -293,9 +293,28 @@ export const transaksiPenjualanController = {
     try {
       const { antrian, items, pelanggan, dokter, totals } = req.body;
       console.log(totals, 'totals')
+
+      // Get the next antrian number
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const lastAntrian = await prisma.antrian.findFirst({
+        where: {
+          tanggal: {
+            gte: today
+          },
+          kd_cab: 'CAB001'
+        },
+        orderBy: {
+          no_antrian: 'desc'
+        }
+      });
+
+      const nextAntrianNumber = lastAntrian?.no_antrian ? lastAntrian.no_antrian + 1 : 1;
+
       const antrianData = await prisma.antrian.create({
         data: {
-          no_antrian: parseInt(antrian.noAntrian),
+          no_antrian: nextAntrianNumber,
           kd_cab: 'CAB001',
           status: 'PENDING',
           tanggal: new Date(),
@@ -505,13 +524,29 @@ export const transaksiPenjualanController = {
     }
   },
 
-  async getKeranjang(req: Request, res: Response) {
+  async getKeranjang(_: unknown, res: Response) {
     try {
-      const keranjang = await prisma.keranjang.findMany()
-
+      // Tentukan tanggal hari ini
+      const today = new Date();
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0)); // Awal hari (00:00:00)
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999)); // Akhir hari (23:59:59.999)
+  
+      // Ambil data keranjang yang dibuat hari ini
+      const keranjang = await prisma.keranjang.findMany({
+        where: {
+          created_at: {
+            gte: startOfDay, // Greater than or equal to awal hari
+            lte: endOfDay,   // Less than or equal to akhir hari
+          },
+        },
+        include: {
+          antrian: true, // Sesuaikan dengan nama relasi yang didefinisikan di schema Prisma
+        },
+      });
+  
       res.status(HTTP_STATUS.OK).json({
         success: true,
-        data: keranjang
+        data: keranjang,
       });
     } catch (error) {
       res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({

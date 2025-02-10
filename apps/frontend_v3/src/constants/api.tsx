@@ -16,7 +16,8 @@ export const API_URL = {
         createAntrian : `${SALES_URL}/antrian/add`,
         finishAntrian : `${SALES_URL}/antrian/finish`,
         getAntrianToday : `${SALES_URL}/antrian/today`,
-        getCurrentAntrianInfo : `${SALES_URL}/antrian/current-antrian-info/:kdCab`
+        getCurrentAntrianInfo : `${SALES_URL}/antrian/current-antrian-info/:kdCab`,
+        continueAntrian: `${SALES_URL}/antrian/continue`
     },
     PAYMENT : {
         createPayment : `${PAYMENT_URL}`,

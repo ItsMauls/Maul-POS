@@ -3,10 +3,12 @@ import { Table } from "@/components/Table";
 import Button from "@/components/ui/Button";
 import { SearchBar } from "@/components/ui/Searchbar";
 import { useRouter } from "next/navigation";
-import { useGet } from "@/hooks/useApi";
+import { useGet, usePost } from "@/hooks/useApi";
 import { API_URL } from "@/constants/api";
 import { formatRupiah } from "@/utils/currency";
 import { useEffect, useState } from "react";
+import { useTransactionStore } from "@/store/transactionStore";
+import { toast } from "react-hot-toast";
 
 interface KeranjangData {
     id: number;
@@ -50,9 +52,11 @@ interface ApiResponse {
 export default function Page() {
     const router = useRouter();
     const { data: response, isLoading, error, refetch } = useGet<ApiResponse>(API_URL.TRANSAKSI_PENJUALAN.getKeranjang);
+    const { mutate: continueAntrian, isLoading: isContinueLoading } = usePost<any>(API_URL.ANTRIAN.continueAntrian);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedRow, setSelectedRow] = useState<number | null>(null);
     const [selectedKeranjang, setSelectedKeranjang] = useState<KeranjangData | null>(null);
+    const { setPelanggan, setDokter, setItems, setTotals } = useTransactionStore();
 
     const handleBack = () => {
         router.push('/transaksi-penjualan/transaksi');
@@ -64,10 +68,54 @@ export default function Page() {
         setSelectedKeranjang(selectedData);
     };
 
-    // Refresh data setiap kali komponen di-mount atau di-update
+    const handleContinueAntrian = () => {
+        if (selectedKeranjang) {
+            continueAntrian(
+                { idAntrian: selectedKeranjang.id_antrian },
+                {
+                    onSuccess: () => {
+                        // Set data ke transaction store sebelum navigasi
+                        setPelanggan(selectedKeranjang.pelanggan);
+                        setDokter(selectedKeranjang.dokter);
+                        setItems(selectedKeranjang.items);
+                        setTotals({
+                            total_harga: selectedKeranjang.total_harga,
+                            total_disc: selectedKeranjang.total_disc,
+                            total_sc_misc: selectedKeranjang.total_sc_misc,
+                            total_promo: selectedKeranjang.total_promo,
+                            total_up: selectedKeranjang.total_up,
+                        });
+                        
+                        router.push('/transaksi-penjualan/transaksi');
+                    },
+                    onError: (error) => {
+                        console.error('Error continuing antrian:', error);
+                        toast.error('Gagal melanjutkan antrian');
+                    }
+                }
+            );
+        }
+    };
+
+    const handleKeyPress = (event: KeyboardEvent) => {
+        if (event.key === 'Enter' && selectedKeranjang) {
+            handleContinueAntrian();
+        }
+    };
+
     useEffect(() => {
         refetch();
     }, [refetch]);
+
+    useEffect(() => {
+        // Add event listener
+        window.addEventListener('keydown', handleKeyPress);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+        };
+    }, [selectedKeranjang]); // Depend on selectedKeranjang
 
     const filteredData = response?.data?.filter(item => 
         item.pelanggan?.nama?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -75,7 +123,7 @@ export default function Page() {
 
     const keranjangColumns = [
         { 
-            accessorKey: "id_antrian", 
+            accessorKey: "antrian.no_antrian", 
             header: "Nomor Antrian",
         },
         { 
@@ -179,7 +227,8 @@ export default function Page() {
                                 Enter
                             </span>
                         }
-                        onClick={handleBack}
+                        onClick={handleContinueAntrian}
+                        disabled={!selectedKeranjang || isContinueLoading}
                         className={'border border-gray-400 rounded-xl py-0'}
                     >
                         Pilih

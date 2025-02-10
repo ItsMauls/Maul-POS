@@ -81,7 +81,7 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
       onSuccess: () => {
         toast.success('Transaksi berhasil ditunda');
         clearTransaction()
-        router.push('/transaksi-penjualan/tunda');
+        // router.push('/transaksi-penjualan/tunda');
       },
       onError: (error) => {
         toast.error('Gagal menunda transaksi');

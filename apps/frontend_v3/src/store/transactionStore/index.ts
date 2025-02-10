@@ -37,6 +37,14 @@ interface TransactionState {
     total_up: number;
   }) => void;
   clearTransaction: () => void;
+  setItems: any;
+  setTotals: (totals: {
+    total_harga: string | number;
+    total_disc: string | number;
+    total_sc_misc: string | number;
+    total_promo: string | number;
+    total_up: string | number;
+  }) => void;
 }
 
 const customStorage: StateStorage = {
@@ -213,6 +221,34 @@ export const useTransactionStore = create(
           total_promo: 0,
           total_up: 0,
           no_voucher: '',
+        }
+      })),
+      setItems: (items: any) => set(() => ({
+        data: items.map((item, index) => ({
+          ...item,
+          index,
+          // Ensure all required properties are present
+          rOption: item.rOption || "R",
+          qty: item.qty || 1,
+          disc: item.disc || 0,
+          sc: item.sc || 0,
+          misc: item.misc || 0,
+          promo: item.promo || 0,
+          discPromo: item.discPromo || 0,
+          promoValue: item.promoValue || 0,
+          up: item.up || 0,
+          noVoucher: item.noVoucher || "-",
+          activePromo: item.activePromo || null,
+        }))
+      })),
+      setTotals: (totals) => set((state) => ({
+        totals: {
+          ...state.totals,
+          total_harga: Number(totals.total_harga) || 0,
+          total_disc: Number(totals.total_disc) || 0,
+          total_sc_misc: Number(totals.total_sc_misc) || 0,
+          total_promo: Number(totals.total_promo) || 0,
+          total_up: Number(totals.total_up) || 0,
         }
       })),
     }),

@@ -6,13 +6,14 @@ export const SHORTCUTS = {
     OPEN_TUNDA_MODAL: 'F4',
     RESET_SP: 'F10',
     APPROVAL: 'F5',
+    BON_GANTUNG: 'F9',
     SEARCH: '/',
     SAVE: 'Ctrl+S',
     CANCEL: 'Esc',
     NEXT_PAGE: 'ArrowRight',
     PREV_PAGE: 'ArrowLeft',
     OPEN_OBAT_MODAL: 'F1',
-    CLOSE_MODAL: 'Escape',
+    CLOSE_MODAL: 'Escape'
   };
   
   export const SHORTCUT_ACTIONS = {

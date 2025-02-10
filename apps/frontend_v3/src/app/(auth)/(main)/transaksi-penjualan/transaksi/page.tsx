@@ -184,6 +184,8 @@ export default function Page() {
         if (selectedRow !== null) {
           setIsMiscModalOpen(true);
         }
+      } else if (event.key === SHORTCUTS.BON_GANTUNG) {
+        router.push('/transaksi-penjualan/tunda')
       }
     };
   

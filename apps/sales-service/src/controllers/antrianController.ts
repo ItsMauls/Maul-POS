@@ -57,5 +57,19 @@ export const antrianController = {
             .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
             .json({ message: 'Terjadi kesalahan saat mengambil data antrian', error });
         }
+    },
+
+    async continueAntrian(req: Request, res: Response) {
+        try {
+            const { idAntrian }= req.body as any
+            const antrian = antrianService.continuePendingAntrian(idAntrian) 
+            res
+            .status(HTTP_STATUS.OK)
+            .json(antrian);
+        } catch (error) {
+            res
+            .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+            .json({ message: 'Terjadi kesalahan saat mengambil data antrian', error }); 
+        }
     }
 };

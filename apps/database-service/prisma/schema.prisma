@@ -324,6 +324,7 @@ model Antrian {
   timer          String?
   status_proses  Int?
   user_mulai     String?
+  is_permanent   Boolean @default(false)
   user_selesai   String?
   tgl_update     DateTime?
   status         String?

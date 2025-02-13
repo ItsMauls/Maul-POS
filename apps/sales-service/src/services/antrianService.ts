@@ -1,7 +1,7 @@
 import prisma from "../config/prisma";
 
 export const antrianService = {
-  async addAntrian(idPelanggan: number, kdCab: string) {
+  async addAntrian(idPelanggan: number, kdCab: string, isPermanent: boolean = false) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
   
@@ -26,7 +26,8 @@ export const antrianService = {
         kd_cab: kdCab,
         tanggal: new Date(),
         mulai: new Date().toISOString(),
-        status: 'MENUNGGU'
+        status: 'MENUNGGU',
+        is_permanent: isPermanent
       }
     });
   },
@@ -93,16 +94,21 @@ export const antrianService = {
     });
   },
 
-  async getAntrianToday(kdCab: string) {
+  async getAntrianToday(kdCab: string, includePermanent: boolean = false) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     return prisma.antrian.findMany({
       where: {
-        tanggal: {
-          gte: today
-        },
-        kd_cab: kdCab
+        kd_cab: kdCab,
+        OR: [
+          {
+            tanggal: {
+              gte: today
+            }
+          },
+          ...(includePermanent ? [{ is_permanent: true }] : [])
+        ]
       },
       orderBy: {
         no_antrian: 'asc'

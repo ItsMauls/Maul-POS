@@ -13,7 +13,8 @@ export const SHORTCUTS = {
     NEXT_PAGE: 'ArrowRight',
     PREV_PAGE: 'ArrowLeft',
     OPEN_OBAT_MODAL: 'F1',
-    CLOSE_MODAL: 'Escape'
+    CLOSE_MODAL: 'Escape',
+    PERMANENT_TUNDA: 'AltLeft+F9'
   };
   
   export const SHORTCUT_ACTIONS = {

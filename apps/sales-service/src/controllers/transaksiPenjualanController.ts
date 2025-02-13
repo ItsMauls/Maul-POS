@@ -291,7 +291,7 @@ export const transaksiPenjualanController = {
 
   async tundaTransaction(req: Request, res: Response) {
     try {
-      const { antrian, items, pelanggan, dokter, totals } = req.body;
+      const { antrian, items, pelanggan, dokter, totals, isPermanent = false } = req.body;
       console.log(totals, 'totals')
 
       // Get the next antrian number
@@ -318,6 +318,7 @@ export const transaksiPenjualanController = {
           kd_cab: 'CAB001',
           status: 'PENDING',
           tanggal: new Date(),
+          is_permanent: isPermanent,
           keranjang: {
             create: {
               items: items,
@@ -528,19 +529,28 @@ export const transaksiPenjualanController = {
     try {
       // Tentukan tanggal hari ini
       const today = new Date();
-      const startOfDay = new Date(today.setHours(0, 0, 0, 0)); // Awal hari (00:00:00)
-      const endOfDay = new Date(today.setHours(23, 59, 59, 999)); // Akhir hari (23:59:59.999)
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999));
   
-      // Ambil data keranjang yang dibuat hari ini
+      // Ambil data keranjang yang dibuat hari ini atau yang permanent
       const keranjang = await prisma.keranjang.findMany({
         where: {
-          created_at: {
-            gte: startOfDay, // Greater than or equal to awal hari
-            lte: endOfDay,   // Less than or equal to akhir hari
-          },
+          OR: [
+            {
+              created_at: {
+                gte: startOfDay,
+                lte: endOfDay,
+              },
+            },
+            {
+              antrian: {
+                is_permanent: true
+              }
+            }
+          ]
         },
         include: {
-          antrian: true, // Sesuaikan dengan nama relasi yang didefinisikan di schema Prisma
+          antrian: true,
         },
       });
   

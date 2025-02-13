@@ -53,12 +53,38 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
     }, 0);
   }, [data]);
 
+  const handleTundaTransaksi = (isPermanent = false) => {
+    const transactionData = {
+      antrian,
+      items: data,
+      pelanggan,
+      totals,
+      dokter,
+      isPermanent
+    };
+
+    tundaTransaksi(transactionData, {
+      onSuccess: () => {
+        toast.success('Transaksi berhasil ditunda');
+        clearTransaction();
+        router.push('/transaksi-penjualan/tunda');
+      },
+      onError: (error) => {
+        toast.error('Gagal menunda transaksi');
+        console.error('Failed to suspend transaction:', error);
+      }
+    });
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === SHORTCUTS.OPEN_PAYMENT_MODAL) {
         onPaymentClick();
       } else if (event.key === SHORTCUTS.OPEN_TUNDA_MODAL) {
-        handleTundaTransaksi();
+        handleTundaTransaksi(false);
+      } else if (event.key === 'F9' && event.altKey) {
+        event.preventDefault();
+        handleTundaTransaksi(true);
       }
     };
 
@@ -67,28 +93,6 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [onPaymentClick]);
-
-  const handleTundaTransaksi = () => {
-    const transactionData = {
-      antrian,
-      items: data,
-      pelanggan,
-      totals,
-      dokter
-    };
-
-    tundaTransaksi(transactionData, {
-      onSuccess: () => {
-        toast.success('Transaksi berhasil ditunda');
-        clearTransaction()
-        // router.push('/transaksi-penjualan/tunda');
-      },
-      onError: (error) => {
-        toast.error('Gagal menunda transaksi');
-        console.error('Failed to suspend transaction:', error);
-      }
-    });
-  };
 
   return (
     <div className=''>
@@ -157,9 +161,20 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           <button type="submit" className="flex-1 bg-emerald-600 text-white rounded mr-2" onClick={onPaymentClick}>
             Bayar <span className="ml-2 bg-blue-500 rounded-lg p-1">F2</span>
           </button>
-          <button type="button" className="flex-1 bg-blue-600 text-white py-2 px-4 rounded" onClick={handleTundaTransaksi}>
+          <button 
+            type="button" 
+            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded" 
+            onClick={() => handleTundaTransaksi(false)}
+          >
             Tunda <span className="ml-2 bg-blue-500 rounded-lg p-1">F4</span>
           </button>
+          {/* <button 
+            type="button" 
+            className="flex-1 bg-purple-600 text-white py-2 px-4 rounded ml-2" 
+            onClick={() => handleTundaTransaksi(true)}
+          >
+            Tunda Permanen <span className="ml-2 bg-blue-500 rounded-lg p-1">Alt+F9</span>
+          </button> */}
         </div>
       </form>
     </div>

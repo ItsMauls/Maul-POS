@@ -11,6 +11,7 @@ export const antrianController = {
             .status(HTTP_STATUS.CREATED)
             .json(antrian);
         } catch (error) {
+            console.log(error)
             res
             .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
             .json({ message: 'Terjadi kesalahan saat menambah antrian', error });
@@ -25,6 +26,7 @@ export const antrianController = {
             .status(HTTP_STATUS.OK)
             .json(antrian);
         } catch (error) {
+            console.log(error)
             res
             .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
             .json({ message: 'Terjadi kesalahan saat menyelesaikan antrian', error });
@@ -39,6 +41,7 @@ export const antrianController = {
             .status(HTTP_STATUS.OK)
             .json(antrian);
         } catch (error) {
+            console.log(error)
             res
             .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
             .json({ message: 'Terjadi kesalahan saat mengambil data antrian', error });
@@ -53,6 +56,7 @@ export const antrianController = {
             .status(HTTP_STATUS.OK)
             .json(antrian);
         } catch (error) {
+            console.log(error)
             res
             .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
             .json({ message: 'Terjadi kesalahan saat mengambil data antrian', error });
@@ -67,6 +71,7 @@ export const antrianController = {
             .status(HTTP_STATUS.OK)
             .json(antrian);
         } catch (error) {
+            console.log(error)
             res
             .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
             .json({ message: 'Terjadi kesalahan saat mengambil data antrian', error }); 

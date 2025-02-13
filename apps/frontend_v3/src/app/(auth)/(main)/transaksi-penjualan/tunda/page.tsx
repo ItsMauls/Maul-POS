@@ -13,6 +13,11 @@ import { toast } from "react-hot-toast";
 interface KeranjangData {
     id: number;
     id_antrian: number;
+    antrian: {
+        no_antrian: number;
+        is_permanent: boolean;
+        // ... other antrian properties
+    };
     items: Array<{
         sc: number;
         up: number;
@@ -128,6 +133,19 @@ export default function Page() {
         { 
             accessorKey: "antrian.no_antrian", 
             header: "Nomor Antrian",
+        },
+        {
+            accessorKey: "antrian.is_permanent",
+            header: "Status",
+            cell: ({ row }) => (
+                <div className={`px-2 py-1 rounded-full text-xs inline-flex items-center ${
+                    row.original.antrian?.is_permanent 
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                    {row.original.antrian?.is_permanent ? 'Permanent' : 'Regular'}
+                </div>
+            )
         },
         { 
             accessorKey: "pelanggan.nama", 

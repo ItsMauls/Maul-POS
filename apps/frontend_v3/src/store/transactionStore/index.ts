@@ -65,7 +65,7 @@ export const useTransactionStore = create(
     (set, get) => ({
       data: [{
         index: 0,
-        rOption: "R",
+        rOption: "",
         kd_brgdg: "BRG001",
         nm_brgdg: "New Item",
         hj_ecer: 0,
@@ -80,7 +80,7 @@ export const useTransactionStore = create(
         promoValue: 0,
         up: 0,
         noVoucher: "-",
-        activePromo: null, // Initialize with null
+        activePromo: null,
       }],
       pelanggan: {},
       dokter: {},
@@ -101,7 +101,7 @@ export const useTransactionStore = create(
         const { data } = get();
         const newItem: DataRow = {
           index: data.length,
-          rOption: "R",
+          rOption: "",
           kd_brgdg: `BRG${(data.length + 1).toString().padStart(3, '0')}`,
           nm_brgdg: "New Item",
           hj_ecer: 0,
@@ -190,7 +190,7 @@ export const useTransactionStore = create(
       clearTransaction: () => set(() => ({
         data: [{
           index: 0,
-          rOption: "R",
+          rOption: "",
           kd_brgdg: "BRG001",
           nm_brgdg: "New Item",
           hj_ecer: 0,
@@ -205,7 +205,7 @@ export const useTransactionStore = create(
           promoValue: 0,
           up: 0,
           noVoucher: "-",
-          activePromo: null, // Set to null when clearing
+          activePromo: null,
         }],
         pelanggan: {},
         dokter: {},
@@ -227,8 +227,7 @@ export const useTransactionStore = create(
         data: items.map((item, index) => ({
           ...item,
           index,
-          // Ensure all required properties are present
-          rOption: item.rOption || "R",
+          rOption: item.rOption || "",
           qty: item.qty || 1,
           disc: item.disc || 0,
           sc: item.sc || 0,

@@ -102,7 +102,7 @@ export default function Page() {
       let adjustedPrice = obat.hj_ecer;
       let sc = 0;
 
-      // Adjust price and SC based on rOption
+      // Hanya tambahkan SC jika rOption sudah dipilih
       if (currentItem.rOption === 'R') {
         sc = 6000;
       } else if (currentItem.rOption === 'RC') {
@@ -238,7 +238,7 @@ export default function Page() {
       cell: ({ row }) => (
         <SelectField
           label=""
-          name={`jenis`}
+          name={`items.${row.index}.rOption`}
           register={register}
           options={[
             { value: "R", label: "R" },
@@ -246,7 +246,7 @@ export default function Page() {
           ]}
           placeholder="Select"
           value={row.original.rOption}
-          onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+          onChange={(e) => {
             const newROption = e.target.value;
             let sc = 0;
 
@@ -264,7 +264,6 @@ export default function Page() {
             });
             updateItem(row.index, updatedItem);
           }}
-          {...({ value: row.original.rOption } as any)}
         />
       ),
     },

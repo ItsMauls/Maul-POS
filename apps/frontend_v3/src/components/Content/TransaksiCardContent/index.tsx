@@ -53,7 +53,23 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
     }, 0);
   }, [data]);
 
+  const validatePelanggan = () => {
+    if (!pelanggan || !pelanggan.nama) {
+      toast.error('Data pelanggan harus diisi terlebih dahulu');
+      return false;
+    }
+    return true;
+  };
+
+  const handlePaymentClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!validatePelanggan()) return;
+    onPaymentClick();
+  };
+
   const handleTundaTransaksi = (isPermanent = false) => {
+    if (!validatePelanggan()) return;
+
     const transactionData = {
       antrian,
       items: data,
@@ -67,7 +83,7 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
       onSuccess: () => {
         toast.success('Transaksi berhasil ditunda');
         clearTransaction();
-        router.push('/transaksi-penjualan/tunda');
+        // router.push('/transaksi-penjualan/tunda');
       },
       onError: (error) => {
         toast.error('Gagal menunda transaksi');
@@ -158,7 +174,11 @@ export const TransaksiCardContent: React.FC<{ data: DataRow[], onPaymentClick: (
           value={(data.reduce((sum, item) => sum + (item.activePromo?.diskon || 0), 0))}
         />
         <div className="flex mt-4">
-          <button type="submit" className="flex-1 bg-emerald-600 text-white rounded mr-2" onClick={onPaymentClick}>
+          <button 
+            type="submit" 
+            className="flex-1 bg-emerald-600 text-white rounded mr-2" 
+            onClick={handlePaymentClick}
+          >
             Bayar <span className="ml-2 bg-blue-500 rounded-lg p-1">F2</span>
           </button>
           <button 

@@ -250,18 +250,20 @@ export default function Page() {
             const newROption = e.target.value;
             let sc = 0;
 
+            // Tentukan SC berdasarkan rOption
             if (newROption === 'R') {
               sc = 6000;
             } else if (newROption === 'RC') {
               sc = 12000;
             }
 
+            // Update item dengan SC yang baru
             const updatedItem = calculateValues({
               ...row.original,
               rOption: newROption,
-              sc: sc,
-              subJumlah: (row.original.hj_ecer * (row.original.qty || 1)) + sc,
+              sc: sc
             });
+
             updateItem(row.index, updatedItem);
           }}
         />

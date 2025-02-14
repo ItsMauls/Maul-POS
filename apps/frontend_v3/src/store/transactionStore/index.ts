@@ -139,41 +139,37 @@ export const useTransactionStore = create(
         }));
         console.log('Updated item:', get().data[index]); // Add this line for debugging
       },
-      calculateValues: (item) => {
-        const subJumlah = item.qty * item.hj_ecer;
-        const discAmount = subJumlah * (item.disc / 100);
-        let promoAmount = 0;
-
+      calculateValues: (item: DataRow) => {
+        const qty = item.qty || 1;
+        const hj_ecer = item.hj_ecer || 0;
+        const sc = item.sc || 0;
+        const misc = item.misc || 0;
+        
+        // Hitung subJumlah (hanya harga * qty, tanpa SC)
+        const subJumlah = hj_ecer * qty;
+        
+        // Hitung diskon jika ada activePromo
+        let discPromo = 0;
+        let promoValue = 0;
+        
         if (item.activePromo) {
-          switch (item.activePromo.jenis_promo) {
-            case 'PERSENTASE_DISKON':
-              promoAmount = subJumlah * (item.activePromo.diskon / 100);
-              if (item.activePromo.max_diskon) {
-                promoAmount = Math.min(promoAmount, item.activePromo.max_diskon);
-              }
-              break;
-            case 'POTONGAN_HARGA':
-              promoAmount = item.activePromo.diskon * item.qty;
-              break;
-            case 'BUY_ONE_GET_ONE':
-              if (item.activePromo.kuantitas_beli && item.qty >= item.activePromo.kuantitas_beli) {
-                const freeItems = Math.floor(item.qty / item.activePromo.kuantitas_beli) * (item.activePromo.kuantitas_gratis || 0);
-                promoAmount = freeItems * item.hj_ecer;
-              }
-              break;
+          if (item.activePromo.jenis_promo === 'PERSENTASE_DISKON') {
+            discPromo = (subJumlah * (item.activePromo.diskon / 100));
+            promoValue = discPromo;
           }
+          // ... handle other promo types if needed ...
         }
 
-        const scAmount = subJumlah * (item.sc / 100);
-        const jumlah = subJumlah - discAmount - promoAmount + scAmount + item.misc;
+        // Hitung jumlah total (termasuk SC, misc, dan diskon)
+        const jumlah = subJumlah + sc + misc - promoValue;
 
         return {
           ...item,
+          qty,
           subJumlah,
-          jumlah,
-          discPromo: promoAmount,
-          promoValue: promoAmount,
-          activePromo: item.activePromo, // Ensure activePromo is included in the returned object
+          discPromo,
+          promoValue,
+          jumlah: Math.ceil(jumlah / 100) * 100, // Round up to nearest 100
         };
       },
       setPelanggan: (data) => set((state) => ({ pelanggan: { ...state.pelanggan, ...data } })),

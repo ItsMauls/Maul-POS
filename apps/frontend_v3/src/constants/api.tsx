@@ -28,7 +28,10 @@ export const API_URL = {
         pelanggan : `${USER_URL}/pelanggan`,
         pelangganByPhone : `${USER_URL}/pelanggan/phone/:phoneNumber`,
         createPelanggan : `${USER_URL}/pelanggan`,
-        updatePelanggan : `${USER_URL}/pelanggan/:id`
+        updatePelanggan : `${USER_URL}/pelanggan/:id`,
+        createKassa: `${USER_URL}/kassa/create`,
+        updateKassa: `${USER_URL}/kassa`,
+        currentKassa: `${USER_URL}/kassa/current`
     },
     REPORTS : {
         sellingOut : `${REPORT_URL}/sellingout`

@@ -170,4 +170,143 @@ exports.userController = {
             res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Error fetching current user' });
         }
     },
+    // Get all pelanggan
+    async getAllPelanggan(req, res) {
+        try {
+            const pelanggan = await prisma_1.default.pelanggan.findMany({
+                select: {
+                    id: true,
+                    nama: true,
+                    alamat: true,
+                    no_telp: true,
+                    usia: true,
+                    instansi: true,
+                    korp: true
+                }
+            });
+            res.status(httpStatus_1.HTTP_STATUS.OK).json(pelanggan);
+        }
+        catch (error) {
+            res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                error: 'Error fetching pelanggan data',
+                message: error
+            });
+        }
+    },
+    // Get pelanggan by phone number
+    async getPelangganByPhoneNumber(req, res) {
+        const { phoneNumber } = req.params;
+        try {
+            const pelanggan = await prisma_1.default.pelanggan.findFirst({
+                where: {
+                    no_telp: phoneNumber
+                },
+                select: {
+                    id: true,
+                    nama: true,
+                    alamat: true,
+                    no_telp: true,
+                    usia: true,
+                    instansi: true,
+                    korp: true
+                }
+            });
+            if (!pelanggan) {
+                return res.status(httpStatus_1.HTTP_STATUS.NOT_FOUND).json({
+                    error: 'Pelanggan not found',
+                    message: 'Phone number is not registered'
+                });
+            }
+            res.status(httpStatus_1.HTTP_STATUS.OK).json(pelanggan);
+        }
+        catch (error) {
+            res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                error: 'Error fetching pelanggan',
+                message: error
+            });
+        }
+    },
+    // Create new pelanggan
+    async createPelanggan(req, res) {
+        const { nama, alamat, no_telp, usia, instansi, korp } = req.body;
+        try {
+            // Check if phone number already exists
+            const existingPelanggan = await prisma_1.default.pelanggan.findFirst({
+                where: { no_telp }
+            });
+            if (existingPelanggan) {
+                return res.status(httpStatus_1.HTTP_STATUS.BAD_REQUEST).json({
+                    error: 'Phone number already registered',
+                    message: 'A customer with this phone number already exists'
+                });
+            }
+            // Create new pelanggan
+            const newPelanggan = await prisma_1.default.pelanggan.create({
+                data: {
+                    nama,
+                    alamat,
+                    no_telp,
+                    usia: usia ? parseInt(usia.toString()) : null,
+                    instansi,
+                    korp
+                },
+                select: {
+                    id: true,
+                    nama: true,
+                    alamat: true,
+                    no_telp: true,
+                    usia: true,
+                    instansi: true,
+                    korp: true
+                }
+            });
+            res.status(httpStatus_1.HTTP_STATUS.CREATED).json({
+                message: 'Pelanggan created successfully',
+                data: newPelanggan
+            });
+        }
+        catch (error) {
+            res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                error: 'Error creating pelanggan',
+                message: error
+            });
+        }
+    },
+    // Update pelanggan
+    async updatePelanggan(req, res) {
+        const { id } = req.params;
+        const { nama, alamat, no_telp, usia, instansi, korp } = req.body;
+        try {
+            const updatedPelanggan = await prisma_1.default.pelanggan.update({
+                where: { id: parseInt(id) },
+                data: {
+                    nama,
+                    alamat,
+                    no_telp,
+                    usia: usia ? parseInt(usia.toString()) : null,
+                    instansi,
+                    korp
+                },
+                select: {
+                    id: true,
+                    nama: true,
+                    alamat: true,
+                    no_telp: true,
+                    usia: true,
+                    instansi: true,
+                    korp: true
+                }
+            });
+            res.status(httpStatus_1.HTTP_STATUS.OK).json({
+                message: 'Pelanggan updated successfully',
+                data: updatedPelanggan
+            });
+        }
+        catch (error) {
+            res.status(httpStatus_1.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                error: 'Error updating pelanggan',
+                message: error
+            });
+        }
+    },
 };

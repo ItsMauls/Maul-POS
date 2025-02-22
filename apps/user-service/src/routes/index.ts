@@ -1,6 +1,8 @@
 import express from 'express';
 import { userController } from '../controllers';
 import { authenticate } from '../../../../libs/@auth/src/authenticate';
+import kassaRoutes from './kassa';
+import cabangRoutes from './cabang'
 
 
 const router = express.Router();
@@ -20,5 +22,9 @@ router.get('/pelanggan', userController.getAllPelanggan);
 router.get('/pelanggan/phone/:phoneNumber', userController.getPelangganByPhoneNumber);
 router.post('/pelanggan', userController.createPelanggan);
 router.put('/pelanggan/:id', userController.updatePelanggan);
+
+router.use(authenticate)
+router.use('/kassa', kassaRoutes)
+router.use('/cabang', cabangRoutes)
 
 export default router;

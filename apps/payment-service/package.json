@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
+    "@maul-pos/database": "file:../database-service",
     "@prisma/client": "^5.13.0",
     "@types/cors": "^2.8.17",
     "@types/js-yaml": "^4.0.9",
@@ -26,8 +27,7 @@
     "js-yaml": "^4.1.0",
     "kafkajs": "^2.2.4",
     "payment-service": "file:",
-    "redis": "^4.7.0",
-    "@maul-pos/database": "file:../database-service"
+    "redis": "^4.7.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

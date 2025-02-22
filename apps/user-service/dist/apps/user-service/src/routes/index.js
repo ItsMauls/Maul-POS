@@ -16,4 +16,8 @@ router.delete('/:id', controllers_1.userController.deleteUser);
 router.post('/validate-credentials', controllers_1.userController.validateUserCredentials);
 router.patch('/:id/password', controllers_1.userController.updateUserPassword);
 router.get('/by-phone-number/:phoneNumber', controllers_1.userController.findUserByPhoneNumber);
+router.get('/pelanggan', controllers_1.userController.getAllPelanggan);
+router.get('/pelanggan/phone/:phoneNumber', controllers_1.userController.getPelangganByPhoneNumber);
+router.post('/pelanggan', controllers_1.userController.createPelanggan);
+router.put('/pelanggan/:id', controllers_1.userController.updatePelanggan);
 exports.default = router;

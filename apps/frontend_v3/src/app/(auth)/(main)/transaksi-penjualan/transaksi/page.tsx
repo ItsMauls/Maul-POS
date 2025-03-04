@@ -9,9 +9,9 @@ import { PaymentModal } from "@/components/Modal/PaymentModal";
 import { SelectField } from "@/components/SelectField";
 import { Table } from "@/components/Table";
 import { DataRow } from "@/types";
-import { formatRupiah, roundUp } from "@/utils/currency";
+import { formatRupiah } from "@/utils/currency";
 import { ColumnDef } from "@tanstack/react-table";
-import { useState, ChangeEvent, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTransactionStore } from "@/store/transactionStore";
 import { usePost, useGet } from '@/hooks/useApi';
 import { API_URL } from '@/constants/api';
@@ -19,6 +19,8 @@ import { SHORTCUTS } from "@/constants/shorcuts";
 import { MiscModal } from "@/components/Modal/MiscModal/index";
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import { useSetupKassaStore } from "@/store/setupKassa";
 
 
 interface AntrianInfo {
@@ -29,6 +31,7 @@ interface AntrianInfo {
 export default function Page() {
   const { 
     data, 
+    posType,
     addItem, 
     removeItem, 
     updateItem, 
@@ -37,9 +40,10 @@ export default function Page() {
     dokter, 
     setAntrian, 
     clearTransaction ,
-    updateTotals
+    updateTotals,
+    setPosType
   } = useTransactionStore();
-  console.log(data, 'datdasda');
+  console.log(data, 'DATA');
   
   const [isObatModalOpen, setIsObatModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
@@ -50,6 +54,7 @@ export default function Page() {
   const { data: antrianInfo, isLoading: isLoadingAntrianInfo, refetch: refetchAntrianInfo } = useGet<AntrianInfo>(API_URL.ANTRIAN.getCurrentAntrianInfo.replace(':kdCab', 'CAB001'));
   const { register } = useForm();
   const router = useRouter();
+  const { setTipePOS, tipePOS } = useSetupKassaStore();
 
   const [headerInfo, setHeaderInfo] = useState({
     Antrian: '',
@@ -132,7 +137,7 @@ export default function Page() {
   };
 
   const [isMiscModalOpen, setIsMiscModalOpen] = useState(false);
-  const [miscOptions, setMiscOptions] = useState([
+  const [miscOptions, _] = useState([
     { value: 'salep', label: 'Salep', price: 5000 },
     { value: 'kapsul', label: 'Kapsul', price: 3000 },
     // Add more misc options as needed
@@ -186,6 +191,11 @@ export default function Page() {
         }
       } else if (event.key === SHORTCUTS.BON_GANTUNG) {
         router.push('/transaksi-penjualan/tunda')
+      } else if (event.key === SHORTCUTS.SWITCH_POS_TYPE) {
+        event.preventDefault();
+        const newTipePOS = tipePOS === '01 - Swalayan' ? '02 - Resep' : '01 - Swalayan';
+        setTipePOS(newTipePOS);
+        toast.success(`Beralih ke POS ${newTipePOS}`);
       }
     };
   
@@ -194,7 +204,7 @@ export default function Page() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [data.length, selectedRow, handleAddItem, handleRemoveItem]);
+  }, [data.length, selectedRow, handleAddItem, handleRemoveItem, setTipePOS, tipePOS]);
 
   const accordionMenus = [
     {

@@ -5,7 +5,7 @@ datasource db {
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "windows"]
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "darwin-arm64"]
 }
 
 // ============= AUTH & USER MANAGEMENT =============
@@ -22,6 +22,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   profile      Profile?
+  userCabang   MUserCabang[] 
 
   @@map("user")
 }
@@ -36,6 +37,24 @@ model Profile {
   updatedAt DateTime @updatedAt
 
   @@map("profile")
+}
+
+model MUserCabang {
+  id             BigInt    @id @default(autoincrement())
+  user_id        String?   @unique(map: "user_id")  // Perbaikan dari Int? ke String?
+  kd_cab         String?   @unique(map: "kd_cab") @db.VarChar(10)
+  created_at     DateTime? @default(now())
+  created_by     Int?
+  updated_at     DateTime?
+  updated_by     Int?
+  deleted_status Boolean   @default(false)
+  deleted_at     DateTime?
+  deleted_by     Int?
+
+  user   User?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  cabang MCabang? @relation(fields: [kd_cab], references: [kd_cab], onDelete: SetNull)
+
+  @@map("muser_cabang")
 }
 
 enum Role {
@@ -123,6 +142,7 @@ model MCabang {
   Transaksi  Transaksi[]
   Antrian    Antrian[]
   kassa      MKassa[]
+  users      MUserCabang[]
 
   @@map("mcabang")
 }

@@ -14,7 +14,8 @@ export const SHORTCUTS = {
     PREV_PAGE: 'ArrowLeft',
     OPEN_OBAT_MODAL: 'F1',
     CLOSE_MODAL: 'Escape',
-    PERMANENT_TUNDA: 'AltLeft+F9'
+    PERMANENT_TUNDA: 'AltLeft+F9',
+    SWITCH_POS_TYPE: 'F8'
   };
   
   export const SHORTCUT_ACTIONS = {

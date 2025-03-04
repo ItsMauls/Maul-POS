@@ -45,6 +45,8 @@ interface TransactionState {
     total_promo: string | number;
     total_up: string | number;
   }) => void;
+  posType: 'Swalayan' | 'Resep';
+  setPosType: (type: 'Swalayan' | 'Resep') => void;
 }
 
 const customStorage: StateStorage = {
@@ -97,6 +99,7 @@ export const useTransactionStore = create(
         total_up: 0,
         no_voucher: '',
       },
+      posType: 'Swalayan',
       addItem: (index) => {
         const { data } = get();
         const newItem: DataRow = {
@@ -246,6 +249,7 @@ export const useTransactionStore = create(
           total_up: Number(totals.total_up) || 0,
         }
       })),
+      setPosType: (type: 'Swalayan' | 'Resep') => set({ posType: type }),
     }),
     {
       name: 'transaction-storage',

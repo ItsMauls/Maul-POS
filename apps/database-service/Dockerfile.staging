@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
 # Install OpenSSL and other dependencies
 RUN apk add --no-cache libc6-compat openssl postgresql-client
@@ -16,6 +16,23 @@ COPY apps/database-service .
 
 # Generate Prisma client
 RUN npx prisma generate
+
+# Production stage
+FROM node:18-alpine
+
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl postgresql-client
+
+WORKDIR /app/apps/database-service
+
+# Copy package files
+COPY apps/database-service/package*.json ./
+
+# Install production dependencies only
+RUN npm install --production
+
+# Copy built files from builder
+COPY --from=builder /app/apps/database-service/node_modules/.prisma ./node_modules/.prisma
 
 # Create a startup script
 RUN echo '#!/bin/sh\n\

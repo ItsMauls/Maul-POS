@@ -1,26 +1,24 @@
 FROM node:18-alpine
 
-# Install dependencies required for bcrypt
-RUN apk add --no-cache make gcc g++ python3
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
 
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
+WORKDIR /app/apps/auth-service
 
-COPY ./apps/auth-service/package.json ./apps/auth-service/yarn.lock* ./apps/auth-service/package-lock.json* ./apps/auth-service/pnpm-lock.yaml* ./
+# Copy package files
+COPY apps/auth-service/package*.json ./
 
-RUN \
-    if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then npm i -g pnpm && pnpm i --frozen-lockfile; \
-    else echo 'Lockfile not found.' && exit 1; \
-    fi
+# Install dependencies
+RUN npm install
 
-COPY ./apps/auth-service .
+# Copy the rest of the auth service files
+COPY apps/auth-service .
 
-# Rebuild bcrypt
-RUN npm i nodemon -g
-RUN npm rebuild bcrypt --build-from-source
+# Build TypeScript
+RUN npm run build
 
-CMD ["npm", "run", "dev"]
-
+# Expose port
 EXPOSE 3007
+
+# Start in development mode
+CMD ["npm", "run", "dev"]

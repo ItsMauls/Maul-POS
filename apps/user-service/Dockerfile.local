@@ -1,20 +1,24 @@
 FROM node:18-alpine
 
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
 
-# Copy entire project
-COPY . .
+WORKDIR /app/apps/user-service
+
+# Copy package files
+COPY apps/user-service/package*.json ./
 
 # Install dependencies
-WORKDIR /app/apps/user-service
-RUN npm install --verbose
-RUN npm i nodemon -g
+RUN npm install
 
-# Generate Prisma client
-RUN npx prisma generate
+# Copy the rest of the user service files
+COPY apps/user-service .
 
+# Build TypeScript
+RUN npm run build
 
+# Expose port
+EXPOSE 3006
+
+# Start in development mode
 CMD ["npm", "run", "dev"]
-
-EXPOSE 3003

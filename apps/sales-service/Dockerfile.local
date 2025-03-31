@@ -1,26 +1,24 @@
 FROM node:18-alpine
 
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
 
-# Copy entire project
-COPY . .
+WORKDIR /app/apps/sales-service
 
-# Install dependencies for @auth
-WORKDIR /app/libs/@auth
+# Copy package files
+COPY apps/sales-service/package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Build @auth
+# Copy the rest of the sales service files
+COPY apps/sales-service .
+
+# Build TypeScript
 RUN npm run build
 
-# Install dependencies for sales-service
-WORKDIR /app/apps/sales-service
-RUN npm install
+# Expose port
+EXPOSE 3005
 
-RUN npm i nodemon -g
-# Generate Prisma client
-RUN npx prisma generate
-
+# Start in development mode
 CMD ["npm", "run", "dev"]
-
-EXPOSE 3007

@@ -10,12 +10,12 @@ COPY . .
 WORKDIR /app/apps/user-service
 RUN npm install --verbose
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Prisma client with correct binary targets
+# RUN npx prisma generate --schema=./prisma/schema.prisma
 
 # Build the application
 RUN npm run build
 
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
 
 EXPOSE 3003

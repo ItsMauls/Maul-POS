@@ -1,23 +1,23 @@
 FROM node:18-alpine
 
-RUN apk add --no-cache libc6-compat
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
+
 WORKDIR /app
 
-COPY ./apps/inventory-service-pembelian/package.json ./apps/inventory-service-pembelian/yarn.lock* ./apps/inventory-service-pembelian/package-lock.json* ./apps/inventory-service-pembelian/pnpm-lock.yaml* ./
+# Copy entire project
+COPY . .
 
-RUN \
-    if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then npm i -g pnpm && pnpm i --frozen-lockfile; \
-    else echo 'Lockfile not found.' && exit 1; \
-    fi
+# Install dependencies
+WORKDIR /app/apps/inventory-service-pembelian
+RUN npm install --verbose
 
-COPY ./apps/inventory-service-pembelian .
+# Generate Prisma client with correct binary targets
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
-# RUN npx prisma migrate dev
-RUN npm i nodemon -g
-RUN npx prisma generate
+# Build the application
+RUN npm run build
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
 
 EXPOSE 3003

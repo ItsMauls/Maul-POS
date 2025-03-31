@@ -1,23 +1,21 @@
 FROM node:18-alpine
 
-RUN apk add --no-cache libc6-compat
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
+
 WORKDIR /app
 
-COPY ./apps/frontend_v3/package.json ./apps/frontend_v3/yarn.lock* ./apps/frontend_v3/package-lock.json* ./apps/frontend_v3/pnpm-lock.yaml* ./
+# Copy package files
+COPY apps/frontend_v3/package*.json ./
 
-RUN \
-    if [ -f yarn.lock ]; then echo 'Installing with Yarn' && yarn install --frozen-lockfile --prefer-offline; \
-    elif [ -f package-lock.json ]; then echo 'Installing with npm' && npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then echo 'Installing with pnpm' && npm i -g pnpm && pnpm i --frozen-lockfile; \
-    else echo 'Lockfile not found. please ensure that either yarn.lock, package-lock.json or pnpm-lock.yaml is present.' && exit 1; \
-    fi
+# Install dependencies
+RUN npm install
 
-COPY . .
+# Copy the rest of the frontend files
+COPY apps/frontend_v3 .
 
-CMD \
-    if [ -f yarn.lock ]; then yarn dev; \
-    elif [ -f package-lock.json ]; then npm run dev; \
-    elif [ -f pnpm-lock.yaml ]; then pnpm dev; \
-    fi
-
+# Expose port
 EXPOSE 3000
+
+# Start in development mode
+CMD ["npm", "run", "dev"]

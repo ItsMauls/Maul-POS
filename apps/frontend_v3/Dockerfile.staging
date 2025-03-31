@@ -1,24 +1,41 @@
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
-RUN apk add --no-cache libc6-compat
-WORKDIR /app/frontend_v3
+WORKDIR /app/apps/frontend_v3
 
-COPY ./apps/frontend_v3/package.json ./
-COPY ./apps/frontend_v3/yarn.lock* ./
-COPY ./apps/frontend_v3/package-lock.json* ./
-COPY ./apps/frontend_v3/pnpm-lock.yaml* ./
+# Copy package files
+COPY apps/frontend_v3/package*.json ./
 
-RUN \
-    if [ -f yarn.lock ]; then echo 'Installing with Yarn' && yarn install --frozen-lockfile --prefer-offline; \
-    elif [ -f package-lock.json ]; then echo 'Installing with npm' && npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then echo 'Installing with pnpm' && npm i -g pnpm && pnpm i --frozen-lockfile; \
-    else echo 'Lockfile not found. Please ensure that either yarn.lock, package-lock.json or pnpm-lock.yaml is present.' && exit 1; \
-    fi
+# Install dependencies
+RUN npm install
 
-COPY ./apps/frontend_v3 .
+# Copy the rest of the frontend files
+COPY apps/frontend_v3 .
 
+# Build the application
 RUN npm run build
 
-CMD npm run start
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app/apps/frontend_v3
+
+# Copy package files
+COPY apps/frontend_v3/package*.json ./
+
+# Install production dependencies only
+RUN npm install --production
+
+# Copy built files from builder
+COPY --from=builder /app/apps/frontend_v3/.next ./.next
+COPY --from=builder /app/apps/frontend_v3/public ./public
+COPY --from=builder /app/apps/frontend_v3/next.config.js ./
+COPY --from=builder /app/apps/frontend_v3/node_modules ./node_modules
+
+# Set environment variables
+ENV NODE_ENV=staging
+ENV PORT=3000
+
+# Start the application
+CMD ["npm", "start"]
 
 EXPOSE 3000

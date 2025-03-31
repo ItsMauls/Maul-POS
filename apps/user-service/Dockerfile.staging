@@ -1,21 +1,45 @@
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
 
-# Copy entire project
-COPY . .
+WORKDIR /app/apps/user-service
+
+# Copy package files
+COPY apps/user-service/package*.json ./
 
 # Install dependencies
-WORKDIR /app/apps/user-service
-RUN npm install --verbose
+RUN npm install
 
-# Generate Prisma client
-RUN npx prisma generate
+# Copy the rest of the user service files
+COPY apps/user-service .
 
 # Build the application
 RUN npm run build
 
+# Production stage
+FROM node:18-alpine
+
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app/apps/user-service
+
+# Copy package files
+COPY apps/user-service/package*.json ./
+
+# Install production dependencies only
+RUN npm install --production
+
+# Copy built files from builder
+COPY --from=builder /app/apps/user-service/dist ./dist
+COPY --from=builder /app/apps/user-service/node_modules/.prisma ./node_modules/.prisma
+
+# Set environment variables
+ENV NODE_ENV=staging
+ENV PORT=3006
+
+# Start the application
 CMD ["npm", "start"]
 
-EXPOSE 3003
+EXPOSE 3006

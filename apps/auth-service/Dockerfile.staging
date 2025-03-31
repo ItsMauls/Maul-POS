@@ -1,28 +1,45 @@
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
-# Install dependencies required for bcrypt
-RUN apk add --no-cache make gcc g++ python3
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
 
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
+WORKDIR /app/apps/auth-service
 
-COPY ./package.json ./yarn.lock* ./package-lock.json* ./pnpm-lock.yaml* ./
+# Copy package files
+COPY apps/auth-service/package*.json ./
 
-RUN \
-    if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then npm i; \
-    elif [ -f pnpm-lock.yaml ]; then npm i -g pnpm && pnpm i --frozen-lockfile; \
-    else echo 'Lockfile not found.' && exit 1; \
-    fi
+# Install dependencies
+RUN npm install
 
-COPY . .
+# Copy the rest of the auth service files
+COPY apps/auth-service .
 
-
-# Rebuild bcrypt
-RUN npm rebuild bcrypt --build-from-source
-
+# Build the application
 RUN npm run build
 
+# Production stage
+FROM node:18-alpine
+
+# Install OpenSSL and other dependencies
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app/apps/auth-service
+
+# Copy package files
+COPY apps/auth-service/package*.json ./
+
+# Install production dependencies only
+RUN npm install --production
+
+# Copy built files from builder
+COPY --from=builder /app/apps/auth-service/dist ./dist
+COPY --from=builder /app/apps/auth-service/node_modules/.prisma ./node_modules/.prisma
+
+# Set environment variables
+ENV NODE_ENV=staging
+ENV PORT=3007
+
+# Start the application
 CMD ["npm", "start"]
 
 EXPOSE 3007
